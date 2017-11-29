@@ -1,0 +1,69 @@
+
+<!-- Table 'miio_devices' edit -->
+<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+[#if OK#]
+<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
+[#endif OK#]
+[#if ERR#]
+<div class="alert alert-error"><#LANG_FILLOUT_REQURED#></div>
+[#endif ERR#]
+<fieldset>
+[#if ID=""#]
+<legend><#LANG_NEW_RECORD#></legend>
+[#endif ID#]
+<div class="form-group">
+<div>
+<table class="table table-stripped">
+ <tr>
+  <td><#LANG_TITLE#></td>
+  <td><#LANG_VALUE#></td>
+  <td><#LANG_DEVICE#></td>
+  <td><#LANG_LINKED_OBJECT#></td>
+  <td><#LANG_LINKED_PROPERTY#></td>
+  <td><#LANG_METHOD#></td>
+  <td valign="top"><#LANG_UPDATED#></td>
+  <td>&nbsp;</td>
+ </tr>
+ [#begin PROPERTIES#]
+ <tr>
+  <td valign="top">[#TITLE#]</td>
+  <td valign="top">[#VALUE#]</td>
+  <td>
+   [#if SDEVICE_TYPE!=""#]
+   [#module name="devices" action="link" type="<#PROPERTIES.SDEVICE_TYPE#>" prefix="miio" source_table="miio_commands" source_table_id="<#PROPERTIES.ID#>" linked_object="<#PROPERTIES.LINKED_OBJECT#>"#]
+   [#else#]
+   &nbsp;
+   [#endif#]
+  </td>
+  <td valign="top"><input type="text" name="linked_object[#ID#]" id="linked_object[#ID#]" value="[#LINKED_OBJECT#]"></td>
+  <td valign="top"><input type="text" name="linked_property[#ID#]" id="linked_property[#ID#]" value="[#LINKED_PROPERTY#]"></td>
+  <td valign="top"><input type="text" name="linked_method[#ID#]" id="linked_method[#ID#]" value="[#LINKED_METHOD#]"></td>
+  [#module name="linkedobject" object_field="linked_object<#PROPERTIES.ID#>" property_field="linked_property<#PROPERTIES.ID#>" method_field="linked_method<#PROPERTIES.ID#>" width="200"#]
+  <td valign="top">[#UPDATED#]</td>
+  <td><a href="?id=<#ID#>&tab=<#TAB#>&view_mode=<#VIEW_MODE#>&delete_id=[#ID#]" onClick="return confirm('<#LANG_ARE_YOU_SURE#>');" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i></td>
+ </tr>
+ [#end PROPERTIES#]
+</table> 
+</div>
+</div>
+<div class="form-group">
+        <div class="col-lg-offset-3 col-lg-4">
+ [#if ID!=""#]
+ <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_SUBMIT#></button>
+ [#else ID#]
+ <button type="submit" name="subm" value="Add" class="btn btn-primary"><#LANG_ADD#></button>
+ [#endif ID#]
+ <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_CANCEL#></a>
+<input type="hidden" name="id" value="<#ID#>">
+<input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
+<input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
+<input type="hidden" name="mode" value="update">
+<input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
+<input type="hidden" name="tab" value="<#TAB#>">
+        </div>
+</div>
+</fieldset>
+</form>
+<!-- dataset2 (module) -->
+<div class="form-group">
+</div>
