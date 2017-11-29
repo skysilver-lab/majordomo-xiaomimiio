@@ -1,0 +1,130 @@
+
+ <!-- action usual -->
+ [#if DATA_SOURCE="miio_devices" || DATA_SOURCE=""#]
+ <!-- table miio_devices search -->
+ [#if VIEW_MODE="search_miio_devices" || VIEW_MODE=""#]
+
+<div class="float-right">
+	<button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#about">О модуле&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
+	</button>
+</div>
+
+<div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
+<!-- <div id="about" class="modal hide"> -->
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">Xiaomi miIO</h4>
+			</div>
+			<div class="modal-body">
+				<div class="float-right">
+					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
+				</div>
+                <p class="float-left"> Модуль поддержки Wi-Fi устройств из экосистемы Xiaomi Mihome, работающих по протоколу miIO. <br><br>
+				Обсуждение модуля на <a href="http://majordomo.smartliving.ru/forum/" target="_blank">форуме</a>.<br>
+				</p>
+			</div>
+			
+			<div class="modal-footer">
+				<div class="pull-left">Автор: @skysilver </div>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+			</div>
+		</div>
+	</div>
+</div>
+ 
+<div>
+	<img src="../templates/xiaomimiio/milogo.png"  width="30" height="30">
+	&nbsp;&nbsp;&nbsp;
+	<a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>   
+</div>
+ 
+<div class="collapse" id='api_settings'>
+	&nbsp;
+    <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+        <fieldset>
+            <div class="form-group">
+                <label class="control-label">IP сервера MajorDoMo 
+				<span class='support' tabindex="1" data-title="IP-адрес требуется обязательно указать, если у сервера два и более сетевых интерфейса.">
+					<i class="glyphicon glyphicon-info-sign"></i>
+				</span>
+                </label>
+                <div class="col-lg-6"><input class="form-control" type="text" name="api_ip" value="<#API_IP#>" class="input"></div>
+            </div>
+            <div class="form-group">
+                <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
+					Отладка DebMes
+					<span class='support' tabindex="1" data-title="Запись обмена сообщениями между сервером и устройствами в отдельный лог-файл YYYY-mm-dd_xiaomimiio.log. Для вступления изменений в силу требуется перезапустить цикл.">
+						<i class="glyphicon glyphicon-info-sign"></i>
+					</span>
+				</div>
+            </div>
+			<div class="form-group">
+                <div class="controls"><input type="checkbox" name="api_log_miio" value="1"[#if API_LOG_MIIO="1"#] checked[#endif#]> 
+					Отладка miIO-Lib
+					<span class='support' tabindex="1" data-title="Запись отладочных сообщений библиотеки miIO-Lib в лог-файл цикла log_YYYY-mm-dd-cycle_xiaomimiio.php.txt. Для вступления изменений в силу требуется перезапустить цикл.">
+						<i class="glyphicon glyphicon-info-sign"></i>
+					</span>
+				</div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
+                <input type="hidden" name="view_mode" value="update_settings">
+                <input type="hidden" name="mode" value="update">
+            </div>
+        </fieldset>
+    </form>
+</div>
+ 
+ [#inc miio_devices_search_admin.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table miio_devices search -->
+ <!-- table miio_devices edit -->
+ [#if VIEW_MODE="edit_miio_devices"#]
+   [#if ID!=""#]
+   [#if TITLE!=""#]<h4>[#TITLE#]</h4>[#endif TITLE#]
+<ul class="nav nav-tabs">
+  <li[#if TAB=""#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
+  </li>
+  <li[#if TAB="data"#] class="active"[#endif#]>
+   <a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=data">&#060#LANG_DATA#&#062</a>
+  </li>
+</ul>
+&nbsp;<br/><br/>
+   [#endif ID#]
+   [#if TAB=""#]
+    [#inc miio_devices_edit_default.html#]
+   [#endif TAB#]
+   [#if TAB="data"#]
+    [#inc miio_devices_edit_data.html#]
+   [#endif TAB#]
+ [#endif VIEW_MODE#]
+ <!-- / table miio_devices edit -->
+ <!-- table miio_devices view --> 
+ [#if VIEW_MODE="view_miio_devices"#]
+   [#if TAB=""#]
+    [#inc miio_devices_view_default.html#]
+   [#endif TAB#]
+ [#endif VIEW_MODE#]
+ <!-- / table miio_devices view -->
+ [#endif DATA_SOURCE#]
+ <!-- action usual -->
+ [#if DATA_SOURCE="miio_commands"#]
+ <!-- table miio_commands search -->
+ [#if VIEW_MODE="search_miio_commands" || VIEW_MODE=""#]
+  [#inc miio_commands_search_admin.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table miio_commands search -->
+ <!-- table miio_commands edit -->
+ [#if VIEW_MODE="edit_miio_commands"#]
+   [#inc miio_commands_edit.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table miio_commands edit -->
+ <!-- table miio_commands view --> 
+ [#if VIEW_MODE="view_miio_commands"#]
+   [#inc miio_commands_view.html#]
+ [#endif VIEW_MODE#]
+ <!-- / table miio_commands view -->
+ [#endif DATA_SOURCE#]
