@@ -1,0 +1,175 @@
+@charset "utf-8";
+/* CSS Document */
+
+/*---------Оформление. Общие стили---------*/
+.support,
+.support-two {
+	display: inline-block;
+	position: relative;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.tip,
+.tip-two,
+.tip-three,
+span.support::before,
+span.support-hover::before { 
+  	display: none;
+  	position: absolute;
+  	z-index: 9998;
+  	top: 0;
+  	left: 100%;
+  	background: #EDEDED;
+  	border-radius: 3px;
+  	border: 1px solid #ccc;
+  	box-shadow: 5px 5px 0.5em -0.1em rgba(0,0,6,0.5);
+  	text-align: left;
+  	color: #000;
+  	font: normal 500 14px Arial, sans-serif;
+  	opacity: .9; 
+  	cursor: default;
+  	padding: 5px;
+  	margin: -15px 0 0 10px;
+  	width: 400px;
+  	min-height: 50px; 
+ 	height: auto;
+}
+.tip-two,
+.tip-three { 
+  	margin: -30px 0 0 0;
+}
+.tip:before,
+.tip-two:before,
+.tip-three:before {
+ 	border-width: 9px 8px 9px 0;
+ 	border-color: transparent #cccccc transparent transparent;
+ 	top: 13px;
+ 	left: -9px;
+}
+.tip:after,
+.tip-two:after,
+.tip-three:after {
+ 	border-width: 7px 7px 7px 0;
+ 	border-color: transparent #ededed transparent transparent;
+ 	top: 15px;
+ 	left: -7px;
+}
+.tip:before,
+.tip-two:before,
+.tip-three:before,
+.tip:after,
+.tip-two:after,
+.tip-three:after {
+ 	content:"";
+ 	position:absolute;
+ 	width: 0px;
+ 	height: 0px;
+ 	border-style: solid;
+}
+a.support:focus em,
+a.support-two:focus em,
+#tip-checkbox:checked ~ .support em {
+ 	background: #6699FF;
+}
+
+.tip-block {
+ 	display: inline-block;
+ 	position: relative;
+ 	background: transparent;
+ 	margin: 0;
+ 	padding: 0;
+ 	border: 0;
+ 	height: 0;
+ 	width: 1px;
+}
+
+/*--------------Любой тег, атрибут data-title------------*/
+
+span.support::before,
+span.support-hover::before {
+	content: attr(data-title);
+}
+span.support-hover:hover::before,
+span.support:focus::before {
+	display: block;
+}
+/*--------------Внутри тега 'A'------------*/
+
+a.support:focus .tip {
+	 display:block;
+}
+a.support[tabindex="1"]:focus {
+	 outline: none;
+}
+/*---------------Непосредственно после тега 'A'----------------*/
+
+a.support-two:focus + .tip-block .tip-two {
+ 	display:block;
+}
+a.support-two[tabindex="1"]:focus {
+ 	outline: none;
+}
+
+/*----------Использование тега 'INPUT'--------------*/
+
+.tip-checkbox {
+  	display: none;
+}
+
+#tip-checkbox:checked ~ * .tip-three {
+    	display: block;
+}
+
+.tip-close {
+ 	display: inline-block;
+  	position: absolute;
+ 	background: #333;
+ 	border-radius: 20px;
+ 	border: 2px solid #FFF;
+ 	top: -8px;
+ 	right: -8px;
+ 	font: normal bold 14px Comic Sans MS;
+ 	text-align: center;
+ 	color: #fff;
+ 	cursor: pointer;
+ 	padding: 0 4px;
+}
+
+/*---------При наведении--------------*/
+
+.support-hover,
+.support-hover-two {
+ 	display: inline-block;
+ 	position: relative;
+ 	color: #06C;
+ 	text-decoration: none;
+ 	cursor: pointer;
+}
+.support-hover em,
+.support-hover-two em {
+ 	background: #FF6600;
+ 	border-radius: 20px;
+ 	border: 1px solid #999;
+ 	text-align: center;
+ 	color: #FFF;
+ 	font: normal bold 16px Arial;
+ 	padding: 0 4px;
+}
+span.support-hover:hover em,
+span.support:hover em,
+span.support:focus em,
+a.support-hover:hover em,
+a.support-hover-two:hover em {
+ 	background: #6699FF;
+}
+/*--------------Внутри тега 'A'------------*/
+
+a.support-hover:hover .tip {
+ 	display:block;
+}
+
+/*---------------Непосредственно после 'A'----------------*/
+a.support-hover-two:hover + .tip-block .tip-two {
+ 	display:block;
+}
