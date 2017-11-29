@@ -1,0 +1,9 @@
+<link href="../templates/xiaomimiio/css/usual.css" rel="stylesheet" type="text/css">
+[#if ACTION=""#]
+<!-- Frontend -->
+ [#inc action_usual.html#]
+[#endif#]
+[#if ACTION="admin"#]
+<!-- Control Panel -->
+ [#inc action_admin.html#]
+[#endif#]
