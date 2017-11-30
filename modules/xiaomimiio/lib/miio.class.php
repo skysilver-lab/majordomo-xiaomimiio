@@ -27,8 +27,8 @@ class miIO {
 	public 	$ip = '';
 	public 	$token = '';
 	public 	$debug = '';
-	public 	$send_timeout = 5;
-	public 	$disc_timeout = 15;
+	public 	$send_timeout = 2;
+	public 	$disc_timeout = 10;
 
     public 	$msg_id = '1';
 	public	$useAutoMsgID = false;
