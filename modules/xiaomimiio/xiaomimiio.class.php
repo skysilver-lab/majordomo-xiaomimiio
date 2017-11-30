@@ -11,192 +11,229 @@ Define('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
 Define('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
 Define('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
-
 class xiaomimiio extends module {
-/**
-* xiaomimiio
-*
-* Module class constructor
-*
-* @access private
-*/
-function xiaomimiio() {
-  $this->name = 'xiaomimiio';
-  $this->title = 'Xiaomi miIO';
-  $this->module_category = '<#LANG_SECTION_DEVICES#>';
-  $this->checkInstalled();
-}
-/**
-* saveParams
-*
-* Saving module parameters
-*
-* @access public
-*/
-function saveParams($data=0) {
- $p=array();
- if (IsSet($this->id)) {
-  $p["id"]=$this->id;
- }
- if (IsSet($this->view_mode)) {
-  $p["view_mode"]=$this->view_mode;
- }
- if (IsSet($this->edit_mode)) {
-  $p["edit_mode"]=$this->edit_mode;
- }
- if (IsSet($this->data_source)) {
-  $p["data_source"]=$this->data_source;
- }
- if (IsSet($this->tab)) {
-  $p["tab"]=$this->tab;
- }
- return parent::saveParams($p);
-}
-/**
-* getParams
-*
-* Getting module parameters from query string
-*
-* @access public
-*/
-function getParams() {
-  global $id;
-  global $mode;
-  global $view_mode;
-  global $edit_mode;
-  global $data_source;
-  global $tab;
-  if (isset($id)) {
-   $this->id=$id;
-  }
-  if (isset($mode)) {
-   $this->mode=$mode;
-  }
-  if (isset($view_mode)) {
-   $this->view_mode=$view_mode;
-  }
-  if (isset($edit_mode)) {
-   $this->edit_mode=$edit_mode;
-  }
-  if (isset($data_source)) {
-   $this->data_source=$data_source;
-  }
-  if (isset($tab)) {
-   $this->tab=$tab;
-  }
-}
-/**
-* Run
-*
-* Description
-*
-* @access public
-*/
-function run() {
- global $session;
-  $out=array();
-  if ($this->action=='admin') {
-   $this->admin($out);
-  } else {
-   $this->usual($out);
-  }
-  if (IsSet($this->owner->action)) {
-   $out['PARENT_ACTION']=$this->owner->action;
-  }
-  if (IsSet($this->owner->name)) {
-   $out['PARENT_NAME']=$this->owner->name;
-  }
-  $out['VIEW_MODE']=$this->view_mode;
-  $out['EDIT_MODE']=$this->edit_mode;
-  $out['MODE']=$this->mode;
-  $out['ACTION']=$this->action;
-  $out['DATA_SOURCE']=$this->data_source;
-  $out['TAB']=$this->tab;
-  $this->data=$out;
-  $p=new parser(DIR_TEMPLATES.$this->name."/".$this->name.".html", $this->data, $this);
-  $this->result=$p->result;
-}
-/**
-* BackEnd
-*
-* Module backend
-*
-* @access public
-*/
-function admin(&$out) {
- 
-	$this->getConfig();
- 
-	$out['API_IP'] = $this->config['API_IP'];
-	$out['API_LOG_DEBMES'] = $this->config['API_LOG_DEBMES'];
-	$out['API_LOG_MIIO'] = $this->config['API_LOG_MIIO'];
-	
-	if ($this->view_mode == 'update_settings') {
-		global $api_ip;
-		$this->config['API_IP'] = $api_ip;
 
-		global $api_log_debmes;
-		$this->config['API_LOG_DEBMES'] = (int)$api_log_debmes;
-		
-		global $api_log_miio;
-		$this->config['API_LOG_MIIO'] = (int)$api_log_miio;
+	/**
+	* xiaomimiio
+	*
+	* Module class constructor
+	*
+	* @access private
+	*/
 
-		$this->saveConfig();
-
-		setGlobal('cycle_xiaomimiioControl', 'restart');
-
-		$this->redirect("?");
+	function xiaomimiio() {
+		$this->name = 'xiaomimiio';
+		$this->title = 'Xiaomi miIO';
+		$this->module_category = '<#LANG_SECTION_DEVICES#>';
+		$this->checkInstalled();
 	}
 	
+	/**
+	* saveParams
+	*
+	* Saving module parameters
+	*
+	* @access public
+	*/
 	
- if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
-  $out['SET_DATASOURCE']=1;
- }
- if ($this->data_source=='miio_devices' || $this->data_source=='') {
-  if ($this->view_mode=='' || $this->view_mode=='search_miio_devices') {
-   $this->search_miio_devices($out);
-  }
-
-  if ($this->view_mode == 'discover') {
-   $this->discover();
-   sleep(3); //3 сек мало для поиска - мин. 10
-   $this->redirect("?");
-  }
-
-  if ($this->view_mode=='edit_miio_devices') {
-   $this->edit_miio_devices($out, $this->id);
-  }
-  if ($this->view_mode=='delete_miio_devices') {
-   $this->delete_miio_devices($this->id);
-   $this->redirect("?data_source=miio_devices");
-  }
- }
-
-}
-
-
-function addToQueue($device_id, $method, $data = '[]') {
+	function saveParams($data=0) {
+		$p=array();
+		if (IsSet($this->id)) {
+			$p["id"]=$this->id;
+		}
+		if (IsSet($this->view_mode)) {
+			$p["view_mode"]=$this->view_mode;
+		}
+		if (IsSet($this->edit_mode)) {
+			$p["edit_mode"]=$this->edit_mode;
+		}
+		if (IsSet($this->data_source)) {
+			$p["data_source"]=$this->data_source;
+		}
+		if (IsSet($this->tab)) {
+			$p["tab"]=$this->tab;
+		}
+		return parent::saveParams($p);
+	}
 	
-	$rec = array();
-	$rec['DEVICE_ID'] = (int)$device_id;
-	$rec['METHOD'] = $method;
-	$rec['DATA'] = $data;
-	$rec['ADDED'] = date('Y-m-d H:i:s');
-	SQLInsert('miio_queue', $rec);
-	
-}
+	/**
+	* getParams
+	*
+	* Getting module parameters from query string
+	*
+	* @access public
+	*/
+	function getParams() {
+  
+		global $id;
+		global $mode;
+		global $view_mode;
+		global $edit_mode;
+		global $data_source;
+		global $tab;
+		
+		if (isset($id)) {
+			$this->id=$id;
+		}
+		if (isset($mode)) {
+			$this->mode=$mode;
+		}
+		if (isset($view_mode)) {
+			$this->view_mode=$view_mode;
+		}
+		if (isset($edit_mode)) {
+			$this->edit_mode=$edit_mode;
+		}
+		if (isset($data_source)) {
+			$this->data_source=$data_source;
+		}
+		if (isset($tab)) {
+			$this->tab=$tab;
+		}
+	}
 
-function discover($ip = '') {
+	/**
+	* Run
+	*
+	* Description
+	*
+	* @access public
+	*/
 	
-	$this->addToQueue(0, 'discover_all');
-	
-}
+	function run() {
+		
+		global $session;
+		$out=array();
+		if ($this->action=='admin') {
+			$this->admin($out);
+		} else {
+			$this->usual($out);
+		}
+		
+		if (IsSet($this->owner->action)) {
+			$out['PARENT_ACTION']=$this->owner->action;
+		}
+  
+		if (IsSet($this->owner->name)) {
+			$out['PARENT_NAME']=$this->owner->name;
+		}
+  
+		$out['VIEW_MODE']=$this->view_mode;
+		$out['EDIT_MODE']=$this->edit_mode;
+		$out['MODE']=$this->mode;
+		$out['ACTION']=$this->action;
+		$out['DATA_SOURCE']=$this->data_source;
+		$out['TAB']=$this->tab;
+		$this->data=$out;
+		$p=new parser(DIR_TEMPLATES.$this->name."/".$this->name.".html", $this->data, $this);
+		$this->result=$p->result;
+	}
 
-function requestInfo($device_id) {
+	/**
+	* BackEnd
+	*
+	* Module backend
+	*
+	* @access public
+	*/
 	
-	$this->addToQueue($device_id, 'miIO.info');
+	function admin(&$out) {
+ 
+		$this->getConfig();
+ 
+		$out['API_IP'] = $this->config['API_IP'];
+		$out['API_LOG_DEBMES'] = $this->config['API_LOG_DEBMES'];
+		$out['API_LOG_MIIO'] = $this->config['API_LOG_MIIO'];
 	
-}
+		if ($this->view_mode == 'update_settings') {
+			global $api_ip;
+			$this->config['API_IP'] = $api_ip;
+
+			global $api_log_debmes;
+			$this->config['API_LOG_DEBMES'] = (int)$api_log_debmes;
+		
+			global $api_log_miio;
+			$this->config['API_LOG_MIIO'] = (int)$api_log_miio;
+
+			$this->saveConfig();
+			
+			// После изменения настроек модуля перезапускаем цикл
+			setGlobal('cycle_xiaomimiioControl', 'restart');
+
+			$this->redirect("?");
+		}
+	
+		if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
+			$out['SET_DATASOURCE']=1;
+		}
+ 
+		if ($this->data_source=='miio_devices' || $this->data_source=='') {
+			if ($this->view_mode=='' || $this->view_mode=='search_miio_devices') {
+				$this->search_miio_devices($out);
+			}
+
+			if ($this->view_mode == 'discover') {
+				$this->discover();
+				sleep(12);
+				$this->redirect('?');
+			}
+
+			if ($this->view_mode=='edit_miio_devices') {
+				$this->edit_miio_devices($out, $this->id);
+			}
+			if ($this->view_mode=='delete_miio_devices') {
+				$this->delete_miio_devices($this->id);
+				$this->redirect("?data_source=miio_devices");
+			}
+		}
+	}
+
+	/**
+	* addToQueue
+	*
+	* ...
+	*
+	* @access private
+	*/
+	
+	function addToQueue($device_id, $method, $data = '[]') {
+	
+		$rec = array();
+		$rec['DEVICE_ID'] = (int)$device_id;
+		$rec['METHOD'] = $method;
+		$rec['DATA'] = $data;
+		$rec['ADDED'] = date('Y-m-d H:i:s');
+		SQLInsert('miio_queue', $rec);
+	
+	}
+
+	/**
+	* discover
+	*
+	* ...
+	*
+	* @access public
+	*/
+
+	function discover($ip = '') {
+	
+		$this->addToQueue(0, 'discover_all');
+	
+	}
+
+	/**
+	* requestInfo
+	*
+	* ...
+	*
+	* @access public
+	*/
+	
+	function requestInfo($device_id) {
+	
+		$this->addToQueue($device_id, 'miIO.info');
+	
+	}
 
 
 	function requestStatus($device_id) {
@@ -204,6 +241,7 @@ function requestInfo($device_id) {
 		$device_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=" . (int)$device_id);
 		
 		//DebMes($device_rec['DEVICE_TYPE'], 'xiaomimiio');
+		//DebMes('[requestStatus] DEVICE_TYPE='.$device_rec['DEVICE_TYPE'], 'xiaomimiio');
 		
 		if ($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') {
 			$props=explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
@@ -232,10 +270,6 @@ function requestInfo($device_id) {
 		
 	}
 
-
-
-
-
 	/**
 	* FrontEnd
 	*
@@ -253,6 +287,11 @@ function requestInfo($device_id) {
 				global $message;
 				global $command;
 				$this->processMessage($message, $command, $device_id);
+			} else if ($op == 'discover_all') {
+				//global $device_id;
+				//global $message;
+				//global $command;
+				//$this->processMessage($message, $command, $device_id);
 			}
 			echo 'OK';
 			exit;
@@ -314,6 +353,11 @@ function requestInfo($device_id) {
 					} else {
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
 					}
+				} elseif ($properties[$i]['TITLE'] == 'bright') { // bright command
+					$value = (int)$value;
+					if ($value < 1) $value = 1;
+					if ($value > 100) $value = 100;
+					$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_bright', "[$value]");
 				}
 				SQLExec("UPDATE miio_commands SET VALUE='".DBSafe($value)."' WHERE ID=".$properties[$i]['ID']);
 			}
@@ -356,15 +400,13 @@ function requestInfo($device_id) {
 	/**
 	* processMessage
 	*
-	* Module uninstall routine
+	* ...
 	*
 	* @access private
 	*/
 
 	function processMessage($message, $command, $device_id) {
 
-		//DebMes("processMessage($message, $command, $device_id) " . PHP_EOL;
-		
 		$this->getConfig();
 		
 		if ($this->config['API_LOG_DEBMES']) {
@@ -382,34 +424,38 @@ function requestInfo($device_id) {
 		if ($command == 'discover_all') {
 			if (is_array($data['devices'])) {
 				foreach($data['devices'] as $dev) {
-					$dev=json_decode($dev,true);
-					$device_type_code=$dev['devicetype'];
-					$device_serial=$dev['serial'];
-					$token=$dev['token'];
-					if (preg_match('/^0+$/',$token)) {
-						$token='';
+					$dev = json_decode($dev, true);
+					$device_type_code = $dev['devicetype'];
+					$device_serial = $dev['serial'];
+					$token = $dev['token'];
+							
+					if (preg_match('/^0+$/', $token)) {
+						$token = '';
 					}
-					$dev_rec=SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='".$device_type_code."' AND SERIAL='".$device_serial."'");
-					$dev_rec['IP']=$dev['ip'];
-					if ($token!='') {
-						$dev_rec['TOKEN']=$token;
-					}
+					
+					$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='".$device_type_code."' AND SERIAL='".$device_serial."'");
+					
 					if ($dev_rec['ID']) {
-						SQLUpdate('miio_devices',$dev_rec);
+						$dev_rec['IP'] = $dev['ip'];
+						if ($token != '') {
+							$dev_rec['TOKEN'] = $token;
+						}
+						SQLUpdate('miio_devices', $dev_rec);
 					} else {
-						$dev_rec=array();
-						$dev_rec['IP']=$dev['ip'];
-						$dev_rec['SERIAL']=$device_serial;
-						$dev_rec['DEVICE_TYPE_CODE']=$device_type_code;
-						$dev_rec['TITLE']='New '.$dev_rec['DEVICE_TYPE_CODE'];
-						$dev_rec['ID']=SQLInsert('miio_devices',$dev_rec);
+						$dev_rec = array();
+						$dev_rec['IP'] = $dev['ip'];
+						if ($token != '') {
+							$dev_rec['TOKEN'] = $token;
+						}
+						$dev_rec['SERIAL'] = $device_serial;
+						$dev_rec['DEVICE_TYPE_CODE'] = $device_type_code;
+						$dev_rec['TITLE'] = 'New ' . $dev_rec['DEVICE_TYPE_CODE'];
+						$dev_rec['ID'] = SQLInsert('miio_devices', $dev_rec);
 					}
 					$this->processCommand($dev_rec['ID'], 'online', 1);
 				}
 			} 
 		} elseif ($device['ID']) {
-			//$res_commands[] = array('message' => $message);
-			//$res_commands[] = array('online' => 1);
 			
 			$res_commands[] = array('command' => 'message', 'value' => $message);
 			$res_commands[] = array('command' => 'online', 'value' => 1);
@@ -445,6 +491,7 @@ function requestInfo($device_id) {
 				foreach($data['result'] as $key=>$value) {
 					//$res_commands[] = array($key=>$value);
 					$res_commands[] = array('command' => $key, 'value' => $value);
+					// добавить в массив параметры статус_текст и еррор_текст
 				}
 			}
 		}
@@ -473,16 +520,23 @@ function requestInfo($device_id) {
 
 	}
 	
-/**
-* Install
-*
-* Module installation routine
-*
-* @access private
-*/
- function install($data='') {
-  parent::install();
- }
+	/**
+	* Install
+	*
+	* Module installation routine
+	*
+	* @access private
+	*/
+ 
+	function install($data = '') {
+		
+		//setGlobal('cycle_schedappControl', 'restart');
+		//setGlobal('cycle_schedappAutoRestart', '1');
+		//$this->name
+		
+		parent::install();
+		
+	}
 	
 	/**
 	* Uninstall
@@ -494,58 +548,68 @@ function requestInfo($device_id) {
 	
 	function uninstall() {
 		
+		//перед удалением таблиц нужно остановить цикл, если он запущен, чтобы не было ошибок SQL
+		
 		SQLExec('DROP TABLE IF EXISTS miio_devices');
 		SQLExec('DROP TABLE IF EXISTS miio_commands');
 		SQLExec('DROP TABLE IF EXISTS miio_queue');
   
-		//cycle
+		if (file_exists(ROOT.'scripts/cycle_xiaomimiio.php')) {
+			unlink(ROOT.'scripts/cycle_xiaomimiio.php');
+		}
+		
+		//также нужно удалить сведения о цикле из Xray и свойства из объекта ThisComputer
+		//ThisComputer.cycle_xiaomimiioRun
+		//ThisComputer.cycle_xiaomimiioControl
+		//ThisComputer.cycle_xiaomihomeDisabled
+		//ThisComputer.cycle_xiaomimiioAutoRestart
+		
 		parent::uninstall();
 		
 	}
-/**
-* dbInstall
-*
-* Database installation routine
-*
-* @access private
-*/
- function dbInstall($data = '') {
-/*
-miio_devices - 
-miio_commands - 
-*/
-  $data = <<<EOD
- miio_devices: ID int(10) unsigned NOT NULL auto_increment
- miio_devices: TITLE varchar(100) NOT NULL DEFAULT ''
- miio_devices: IP varchar(255) NOT NULL DEFAULT ''
- miio_devices: TOKEN varchar(255) NOT NULL DEFAULT ''
- miio_devices: MAC varchar(255) NOT NULL DEFAULT ''
- miio_devices: DEVICE_TYPE varchar(255) NOT NULL DEFAULT ''
- miio_devices: DEVICE_TYPE_CODE varchar(255) NOT NULL DEFAULT '' 
- miio_devices: MODEL varchar(255) NOT NULL DEFAULT ''
- miio_devices: HW_VER varchar(255) NOT NULL DEFAULT ''
- miio_devices: SERIAL varchar(255) NOT NULL DEFAULT '' 
- miio_devices: UPDATE_PERIOD int(10) NOT NULL DEFAULT '0'
- miio_devices: NEXT_UPDATE datetime 
+	
+	/**
+	* dbInstall
+	*
+	* Database installation routine
+	*
+	* @access private
+	*/
+	function dbInstall($data = '') {
+
+		$data = <<<EOD
+			miio_devices: ID int(10) unsigned NOT NULL auto_increment
+			miio_devices: TITLE varchar(100) NOT NULL DEFAULT ''
+			miio_devices: IP varchar(255) NOT NULL DEFAULT ''
+			miio_devices: TOKEN varchar(255) NOT NULL DEFAULT ''
+			miio_devices: MAC varchar(255) NOT NULL DEFAULT ''
+			miio_devices: DEVICE_TYPE varchar(255) NOT NULL DEFAULT ''
+			miio_devices: DEVICE_TYPE_CODE varchar(255) NOT NULL DEFAULT '' 
+			miio_devices: MODEL varchar(255) NOT NULL DEFAULT ''
+			miio_devices: HW_VER varchar(255) NOT NULL DEFAULT ''
+			miio_devices: SERIAL varchar(255) NOT NULL DEFAULT '' 
+			miio_devices: UPDATE_PERIOD int(10) NOT NULL DEFAULT '0'
+			miio_devices: NEXT_UPDATE datetime 
  
- miio_commands: ID int(10) unsigned NOT NULL auto_increment
- miio_commands: TITLE varchar(100) NOT NULL DEFAULT ''
- miio_commands: VALUE text
- miio_commands: DEVICE_ID int(10) NOT NULL DEFAULT '0'
- miio_commands: LINKED_OBJECT varchar(100) NOT NULL DEFAULT ''
- miio_commands: LINKED_PROPERTY varchar(100) NOT NULL DEFAULT ''
- miio_commands: LINKED_METHOD varchar(100) NOT NULL DEFAULT ''
- miio_commands: UPDATED datetime
+			miio_commands: ID int(10) unsigned NOT NULL auto_increment
+			miio_commands: TITLE varchar(100) NOT NULL DEFAULT ''
+			miio_commands: VALUE text
+			miio_commands: DEVICE_ID int(10) NOT NULL DEFAULT '0'
+			miio_commands: LINKED_OBJECT varchar(100) NOT NULL DEFAULT ''
+			miio_commands: LINKED_PROPERTY varchar(100) NOT NULL DEFAULT ''
+			miio_commands: LINKED_METHOD varchar(100) NOT NULL DEFAULT ''
+			miio_commands: UPDATED datetime
  
- miio_queue: ID int(10) unsigned NOT NULL auto_increment
- miio_queue: DEVICE_ID int(10) NOT NULL DEFAULT '0' 
- miio_queue: METHOD varchar(100)
- miio_queue: DATA text 
- miio_queue: ADDED datetime  
- 
+			miio_queue: ID int(10) unsigned NOT NULL auto_increment
+			miio_queue: DEVICE_ID int(10) NOT NULL DEFAULT '0' 
+			miio_queue: METHOD varchar(100)
+			miio_queue: DATA text 
+			miio_queue: ADDED datetime
 EOD;
-  parent::dbInstall($data);
- }
+		
+		parent::dbInstall($data);
+	}
+	
 // --------------------------------------------------------------------
 }
 /*
