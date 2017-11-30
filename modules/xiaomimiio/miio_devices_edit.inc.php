@@ -11,7 +11,7 @@
    $ok=1;
   // step: default
   if ($this->tab=='') {
-  //updating '<%LANG_TITLE%>' (varchar, required)
+  /*updating '<%LANG_TITLE%>' (varchar, required)*/
    global $title;
    $rec['TITLE']=$title;
    if ($rec['TITLE']=='') {
@@ -65,7 +65,8 @@
            }
            $this->requestInfo($rec['ID']);
            sleep(1);
-           $this->requestStatus($device_id);
+		   DebMes('Save device params [requestStatus] DevID='.$rec['ID'], 'xiaomimiio');
+           $this->requestStatus($rec['ID']);
 
        }
 
@@ -115,20 +116,25 @@
        if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
            addLinkedProperty($properties[$i]['LINKED_OBJECT'], $properties[$i]['LINKED_PROPERTY'], $this->name);
        }
-       if (file_exists(DIR_MODULES.'devices/devices.class.php')) {
-           if ($properties[$i]['TITLE']=='power') {
-               $properties[$i]['SDEVICE_TYPE']='relay';
-           }
-       }
+		if (file_exists(DIR_MODULES.'devices/devices.class.php')) {
+			if ($properties[$i]['TITLE'] == 'power') {
+				$properties[$i]['SDEVICE_TYPE'] = 'relay';
+			}
+			if ($properties[$i]['TITLE'] == 'bright') {
+				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			}
+		}
 
    }
    $out['PROPERTIES']=$properties;   
   }
-  if (is_array($rec)) {
-   foreach($rec as $k=>$v) {
-    if (!is_array($v)) {
-     $rec[$k]=htmlspecialchars($v);
-    }
-   }
-  }
-  outHash($rec, $out);
+	
+	if (is_array($rec)) {
+		foreach($rec as $k => $v) {
+			if (!is_array($v)) {
+				$rec[$k] = htmlspecialchars($v);
+			}
+		}
+	}
+	
+	outHash($rec, $out);
