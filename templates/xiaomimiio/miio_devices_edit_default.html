@@ -13,22 +13,21 @@
 <!-- TITLE (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_TITLE#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_TITLE#>:
- (*)
+ <#LANG_TITLE#> (*):
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="title" value="[#TITLE#]" id="title"></div>
 </div>
 <!-- IP (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_IP#] style="color:red;font-weight:bold"[#endif#]>
- IP:
+ IP (*):
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="ip" value="[#IP#]" id="ip"></div>
 </div>
 <!-- TOKEN (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_TOKEN#] style="color:red;font-weight:bold"[#endif#]>
- TOKEN:
+ Токен (*):
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="token" value="[#TOKEN#]" id="token"></div>
 </div>
@@ -59,7 +58,7 @@
  [#if SERIAL!=""#]
  <div class="form-group">
   <label class="col-lg-3 control-label">
-   SERIAL:
+   Серийный номер:
   </label>
   <div class="col-lg-4">[#SERIAL#]</div>
  </div>
@@ -68,7 +67,7 @@
  [#if DEVICE_TYPE_CODE!=""#]
  <div class="form-group">
   <label class="col-lg-3 control-label">
-   <#LANG_TYPE#> (code):
+   Код:
   </label>
   <div class="col-lg-4">[#DEVICE_TYPE_CODE#]</div>
  </div>
@@ -111,7 +110,7 @@
  [#else ID#]
  <button type="submit" name="subm" value="Add" class="btn btn-primary"><#LANG_ADD#></button>
  [#endif ID#]
- <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_CANCEL#></a>
+ <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_STRING_BACK#></a>
 <input type="hidden" name="id" value="<#ID#>">
 <input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
 <input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
