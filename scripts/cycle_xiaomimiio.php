@@ -1,16 +1,16 @@
 <?php
 chdir(dirname(__FILE__) . '/../');
 
-include_once("./config.php");
-include_once("./lib/loader.php");
-include_once("./lib/threads.php");
+include_once('./config.php');
+include_once('./lib/loader.php');
+include_once('./lib/threads.php');
 
 set_time_limit(0);
 
 $db = new mysql(DB_HOST, '', DB_USER, DB_PASSWORD, DB_NAME);
 
-include_once("./load_settings.php");
-include_once(DIR_MODULES . "control_modules/control_modules.class.php");
+include_once('./load_settings.php');
+include_once(DIR_MODULES . 'control_modules/control_modules.class.php');
 
 $ctl = new control_modules();
 
@@ -20,7 +20,7 @@ include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
 $miio_module = new xiaomimiio();
 $miio_module->getConfig();
 
-echo date('H:i:s') . " running " . basename(__FILE__) . PHP_EOL;
+echo date('H:i:s') . ' Running ' . basename(__FILE__) . PHP_EOL;
 
 $latest_check = 0;
 $checkEvery = 5;
@@ -37,7 +37,8 @@ if ($miio_module->config['API_LOG_MIIO']) {
     $debug = false;
 }
 
-$debug = false;
+echo date('H:i:s') . ' Init miIO ' . PHP_EOL;
+
 $dev = new miIO(null, $bind_ip, null, $debug);
 
 while (1) {
@@ -53,7 +54,7 @@ while (1) {
         $total = count($queue);
         for ($i = 0; $i < $total; $i++) {
 
-            echo date('H:i:s') . " Queue command: " . json_encode($queue[$i]) . PHP_EOL;
+            echo date('H:i:s') . ' Queue command: ' . json_encode($queue[$i]) . PHP_EOL;
             SQLExec("DELETE FROM miio_queue WHERE ID=" . $queue[$i]['ID']);
             $reply = '';
 			$dev->data = '';
@@ -78,10 +79,10 @@ while (1) {
 				//перед отправкой команды у-ву нужно задать разницу времени между сервером и локальным временем у-ва.
 				//это значение уникально для каждого у-ва, поэтому логично его хранить в базе и обновлять при периодическом поиске или пинге.
 				//это также избавит от необходимости слать hello-пакет перед каждой командой
-                if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], time())) { //msgSendRcv($command, $parameters = NULL, $id = 1)
+                if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], time())) {
 					$reply = $dev->data;
 				} else {
-					echo date('H:i:s') . " Reply: устройство не ответило на запрос \n";
+					echo date('H:i:s') . " Reply: device not answered \n";
 				}
             }
 
@@ -95,13 +96,12 @@ while (1) {
 
     $devices = SQLSelect("SELECT * FROM miio_devices WHERE UPDATE_PERIOD>0 AND NEXT_UPDATE<=NOW()");
     if ($devices[0]['ID']) {
-		//echo date('Y-m-d H:i:s') . " Запрос статуса устройств" . PHP_EOL;
         $total = count($devices);
         for ($i = 0; $i < $total; $i++) {
             $devices[$i]['NEXT_UPDATE'] = date('Y-m-d H:i:s', time()+(int)$devices[$i]['UPDATE_PERIOD']);
             SQLUpdate('miio_devices', $devices[$i]);
 			$id = $devices[$i]['ID'];
-			echo date('H:i:s') . " Запрос статуса устройства ID$id" . PHP_EOL;
+			echo date('H:i:s') . " Request update properties of DevID$id" . PHP_EOL;
             $miio_module->requestStatus($devices[$i]['ID']);
 		}
     }
@@ -114,4 +114,5 @@ while (1) {
 	sleep(1);
 }
 
-DebMes("Unexpected close of cycle: " . basename(__FILE__));
+echo date('H:i:s') . ' Unexpected close of cycle ' . PHP_EOL;
+DebMes('Unexpected close of cycle: ' . basename(__FILE__));
