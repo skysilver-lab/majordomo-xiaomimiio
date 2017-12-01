@@ -32,6 +32,9 @@ if ($res[0]['ID']) {
 	$total = count($res);
 	for($i = 0; $i < $total; $i++) {
 		// some action for every record if required
+		$dev_id = $res[$i]['ID'];
+		$online = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='$dev_id' AND TITLE='online'");
+		$res[$i]['ONLINE'] = $online['VALUE'];
 	}
 	$out['RESULT'] = $res;
 }
