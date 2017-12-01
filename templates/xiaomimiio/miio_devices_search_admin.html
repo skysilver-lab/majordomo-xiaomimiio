@@ -29,51 +29,56 @@
 <tbody>
 [#begin RESULT#]
 <tr style="height:52px" class="hover_btn2">
- <td style="vertical-align:middle"
-  >
+ <td style="vertical-align:middle">
   <b>
    [#TITLE#]
   </a></b>
  </td>
- <td style="vertical-align:middle"
-   >
+ <td style="vertical-align:middle">
+	[#if DEVICE_TYPE!=""#]
+		<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="40px">
+	[#else#]
+		<img src="../templates/xiaomimiio/img/small/unknown.png" height="36px">
+	[#endif#]
+ </td>
+ <td style="vertical-align:middle">
   [#if IP!=""#]
    [#IP#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td style="vertical-align:middle"
-   >
+ <td style="vertical-align:middle">
   [#if TOKEN!=""#]
    [#TOKEN#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td style="vertical-align:middle"
-   >
+ <td style="vertical-align:middle">
   [#if MAC!=""#]
    [#MAC#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td style="vertical-align:middle"
-   >
-  [#if DEVICE_TYPE!=""#]
-   [#DEVICE_TYPE#]
-  [#else#]
-   &nbsp;
-  [#endif#]
+ <td style="vertical-align:middle">
+	[#if DEVICE_TYPE!=""#]
+		[#DEVICE_TYPE#]
+	[#else#]
+		&nbsp;
+	[#endif#]
  </td>
- <td style="vertical-align:middle"
-   >
-  [#if MODEL!=""#]
-   [#MODEL#]
-  [#else#]
-   &nbsp;
-  [#endif#]
+ <td style="vertical-align:middle">
+	[#if ONLINE!=""#]
+		[#if ONLINE==1#]
+			<span class="label label-success" title="Устройство в сети">Online</span>
+		[#else#]
+			<span class="label label-warning" title="Устройство не доступно">Offline</span>
+		[#endif#]
+	[#else#]
+		&nbsp;
+	[#endif#]
  </td>
  <td style="vertical-align:middle"
    >
