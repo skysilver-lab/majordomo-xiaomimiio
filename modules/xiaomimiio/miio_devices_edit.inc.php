@@ -2,8 +2,8 @@
 /*
 * @version 0.1 (wizard)
 */
-  if ($this->owner->name=='panel') {
-   $out['CONTROLPANEL']=1;
+  if ($this->owner->name == 'panel') {
+	$out['CONTROLPANEL'] = 1;
   }
   $table_name='miio_devices';
   $rec=SQLSelectOne("SELECT * FROM $table_name WHERE ID='$id'");
@@ -66,7 +66,7 @@
            $this->requestInfo($rec['ID']);
            sleep(1);
 		   DebMes('Save device params [requestStatus] DevID='.$rec['ID'], 'xiaomimiio');
-           $this->requestStatus($rec['ID']);
+           if ((int)$update_period == 0) $this->requestStatus($rec['ID']);
 
        }
 
