@@ -1,10 +1,10 @@
 <?php
 /**
-* miIO 
+* Xiaomi miIO 
 * @package project
-* @author Wizard <sergejey@gmail.com>
-* @copyright http://majordomo.smartliving.ru/ (c)
-* @version 0.1 (wizard, 13:11:31 [Nov 25, 2017])
+* @author <skysilver.da@gmail.com>
+* @copyright <skysilver.da@gmail.com> (c)
+* @version 0.3
 */
 
 Define('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -36,24 +36,28 @@ class xiaomimiio extends module {
 	* @access public
 	*/
 	
-	function saveParams($data=0) {
-		$p=array();
+	function saveParams($data = 0) {
+		
+		$p = array();
+		
 		if (IsSet($this->id)) {
-			$p["id"]=$this->id;
+			$p['id'] = $this->id;
 		}
 		if (IsSet($this->view_mode)) {
-			$p["view_mode"]=$this->view_mode;
+			$p['view_mode'] = $this->view_mode;
 		}
 		if (IsSet($this->edit_mode)) {
-			$p["edit_mode"]=$this->edit_mode;
+			$p['edit_mode'] = $this->edit_mode;
 		}
 		if (IsSet($this->data_source)) {
-			$p["data_source"]=$this->data_source;
+			$p['data_source'] = $this->data_source;
 		}
 		if (IsSet($this->tab)) {
-			$p["tab"]=$this->tab;
+			$p['tab'] = $this->tab;
 		}
+		
 		return parent::saveParams($p);
+		
 	}
 	
 	/**
@@ -173,8 +177,9 @@ class xiaomimiio extends module {
 			}
 
 			if ($this->view_mode == 'discover') {
+				if ($this->config['API_LOG_DEBMES']) DebMes('Starting manual search for devices in the network', 'xiaomimiio');
 				$this->discover();
-				sleep(12);
+				if ($this->config['API_LOG_DEBMES']) DebMes('Manual search for devices in the network is finished', 'xiaomimiio');
 				$this->redirect('?');
 			}
 
@@ -210,15 +215,101 @@ class xiaomimiio extends module {
 	/**
 	* discover
 	*
-	* ...
+	* Поиск miIO-устройств в локальной сети
 	*
 	* @access public
 	*/
 
 	function discover($ip = '') {
-	
-		$this->addToQueue(0, 'discover_all');
-	
+
+		$this->getConfig();
+ 
+		if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+		 else $bind_ip = '0.0.0.0';
+		if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+		 else $miio_debug = false;
+		
+		if (!class_exists('miIO', false)) {
+			include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
+		}
+		
+		$dev = new miIO(null, $bind_ip, null, $miio_debug);
+		
+		// Выполняем broadcast-поиск устройств в локальной сети
+		if ($this->config['API_LOG_DEBMES']) DebMes("Run miIO-discover command", 'xiaomimiio');
+		$res = $dev->discover();
+		if ($this->config['API_LOG_DEBMES']) DebMes("End miIO-discover command", 'xiaomimiio');
+		
+		if ($res) {
+			// Обрабатываем результат поиска
+			$reply = $dev->data;
+			
+			if ($reply != '') {
+				if ($this->config['API_LOG_DEBMES']) DebMes("Reply = $reply", 'xiaomimiio');
+
+				$all_devices = SQLSelect('SELECT * FROM miio_devices');
+				$count_devices = count($all_devices);
+			
+				$found_devices = json_decode($reply, true);
+			
+				if (is_array($found_devices['devices'])) {
+					foreach($found_devices['devices'] as $dev) {
+						$dev = json_decode($dev, true);
+						$ip = $dev['ip'];
+						$device_type_code = $dev['devicetype'];
+						$device_serial = $dev['serial'];
+						$token = $dev['token'];
+							
+						if (preg_match('/^0+$/', $token)) $token = '';
+					
+						$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='$device_type_code' AND SERIAL='$device_serial'");
+					
+						if ($dev_rec['ID']) {
+							// Если устройство уже есть в БД, то обновим его IP, токен и свойство online
+							$dev_rec['IP'] = $ip;
+							if ($token != '') $dev_rec['TOKEN'] = $token;
+						
+							if ($this->config['API_LOG_DEBMES']) DebMes("Update the ip address and the token for the device $ip", 'xiaomimiio');
+							SQLUpdate('miio_devices', $dev_rec);
+						
+							// Ответившее устройство выкинем из претендентов на оффлайн
+							for ($i = 0; $i < $count_devices; $i++) {
+								if ($dev_rec['ID'] == $all_devices[$i]['ID']) {
+									unset($all_devices[$i]);
+									break;
+								}
+							}
+						
+							$this->processCommand($dev_rec['ID'], 'online', 1);
+						} else {
+							// Если устройство нет в БД, то добавим его и установим свойство online
+							$dev_rec = array();
+							$dev_rec['IP'] = $ip;
+							if ($token != '') $dev_rec['TOKEN'] = $token;
+
+							$dev_rec['SERIAL'] = $device_serial;
+							$dev_rec['DEVICE_TYPE_CODE'] = $device_type_code;
+							$dev_rec['TITLE'] = 'New ' . $dev_rec['DEVICE_TYPE_CODE'];
+							if ($this->config['API_LOG_DEBMES']) DebMes("Add new device with $ip", 'xiaomimiio');
+							$dev_rec['ID'] = SQLInsert('miio_devices', $dev_rec);
+							$this->processCommand($dev_rec['ID'], 'online', 1);
+						}
+					}
+				}
+			
+				// Для имеющихся в БД, но не ответивших, устройств выставим свойство online в 0 (оффлайн)
+				if ($all_devices[0]['ID']) {
+					foreach($all_devices as $dev) {
+						$ip = $dev['IP'];
+						if ($this->config['API_LOG_DEBMES']) DebMes("Device $ip is offline", 'xiaomimiio');
+						$this->processCommand($dev['ID'], 'online', 0);
+					}
+				}
+			}
+		} else {
+			if ($this->config['API_LOG_DEBMES']) DebMes('Not received any response from devices', 'xiaomimiio');
+		}
+
 	}
 
 	/**
@@ -235,6 +326,13 @@ class xiaomimiio extends module {
 	
 	}
 
+	/**
+	* requestStatus
+	*
+	* ...
+	*
+	* @access public
+	*/
 
 	function requestStatus($device_id) {
 		
@@ -287,11 +385,10 @@ class xiaomimiio extends module {
 				global $message;
 				global $command;
 				$this->processMessage($message, $command, $device_id);
-			} else if ($op == 'discover_all') {
-				//global $device_id;
-				//global $message;
-				//global $command;
-				//$this->processMessage($message, $command, $device_id);
+			} else if ($op == 'broadcast_search') {
+				if ($this->config['API_LOG_DEBMES']) DebMes('Starting periodic search for devices in the network', 'xiaomimiio');
+				$this->discover();
+				if ($this->config['API_LOG_DEBMES']) DebMes('Periodic search for devices in the network is finished', 'xiaomimiio');
 			}
 			echo 'OK';
 			exit;
@@ -409,9 +506,7 @@ class xiaomimiio extends module {
 
 		$this->getConfig();
 		
-		if ($this->config['API_LOG_DEBMES']) {
-			DebMes("Incoming message from $device_id ($command): $message", 'xiaomimiio');
-		}
+		if ($this->config['API_LOG_DEBMES']) DebMes("Incoming message from $device_id ($command): $message", 'xiaomimiio');
 		
 		$res_commands = array();
 
