@@ -94,7 +94,7 @@ while (1) {
             }
         }
     }
-
+	// TO-DO: проверить на наличие типа устройства (DEVICE_TYPE не пустой)
     $devices = SQLSelect('SELECT * FROM miio_devices WHERE UPDATE_PERIOD>0 AND NEXT_UPDATE<=NOW()');
     
 	if ($devices[0]['ID']) {

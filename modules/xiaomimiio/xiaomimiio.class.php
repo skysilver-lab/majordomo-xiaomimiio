@@ -4,10 +4,11 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright <skysilver.da@gmail.com> (c)
-* @version 0.3
+* @version 0.4
 */
 
 Define('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
+Define('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
 Define('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
 Define('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
@@ -208,6 +209,8 @@ class xiaomimiio extends module {
 		$rec['METHOD'] = $method;
 		$rec['DATA'] = $data;
 		$rec['ADDED'] = date('Y-m-d H:i:s');
+		
+		//TO-DO: добавить проверку на наличие токена, иначе не ставить команду в очередь.
 		SQLInsert('miio_queue', $rec);
 	
 	}
@@ -260,7 +263,10 @@ class xiaomimiio extends module {
 						$device_serial = $dev['serial'];
 						$token = $dev['token'];
 							
-						if (preg_match('/^0+$/', $token)) $token = '';
+						if (preg_match('/^[0fF]+$/', $token)) $token = '';
+						//if (preg_match('/^0+$/', $token)) $token = '';
+						 //else if (preg_match('/^F+$/', $token)) $token = '';
+						  //else if (preg_match('/^f+$/', $token)) $token = '';
 					
 						$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='$device_type_code' AND SERIAL='$device_serial'");
 					
@@ -362,6 +368,13 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.color1') {
+			$props = explode(',', MIIO_YEELIGHT_COLOR_BULB_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} else if ($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') {
 			$this->addToQueue($device_id, 'get_status');
 		}
@@ -386,6 +399,7 @@ class xiaomimiio extends module {
 				global $command;
 				$this->processMessage($message, $command, $device_id);
 			} else if ($op == 'broadcast_search') {
+				$this->getConfig();
 				if ($this->config['API_LOG_DEBMES']) DebMes('Starting periodic search for devices in the network', 'xiaomimiio');
 				$this->discover();
 				if ($this->config['API_LOG_DEBMES']) DebMes('Periodic search for devices in the network is finished', 'xiaomimiio');
@@ -434,6 +448,7 @@ class xiaomimiio extends module {
 	function propertySetHandle($object, $property, $value) {
 	
 		$this->getConfig();
+		
 		$table = 'miio_commands';
 	
 		$properties = SQLSelect("SELECT miio_commands.*, miio_devices.DEVICE_TYPE FROM miio_commands LEFT JOIN miio_devices ON miio_devices.ID=miio_commands.DEVICE_ID WHERE miio_commands.LINKED_OBJECT LIKE '".DBSafe($object)."' AND miio_commands.LINKED_PROPERTY LIKE '".DBSafe($property)."'");
@@ -442,15 +457,19 @@ class xiaomimiio extends module {
    
 		if ($total) {
 			for($i = 0; $i < $total; $i++) {
-				if ($properties[$i]['TITLE'] == 'command') { // any custom command without params
+				if ($properties[$i]['TITLE'] == 'command') { 
+					// Отправка любой команды (метода) без параметров.
+					// Например, miIO.info, toggle, app_start и др.
 					$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
-				} elseif ($properties[$i]['TITLE'] == 'power') { // power command
+				} elseif ($properties[$i]['TITLE'] == 'power') { 
+					// Команда на включение и выключени
 					if ($value) {
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["on"]');
 					} else {
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
 					}
-				} elseif ($properties[$i]['TITLE'] == 'bright') { // bright command
+				} elseif ($properties[$i]['TITLE'] == 'bright') {
+					// Команда на изменение яркости
 					$value = (int)$value;
 					if ($value < 1) $value = 1;
 					if ($value > 100) $value = 100;
@@ -523,8 +542,8 @@ class xiaomimiio extends module {
 					$device_type_code = $dev['devicetype'];
 					$device_serial = $dev['serial'];
 					$token = $dev['token'];
-							
-					if (preg_match('/^0+$/', $token)) {
+					
+					if (preg_match('/^[0fF]+$/', $token)) {
 						$token = '';
 					}
 					
@@ -555,9 +574,11 @@ class xiaomimiio extends module {
 			$res_commands[] = array('command' => 'message', 'value' => $message);
 			$res_commands[] = array('command' => 'online', 'value' => 1);
 
-			// PROCESSING REPLY MESSAGE
+			
 			if ($device['DEVICE_TYPE'] == 'lumi.gateway.v3') {
-				//to-do
+				//
+				//TO-DO
+				//
 			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.mono1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_YEELIGHT_WHITE_BULB_PROPS);
 				$i = 0;
@@ -582,19 +603,23 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' && $command == 'get_status' && is_array($data['result'])) {
-				foreach($data['result'] as $key=>$value) {
-					//$res_commands[] = array($key=>$value);
+			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.color1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_YEELIGHT_COLOR_BULB_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
 					$res_commands[] = array('command' => $key, 'value' => $value);
-					// добавить в массив параметры статус_текст и еррор_текст
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' && $command == 'get_status' && is_array($data['result'])) {
+				foreach($data['result'][0] as $key => $value) {
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					// TO-DO: добавить в массив параметры статус_текст и еррор_текст
 				}
 			}
+			 
 		}
 		
-		//DebMes(implode($res_commands), 'xiaomimiio');
-		//$dt = serialize($res_commands). PHP_EOL;
-		//file_put_contents('miio_debug', $dt, FILE_APPEND | LOCK_EX);
-		//$value = '';
 		foreach ($res_commands as $c) {
             $cmd = $c['command'];
             $val = $c['value'];
@@ -605,13 +630,6 @@ class xiaomimiio extends module {
 			//DebMes("cmd=$cmd value=$val", 'xiaomimiio');
 			$this->processCommand($device['ID'], $cmd, $val);
         }
-		
-		//foreach($res_commands as $cmd => $value) {
-			//if ($value == 'on') $value = 1;
-			//if ($value == 'off') $value = 0;
-			//DebMes("cmd=$cmd value=$value", 'xiaomimiio');
-			//$this->processCommand($device['ID'], $cmd, $value);
-		//}
 
 	}
 	
@@ -643,22 +661,18 @@ class xiaomimiio extends module {
 	
 	function uninstall() {
 		
-		//перед удалением таблиц нужно остановить цикл, если он запущен, чтобы не было ошибок SQL
+		/*
+			TO-DO:
+			- перед удалением таблиц нужно остановить цикл, если он запущен, чтобы не было ошибок SQL
+			- также нужно удалить сведения о цикле из Xray и свойства из объекта ThisComputer
+			  (ThisComputer.cycle_xiaomimiioRun, ThisComputer.cycle_xiaomimiioControl, 
+			   ThisComputer.cycle_xiaomihomeDisabled, ThisComputer.cycle_xiaomimiioAutoRestart)
+		*/
 		
 		SQLExec('DROP TABLE IF EXISTS miio_devices');
 		SQLExec('DROP TABLE IF EXISTS miio_commands');
 		SQLExec('DROP TABLE IF EXISTS miio_queue');
   
-		if (file_exists(ROOT.'scripts/cycle_xiaomimiio.php')) {
-			unlink(ROOT.'scripts/cycle_xiaomimiio.php');
-		}
-		
-		//также нужно удалить сведения о цикле из Xray и свойства из объекта ThisComputer
-		//ThisComputer.cycle_xiaomimiioRun
-		//ThisComputer.cycle_xiaomimiioControl
-		//ThisComputer.cycle_xiaomihomeDisabled
-		//ThisComputer.cycle_xiaomimiioAutoRestart
-		
 		parent::uninstall();
 		
 	}
@@ -680,11 +694,13 @@ class xiaomimiio extends module {
 			miio_devices: MAC varchar(255) NOT NULL DEFAULT ''
 			miio_devices: DEVICE_TYPE varchar(255) NOT NULL DEFAULT ''
 			miio_devices: DEVICE_TYPE_CODE varchar(255) NOT NULL DEFAULT '' 
+			miio_devices: TIME_DIFF int(10) NOT NULL DEFAULT '0'
 			miio_devices: MODEL varchar(255) NOT NULL DEFAULT ''
 			miio_devices: HW_VER varchar(255) NOT NULL DEFAULT ''
 			miio_devices: SERIAL varchar(255) NOT NULL DEFAULT '' 
 			miio_devices: UPDATE_PERIOD int(10) NOT NULL DEFAULT '0'
-			miio_devices: NEXT_UPDATE datetime 
+			miio_devices: NEXT_UPDATE datetime
+			miio_devices: UPDATED datetime
  
 			miio_commands: ID int(10) unsigned NOT NULL auto_increment
 			miio_commands: TITLE varchar(100) NOT NULL DEFAULT ''

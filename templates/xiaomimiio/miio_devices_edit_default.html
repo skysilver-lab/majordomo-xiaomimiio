@@ -31,28 +31,32 @@
  </label>
  <div class="col-lg-4"><input type="text" class="form-control" name="token" value="[#TOKEN#]" id="token"></div>
 </div>
+
 <!-- DEVICE_TYPE (varchar) -->
 <div class="form-group">
- <label class="col-lg-3 control-label"[#if ERR_DEVICE_TYPE#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_TYPE#>:
- </label>
- <div class="col-lg-4">
-  <select name="device_type" class="form-control">
-   <option value=""></option>
-   <option value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]>Mi Smart Home Gateway</option>
-   <option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
-   <option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
-   <option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips Eyecare Smart Lamp 2</option>
-   <option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Xiaomi Vacuum Cleaner</option>
-  </select>
-  </div>
+	<label class="col-lg-3 control-label"[#if ERR_DEVICE_TYPE#] style="color:red;font-weight:bold"[#endif#]>
+		<#LANG_TYPE#>:
+	</label>
+	<div class="col-lg-4">
+		<select name="device_type" class="form-control">
+			<option value=""></option>
+			<option value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]>Mi Smart Home Gateway</option>
+			<option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
+			<option value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]>Yeelight Color Bulb</option>
+			<option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
+			<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips Eyecare Smart Lamp 2</option>
+			<option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Xiaomi Vacuum Cleaner</option>
+			<option value="isa.camera.isc5" [#if DEVICE_TYPE="isa.camera.isc5"#] selected[#endif#]>Xiaomi Square Smart Camera</option>
+		</select>
+	</div>
 </div>
+
 <!-- UPDATE_PERIOD (varchar) -->
 <div class="form-group">
  <label class="col-lg-3 control-label"[#if ERR_UPDATE_PERIOD#] style="color:red;font-weight:bold"[#endif#]>
   <#LANG_POLLING_PERIOD#>, <#LANG_SECONDS#>:
  </label>
- <div class="col-lg-4"><input type="text" class="form-control" name="update_period" value="[#UPDATE_PERIOD#]" id="update_period"></div>
+ <div class="col-lg-4"><input type="text" class="form-control" name="update_period" value="[#if UPDATE_PERIOD!=""#][#UPDATE_PERIOD#][#else#]0[#endif#]" id="update_period"></div>
 </div>
 
  [#if SERIAL!=""#]
