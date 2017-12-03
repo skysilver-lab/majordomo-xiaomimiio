@@ -3,15 +3,57 @@
 * Xiaomi miIO 
 * @package project
 * @author <skysilver.da@gmail.com>
-* @copyright <skysilver.da@gmail.com> (c)
-* @version 0.4
+* @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 0.5
 */
 
-Define('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
-Define('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
-Define('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
-Define('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
+define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
+define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
 
+define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
+define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,cct,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
+
+define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
+
+define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
+														'1' => 	'Initiating',
+														'2' => 	'Sleeping',
+														'3' => 	'Waiting',
+														'4' => 	'Unknown',
+														'5' => 	'Cleaning',
+														'6' => 	'Back to home',
+														'7' => 	'Unknown',
+														'8' => 	'Charging',
+														'9' => 	'Charging Error',
+														'10' => 'Pause',
+														'11' => 'Spot Cleaning',
+														'12' => 'In Error',
+														'13' => 'Shutting down',
+														'14' => 'Updating',
+														'15' => 'Docking',
+														'100' => 'Full')));
+
+define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>  'No error',
+														'1' => 	'Laser distance sensor error',
+														'2' => 	'Collision sensor error',
+														'3' => 	'Wheels on top of void, move robot',
+														'4' => 	'Clean hovering sensors, move robot',
+														'5' => 	'Clean main brush',
+														'6' => 	'Clean side brush',
+														'7' => 	'Main wheel stuck',
+														'8' => 	'Device stuck, clean area',
+														'9' => 	'Dust collector missing',
+														'10' => 'Clean filter',
+														'11' => 'Stuck in magnetic barrier',
+														'12' => 'Low battery',
+														'13' => 'Charging fault',
+														'14' => 'Battery fault',
+														'15' => 'Wall sensors dirty, wipe them',
+														'16' => 'Place me on flat surface',
+														'17' => 'Side brushes problem, reboot me',
+														'18' => 'Suction fan problem',
+														'19' => 'Unpowered charging station')));
+					
 class xiaomimiio extends module {
 
 	/**
@@ -78,22 +120,22 @@ class xiaomimiio extends module {
 		global $tab;
 		
 		if (isset($id)) {
-			$this->id=$id;
+			$this->id = $id;
 		}
 		if (isset($mode)) {
-			$this->mode=$mode;
+			$this->mode = $mode;
 		}
 		if (isset($view_mode)) {
-			$this->view_mode=$view_mode;
+			$this->view_mode = $view_mode;
 		}
 		if (isset($edit_mode)) {
-			$this->edit_mode=$edit_mode;
+			$this->edit_mode = $edit_mode;
 		}
 		if (isset($data_source)) {
-			$this->data_source=$data_source;
+			$this->data_source = $data_source;
 		}
 		if (isset($tab)) {
-			$this->tab=$tab;
+			$this->tab = $tab;
 		}
 	}
 
@@ -147,16 +189,28 @@ class xiaomimiio extends module {
 		$this->getConfig();
  
 		$out['API_IP'] = $this->config['API_IP'];
+		$out['API_DISC_PERIOD'] = $this->config['API_DISC_PERIOD'];
 		$out['API_LOG_DEBMES'] = $this->config['API_LOG_DEBMES'];
+		$out['API_LOG_CYCLE'] = $this->config['API_LOG_CYCLE'];
 		$out['API_LOG_MIIO'] = $this->config['API_LOG_MIIO'];
-	
+		
+		if ((time() - gg('cycle_xiaomimiioRun')) < 15 ) $out['CYCLERUN'] = 1;
+		 else $out['CYCLERUN'] = 0;
+		
 		if ($this->view_mode == 'update_settings') {
+			
 			global $api_ip;
 			$this->config['API_IP'] = $api_ip;
+			
+			global $api_disc_period;
+			$this->config['API_DISC_PERIOD'] = (int)$api_disc_period;
 
 			global $api_log_debmes;
 			$this->config['API_LOG_DEBMES'] = (int)$api_log_debmes;
 		
+			global $api_log_cycle;
+			$this->config['API_LOG_CYCLE'] = (int)$api_log_cycle;
+			
 			global $api_log_miio;
 			$this->config['API_LOG_MIIO'] = (int)$api_log_miio;
 
@@ -169,11 +223,12 @@ class xiaomimiio extends module {
 		}
 	
 		if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
-			$out['SET_DATASOURCE']=1;
+			$out['SET_DATASOURCE'] = 1;
 		}
  
-		if ($this->data_source=='miio_devices' || $this->data_source=='') {
-			if ($this->view_mode=='' || $this->view_mode=='search_miio_devices') {
+		if ($this->data_source == 'miio_devices' || $this->data_source == '') {
+			
+			if ($this->view_mode == '' || $this->view_mode == 'search_miio_devices') {
 				$this->search_miio_devices($out);
 			}
 
@@ -184,12 +239,13 @@ class xiaomimiio extends module {
 				$this->redirect('?');
 			}
 
-			if ($this->view_mode=='edit_miio_devices') {
+			if ($this->view_mode == 'edit_miio_devices') {
 				$this->edit_miio_devices($out, $this->id);
 			}
-			if ($this->view_mode=='delete_miio_devices') {
+			
+			if ($this->view_mode == 'delete_miio_devices') {
 				$this->delete_miio_devices($this->id);
-				$this->redirect("?data_source=miio_devices");
+				$this->redirect('?data_source=miio_devices');
 			}
 		}
 	}
@@ -252,7 +308,7 @@ class xiaomimiio extends module {
 
 				$all_devices = SQLSelect('SELECT * FROM miio_devices');
 				$count_devices = count($all_devices);
-			
+				if ($this->config['API_LOG_DEBMES']) DebMes("Current count of devices $count_devices", 'xiaomimiio');
 				$found_devices = json_decode($reply, true);
 			
 				if (is_array($found_devices['devices'])) {
@@ -304,7 +360,10 @@ class xiaomimiio extends module {
 				}
 			
 				// Для имеющихся в БД, но не ответивших, устройств выставим свойство online в 0 (оффлайн)
-				if ($all_devices[0]['ID']) {
+				$count_devices = count($all_devices);
+				if ($this->config['API_LOG_DEBMES']) DebMes("Current count of offline devices $count_devices", 'xiaomimiio');
+
+				if (count($all_devices) > 0) {
 					foreach($all_devices as $dev) {
 						$ip = $dev['IP'];
 						if ($this->config['API_LOG_DEBMES']) DebMes("Device $ip is offline", 'xiaomimiio');
@@ -348,6 +407,7 @@ class xiaomimiio extends module {
 		//DebMes('[requestStatus] DEVICE_TYPE='.$device_rec['DEVICE_TYPE'], 'xiaomimiio');
 		
 		if ($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') {
+			//
 			$props=explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
@@ -355,6 +415,7 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '['.implode(',',$props).']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'philips.light.sread1') {
+			//
 			$props = explode(',', MIIO_PHILIPS_EYECARE_LAMP_2_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
@@ -362,6 +423,7 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '['.implode(',',$props).']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.mono1') {
+			//
 			$props = explode(',', MIIO_YEELIGHT_WHITE_BULB_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
@@ -369,6 +431,7 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.color1') {
+			//
 			$props = explode(',', MIIO_YEELIGHT_COLOR_BULB_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
@@ -376,7 +439,17 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} else if ($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') {
+			//
 			$this->addToQueue($device_id, 'get_status');
+			$this->addToQueue($device_id, 'get_consumable');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.m1') {
+			//
+			$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		}
 		
 	}
@@ -469,11 +542,17 @@ class xiaomimiio extends module {
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
 					}
 				} elseif ($properties[$i]['TITLE'] == 'bright') {
-					// Команда на изменение яркости
+					// Команда на изменение яркости (в % от 1 до 100)
 					$value = (int)$value;
 					if ($value < 1) $value = 1;
 					if ($value > 100) $value = 100;
 					$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_bright', "[$value]");
+				} elseif ($properties[$i]['TITLE'] == 'cct') {
+					// Команда на изменение цветовой температуры (в % от 1 до 100)
+					$value = (int)$value;
+					if ($value < 1) $value = 1;
+					if ($value > 100) $value = 100;
+					$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_cct', "[$value]");
 				}
 				SQLExec("UPDATE miio_commands SET VALUE='".DBSafe($value)."' WHERE ID=".$properties[$i]['ID']);
 			}
@@ -614,10 +693,24 @@ class xiaomimiio extends module {
 			} elseif ($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' && $command == 'get_status' && is_array($data['result'])) {
 				foreach($data['result'][0] as $key => $value) {
 					$res_commands[] = array('command' => $key, 'value' => $value);
-					// TO-DO: добавить в массив параметры статус_текст и еррор_текст
+					if ($key == 'state') {
+						$state_codes = unserialize (MIIO_MIVACUUM_1_STATE_CODES);
+						if (array_key_exists($value, $state_codes)) $res_commands[] = array('command' => 'state_text', 'value' => $state_codes[$value]);
+					}
+					if ($key == 'error_code') {
+						$error_codes = unserialize (MIIO_MIVACUUM_1_ERROR_CODES);
+						if (array_key_exists($value, $error_codes)) $res_commands[] = array('command' => 'error_text', 'value' => $error_codes[$value]);
+					}				
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.m1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
 				}
 			}
-			 
 		}
 		
 		foreach ($res_commands as $c) {

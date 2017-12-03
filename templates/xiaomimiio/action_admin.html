@@ -39,9 +39,15 @@
 <div>
 	<img src="../templates/xiaomimiio/milogo.png"  width="30" height="30">
 	&nbsp;&nbsp;&nbsp;
-	<a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>   
+	<a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>
+	&nbsp;&nbsp;&nbsp;
+	[#if CYCLERUN==1#]
+		<span class="label label-success" title="Статус цикла">Цикл запущен</span>
+	[#else#]
+		<span class="label label-danger" title="Статус цикла">Цикл остановлен</span>
+	[#endif#]
 </div>
- 
+
 <div class="collapse" id='api_settings'>
 	&nbsp;
     <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
@@ -53,6 +59,14 @@
 				</span>
                 </label>
                 <div class="col-lg-4"><input class="form-control" type="text" name="api_ip" value="<#API_IP#>" class="input"></div>
+            </div>
+			<div class="form-group">
+                <label class="control-label">Период автопоиска 
+				<span class='support' tabindex="1" data-title="Период (в секундах) поиска устройств в сети с помощью широковещательного запроса. Механизм предназначен для поиска новых устройств, определения доступности (онлайн/оффлайн) текущих и обновления их IP-адресов.">
+					<i class="glyphicon glyphicon-info-sign"></i>
+				</span>
+                </label>
+                <div class="col-lg-4"><input class="form-control" type="text" name="api_disc_period" value="[#if API_DISC_PERIOD!=""#][#API_DISC_PERIOD#][#else#]120[#endif#]" class="input"></div>
             </div>
             <div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
@@ -66,6 +80,14 @@
                 <div class="controls"><input type="checkbox" name="api_log_miio" value="1"[#if API_LOG_MIIO="1"#] checked[#endif#]> 
 					Отладка miIO-Lib
 					<span class='support' tabindex="1" data-title="Запись отладочных сообщений библиотеки miIO-Lib в лог-файл цикла log_YYYY-mm-dd-cycle_xiaomimiio.php.txt. Для вступления изменений в силу требуется перезапустить цикл.">
+						<i class="glyphicon glyphicon-info-sign"></i>
+					</span>
+				</div>
+            </div>
+			<div class="form-group">
+                <div class="controls"><input type="checkbox" name="api_log_cycle" value="1"[#if API_LOG_CYCLE="1"#] checked[#endif#]> 
+					Отладка Cycle
+					<span class='support' tabindex="1" data-title="Запись отладочных сообщений цикла в лог-файл log_YYYY-mm-dd-cycle_xiaomimiio.php.txt. Для вступления изменений в силу требуется перезапустить цикл.">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>

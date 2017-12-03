@@ -1,6 +1,8 @@
 <?php
 /*
-* @version 0.1 (wizard)
+* @author <skysilver.da@gmail.com>
+* @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 0.5
 */
 
 global $session;
@@ -25,13 +27,11 @@ $sortby_miio_devices = 'ID DESC';
 
 $out['SORTBY'] = $sortby_miio_devices;
   
-$res = SQLSelect("SELECT * FROM miio_devices WHERE $qry ORDER BY " . $sortby_miio_devices);
+$res = SQLSelect("SELECT * FROM miio_devices WHERE $qry ORDER BY $sortby_miio_devices");
 
 if ($res[0]['ID']) {
-	//paging($res, 100, $out); // search result paging
 	$total = count($res);
 	for($i = 0; $i < $total; $i++) {
-		// some action for every record if required
 		$dev_id = $res[$i]['ID'];
 		$online = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='$dev_id' AND TITLE='online'");
 		$res[$i]['ONLINE'] = $online['VALUE'];

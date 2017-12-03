@@ -1,4 +1,11 @@
 <?php
+/**
+* Xiaomi miIO Cycle
+* @author <skysilver.da@gmail.com>
+* @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 0.5
+*/
+
 chdir(dirname(__FILE__) . '/../');
 
 include_once('./config.php');
@@ -60,7 +67,7 @@ while (1) {
         $total = count($queue);
         for ($i = 0; $i < $total; $i++) {
 
-            echo date('H:i:s') . ' Queue command: ' . json_encode($queue[$i]) . PHP_EOL;
+            if ($cycle_debug) echo date('H:i:s') . ' Queue command: ' . json_encode($queue[$i]) . PHP_EOL;
             SQLExec("DELETE FROM miio_queue WHERE ID=" . $queue[$i]['ID']);
             $reply = '';
 			$dev->data = '';
@@ -82,15 +89,15 @@ while (1) {
                 if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], time())) {
 					$reply = $dev->data;
 				} else {
-					echo date('H:i:s') . " Reply: device not answered \n";
+					if ($cycle_debug) echo date('H:i:s') . " Reply: device not answered \n";
 				}
             }
 
             if ($reply != '') {
-				echo date('H:i:s') . " Reply: $reply \n";
+				if ($cycle_debug) echo date('H:i:s') . " Reply: $reply \n";
                 $url = BASE_URL.'/ajax/xiaomimiio.html?op=process&command='.urlencode($queue[$i]['METHOD']).'&device_id='.$queue[$i]['DEVICE_ID'].'&message='.urlencode($reply);
                 $res = get_headers($url);
-				echo date('H:i:s') . ' Background processing of the response is started' . PHP_EOL;
+				if ($cycle_debug) echo date('H:i:s') . ' Background processing of the response is started' . PHP_EOL;
             }
         }
     }
@@ -102,22 +109,23 @@ while (1) {
         for ($i = 0; $i < $total; $i++) {
             $devices[$i]['NEXT_UPDATE'] = date('Y-m-d H:i:s', time()+(int)$devices[$i]['UPDATE_PERIOD']);
             SQLUpdate('miio_devices', $devices[$i]);
-			$id = $devices[$i]['ID'];
-			echo date('H:i:s') . " Request update properties of DevID$id" . PHP_EOL;
+			$ip = $devices[$i]['IP'];
+			if ($cycle_debug) echo date('H:i:s') . " Request to update the properties of the device $ip" . PHP_EOL;
             $miio_module->requestStatus($devices[$i]['ID']);
 		}
     }
 	
 	if ((time() - $latest_disc) >= $disc_period) {
         $latest_disc = time();
-        echo date('H:i:s') . " Starting periodic search for devices in the network (every $disc_period seconds)" . PHP_EOL;
+        if ($cycle_debug) echo date('H:i:s') . " Starting periodic search for devices in the network (every $disc_period seconds)" . PHP_EOL;
 		$url = BASE_URL.'/ajax/xiaomimiio.html?op=broadcast_search';
         getURLBackground($url, 0);
-		echo date('H:i:s') . " Background search process is started" . PHP_EOL;
+		if ($cycle_debug) echo date('H:i:s') . ' Background search process is started' . PHP_EOL;
     }
 	
 	if (file_exists('./reboot') || IsSet($_GET['onetime'])) {
 		$db->Disconnect();
+		echo date('H:i:s') . ' Stopping by command REBOOT or ONETIME' . basename(__FILE__) . PHP_EOL;
 		exit;
 	}
 
@@ -125,4 +133,5 @@ while (1) {
 }
 
 echo date('H:i:s') . ' Unexpected close of cycle' . PHP_EOL;
+
 DebMes('Unexpected close of cycle: ' . basename(__FILE__));
