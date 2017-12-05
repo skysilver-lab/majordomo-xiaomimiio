@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.5
+* @version 0.6
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -150,30 +150,34 @@ class xiaomimiio extends module {
 	function run() {
 		
 		global $session;
-		$out=array();
-		if ($this->action=='admin') {
+		
+		$out = array();
+		
+		if ($this->action == 'admin') {
 			$this->admin($out);
 		} else {
 			$this->usual($out);
 		}
 		
 		if (IsSet($this->owner->action)) {
-			$out['PARENT_ACTION']=$this->owner->action;
+			$out['PARENT_ACTION'] = $this->owner->action;
 		}
   
 		if (IsSet($this->owner->name)) {
-			$out['PARENT_NAME']=$this->owner->name;
+			$out['PARENT_NAME'] = $this->owner->name;
 		}
   
-		$out['VIEW_MODE']=$this->view_mode;
-		$out['EDIT_MODE']=$this->edit_mode;
-		$out['MODE']=$this->mode;
-		$out['ACTION']=$this->action;
-		$out['DATA_SOURCE']=$this->data_source;
-		$out['TAB']=$this->tab;
-		$this->data=$out;
-		$p=new parser(DIR_TEMPLATES.$this->name."/".$this->name.".html", $this->data, $this);
-		$this->result=$p->result;
+		$out['VIEW_MODE'] = $this->view_mode;
+		$out['EDIT_MODE'] = $this->edit_mode;
+		$out['MODE'] = $this->mode;
+		$out['ACTION'] = $this->action;
+		$out['DATA_SOURCE'] = $this->data_source;
+		$out['TAB'] = $this->tab;
+		
+		$this->data = $out;
+		
+		$p = new parser(DIR_TEMPLATES . $this->name . '/' . $this->name . '.html', $this->data, $this);
+		$this->result = $p->result;
 	}
 
 	/**
@@ -194,8 +198,11 @@ class xiaomimiio extends module {
 		$out['API_LOG_CYCLE'] = $this->config['API_LOG_CYCLE'];
 		$out['API_LOG_MIIO'] = $this->config['API_LOG_MIIO'];
 		
-		if ((time() - gg('cycle_xiaomimiioRun')) < 15 ) $out['CYCLERUN'] = 1;
-		 else $out['CYCLERUN'] = 0;
+		if ((time() - gg('cycle_xiaomimiioRun')) < 15 ) {
+			$out['CYCLERUN'] = 1;
+		} else {
+			$out['CYCLERUN'] = 0;
+		}
 		
 		if ($this->view_mode == 'update_settings') {
 			
@@ -239,6 +246,13 @@ class xiaomimiio extends module {
 				$this->redirect('?');
 			}
 
+			if ($this->view_mode == 'propupd_miio_devices') {
+				if ($this->config['API_LOG_DEBMES']) DebMes('Starting manual update the properties of the device', 'xiaomimiio');
+				$this->requestStatus($this->id);
+				if ($this->config['API_LOG_DEBMES']) DebMes('Manual update the properties of the device is finished', 'xiaomimiio');
+				$this->redirect('?');
+			}
+			
 			if ($this->view_mode == 'edit_miio_devices') {
 				$this->edit_miio_devices($out, $this->id);
 			}
@@ -253,7 +267,7 @@ class xiaomimiio extends module {
 	/**
 	* addToQueue
 	*
-	* ...
+	* Добавление команды в очередь
 	*
 	* @access private
 	*/
@@ -266,7 +280,6 @@ class xiaomimiio extends module {
 		$rec['DATA'] = $data;
 		$rec['ADDED'] = date('Y-m-d H:i:s');
 		
-		//TO-DO: добавить проверку на наличие токена, иначе не ставить команду в очередь.
 		SQLInsert('miio_queue', $rec);
 	
 	}
@@ -380,7 +393,7 @@ class xiaomimiio extends module {
 	/**
 	* requestInfo
 	*
-	* ...
+	* Запрос сведений miIO.info
 	*
 	* @access public
 	*/
@@ -403,12 +416,9 @@ class xiaomimiio extends module {
 		
 		$device_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=" . (int)$device_id);
 		
-		//DebMes($device_rec['DEVICE_TYPE'], 'xiaomimiio');
-		//DebMes('[requestStatus] DEVICE_TYPE='.$device_rec['DEVICE_TYPE'], 'xiaomimiio');
-		
 		if ($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') {
 			//
-			$props=explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
+			$props = explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
 				$props[$i] = '"' . $props[$i] . '"';
@@ -476,44 +486,82 @@ class xiaomimiio extends module {
 				if ($this->config['API_LOG_DEBMES']) DebMes('Starting periodic search for devices in the network', 'xiaomimiio');
 				$this->discover();
 				if ($this->config['API_LOG_DEBMES']) DebMes('Periodic search for devices in the network is finished', 'xiaomimiio');
+			} else if ($op == 'get_miio_info') {
+				
+				$dip = $_GET['dip'];
+				$dtoken = $_GET['dtoken'];
+				
+				header("HTTP/1.0: 200 OK\n");
+				header('Content-Type: text/html; charset=utf-8');
+					
+				if (!class_exists('miIO', false)) {
+					include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
+				}
+				$this->getConfig();
+			
+				if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+				 else $bind_ip = '0.0.0.0';
+				if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+				 else $miio_debug = false;
+			
+				$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
+				
+				if ($dev->getInfo(time())) {
+					if ($dev->data == '') $info = 'Сведения miIO.info не получены. Вероятно, указан неверный токен.';
+					 else $info = $dev->data;
+				} else $info = 'Что-то пошло не так...';
+				
+				echo $info;
+				exit;
 			}
 			echo 'OK';
 			exit;
 		}
 	}
+
+	/**
+	* miio_devices search
+	*
+	* @access public
+	*/
 	
-/**
-* miio_devices search
-*
-* @access public
-*/
- function search_miio_devices(&$out) {
-  require(DIR_MODULES.$this->name.'/miio_devices_search.inc.php');
- }
-/**
-* miio_devices edit/add
-*
-* @access public
-*/
- function edit_miio_devices(&$out, $id) {
-  require(DIR_MODULES.$this->name.'/miio_devices_edit.inc.php');
- }
-/**
-* miio_devices delete record
-*
-* @access public
-*/
- function delete_miio_devices($id) {
-  $rec=SQLSelectOne("SELECT * FROM miio_devices WHERE ID='$id'");
-  // some action for related tables
-  SQLExec("DELETE FROM miio_commands WHERE DEVICE_ID='".$rec['ID']."'");
-  SQLExec("DELETE FROM miio_devices WHERE ID='".$rec['ID']."'");
- }
+	function search_miio_devices(&$out) {
+	
+		require(DIR_MODULES.$this->name . '/miio_devices_search.inc.php');
+
+	}
+
+	/**
+	* miio_devices edit/add
+	*
+	* @access public
+	*/
+	
+	function edit_miio_devices(&$out, $id) {
+	
+		require(DIR_MODULES.$this->name . '/miio_devices_edit.inc.php');
+	
+	}
+
+	/**
+	* miio_devices delete record
+	*
+	* @access public
+	*/
+	
+	function delete_miio_devices($id) {
+		
+		$rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID='$id'");
+		
+		SQLExec("DELETE FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "'");
+		SQLExec("DELETE FROM miio_devices WHERE ID='" . $rec['ID'] . "'");
+		
+	}
 	
 	/**
 	* propertySetHandle
 	*
-	* ...
+	* Обработчик привязанных свойств и методов
 	*
 	* @access private
 	*/
@@ -524,64 +572,81 @@ class xiaomimiio extends module {
 		
 		$table = 'miio_commands';
 	
-		$properties = SQLSelect("SELECT miio_commands.*, miio_devices.DEVICE_TYPE FROM miio_commands LEFT JOIN miio_devices ON miio_devices.ID=miio_commands.DEVICE_ID WHERE miio_commands.LINKED_OBJECT LIKE '".DBSafe($object)."' AND miio_commands.LINKED_PROPERTY LIKE '".DBSafe($property)."'");
-	
+		$properties = SQLSelect("SELECT miio_commands.*, miio_devices.TOKEN, miio_devices.DEVICE_TYPE FROM miio_commands LEFT JOIN miio_devices ON miio_devices.ID=miio_commands.DEVICE_ID WHERE miio_commands.LINKED_OBJECT LIKE '".DBSafe($object)."' AND miio_commands.LINKED_PROPERTY LIKE '".DBSafe($property)."'");
+		/*
+			ID 	TITLE 	VALUE 	DEVICE_ID 	LINKED_OBJECT 	LINKED_PROPERTY 	LINKED_METHOD 	UPDATED	TOKEN	DEVICE_TYPE
+			3 	command NULL	2 			ThisComputer 	GwCmd 								NULL	xxxxx	lumi.gateway.v3
+			10 	command NULL	3 			ThisComputer 	GwCmd 								NULL			isa.camera.isc5
+		*/
 		$total = count($properties);
    
 		if ($total) {
 			for($i = 0; $i < $total; $i++) {
-				if ($properties[$i]['TITLE'] == 'command') { 
-					// Отправка любой команды (метода) без параметров.
-					// Например, miIO.info, toggle, app_start и др.
-					$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
-				} elseif ($properties[$i]['TITLE'] == 'power') { 
-					// Команда на включение и выключени
-					if ($value) {
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["on"]');
-					} else {
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
+				// Если есть токен, то обрабатываем команду и ставим ее в очередь. Без токена ничего не делаем.
+				if ($properties[$i]['TOKEN'] != '') {
+					if ($properties[$i]['TITLE'] == 'command') {
+						// Отправка любой команды (метода) без параметров.
+						// Например, miIO.info, toggle, app_start и др.
+						$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+						//TO-DO: после отправки команды желательно обновить сведения об устройстве,
+						//но при этом перезапишется поле message (удалится результат выполнения команды),
+						//что может быть неприемлемо.
+						//$this->requestStatus($properties[$i]['DEVICE_ID']);
+					} elseif ($properties[$i]['TITLE'] == 'power') {
+						// Команда на включение и выключени
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["on"]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'bright') {
+						// Команда на изменение яркости (в % от 1 до 100)
+						$value = (int)$value;
+						if ($value < 1) $value = 1;
+						if ($value > 100) $value = 100;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_bright', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'cct') {
+						// Команда на изменение цветовой температуры (в % от 1 до 100)
+						$value = (int)$value;
+						if ($value < 1) $value = 1;
+						if ($value > 100) $value = 100;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_cct', "[$value]");
 					}
-				} elseif ($properties[$i]['TITLE'] == 'bright') {
-					// Команда на изменение яркости (в % от 1 до 100)
-					$value = (int)$value;
-					if ($value < 1) $value = 1;
-					if ($value > 100) $value = 100;
-					$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_bright', "[$value]");
-				} elseif ($properties[$i]['TITLE'] == 'cct') {
-					// Команда на изменение цветовой температуры (в % от 1 до 100)
-					$value = (int)$value;
-					if ($value < 1) $value = 1;
-					if ($value > 100) $value = 100;
-					$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_cct', "[$value]");
+					SQLExec("UPDATE miio_commands SET VALUE='".DBSafe($value)."' WHERE ID=".$properties[$i]['ID']);
 				}
-				SQLExec("UPDATE miio_commands SET VALUE='".DBSafe($value)."' WHERE ID=".$properties[$i]['ID']);
 			}
 		}
 	}
 
-	
+	/**
+	* processCommand
+	*
+	* ...
+	*
+	* @access private
+	*/
 	
 	function processCommand($device_id, $command, $value, $params = 0) {
 		
-		//DebMes("processCommand($device_id, $command, $value, $params)", 'xiaomimiio');
+		$cmd_rec = SQLSelectOne("SELECT * FROM miio_commands WHERE DEVICE_ID=".(int)$device_id." AND TITLE LIKE '".DBSafe($command)."'");
 		
-  $cmd_rec=SQLSelectOne("SELECT * FROM miio_commands WHERE DEVICE_ID=".(int)$device_id." AND TITLE LIKE '".DBSafe($command)."'");
-  if (!$cmd_rec['ID']) {
-   $cmd_rec=array();
-   $cmd_rec['TITLE']=$command;
-   $cmd_rec['DEVICE_ID']=$device_id;
-   $cmd_rec['ID']=SQLInsert('miio_commands',$cmd_rec);
-  }
+		if (!$cmd_rec['ID']) {
+			$cmd_rec = array();
+			$cmd_rec['TITLE'] = $command;
+			$cmd_rec['DEVICE_ID'] = $device_id;
+			$cmd_rec['ID'] = SQLInsert('miio_commands', $cmd_rec);
+		}
 
-  $old_value=$cmd_rec['VALUE'];
+		$old_value = $cmd_rec['VALUE'];
 
-  $cmd_rec['VALUE']=$value;
-  $cmd_rec['UPDATED']=date('Y-m-d H:i:s');
-  SQLUpdate('miio_commands',$cmd_rec);
+		$cmd_rec['VALUE'] = $value;
+		$cmd_rec['UPDATED'] = date('Y-m-d H:i:s');
+		SQLUpdate('miio_commands', $cmd_rec);
 
-  if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_PROPERTY']) {
-   setGlobal($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_PROPERTY'], $value, array($this->name => '0'));
-  }
+		if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_PROPERTY']) {
+			setGlobal($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_PROPERTY'], $value, array($this->name => '0'));
+		}
+		
 		if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_METHOD']) {
 			if (!is_array($params)) {
 				$params = array();
@@ -720,7 +785,6 @@ class xiaomimiio extends module {
 				if ($val == 'on') $val = 1;
 				 else if ($val == 'off') $val = 0;
 			}
-			//DebMes("cmd=$cmd value=$val", 'xiaomimiio');
 			$this->processCommand($device['ID'], $cmd, $val);
         }
 
@@ -736,9 +800,8 @@ class xiaomimiio extends module {
  
 	function install($data = '') {
 		
-		//setGlobal('cycle_schedappControl', 'restart');
-		//setGlobal('cycle_schedappAutoRestart', '1');
-		//$this->name
+		//setGlobal('cycle_xiaomimiioControl', 'start');
+		//setGlobal('cycle_xiaomimiioAutoRestart', '1');
 		
 		parent::install();
 		
@@ -759,7 +822,7 @@ class xiaomimiio extends module {
 			- перед удалением таблиц нужно остановить цикл, если он запущен, чтобы не было ошибок SQL
 			- также нужно удалить сведения о цикле из Xray и свойства из объекта ThisComputer
 			  (ThisComputer.cycle_xiaomimiioRun, ThisComputer.cycle_xiaomimiioControl, 
-			   ThisComputer.cycle_xiaomihomeDisabled, ThisComputer.cycle_xiaomimiioAutoRestart)
+			   ThisComputer.cycle_xiaomimiioDisabled, ThisComputer.cycle_xiaomimiioAutoRestart)
 		*/
 		
 		SQLExec('DROP TABLE IF EXISTS miio_devices');

@@ -3,7 +3,7 @@
 <br/>
 <p>
 <a href="?view_mode=edit_miio_devices&data_source=<#DATA_SOURCE#>" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> <#LANG_ADD#></a>
- <a href="?view_mode=discover" class="btn btn-default"><i class="glyphicon glyphicon-refresh"></i> <#LANG_RESCAN_DEVICES#></a>
+ <a href="?view_mode=discover" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> <#LANG_RESCAN_DEVICES#></a>
 </p>
 <table width=100% border=0><tr>
 <td valign=top>
@@ -24,10 +24,42 @@
 [#endif PAGES#]
 <!-- / paging -->
 <!-- search results (list) -->
+
+
+<div class="modal fade" id="miio_info" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			
+			<div class="modal-body">
+                <p class="float-left"><b>miIO Info</b></p>
+				<div id="info" style="word-wrap:break-word"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-success" data-dismiss="modal">Закрыть</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <form action="?" method="post" name="frmList_miio_devices" style="padding:0px" class="form">
 <table  align=center class="table table-striped">
 <tbody>
 [#begin RESULT#]
+
+<script type="text/javascript">
+	function showInfo(ip,token){
+	    var url="/ajax/xiaomimiio.html?op=get_miio_info&dip="+ip+"&dtoken="+token;
+		$("#info").html('');
+		$.ajax({
+			url: url,
+			cache: false,
+			success: function(html){
+				$("#info").html(html);
+			}
+		});
+	}
+</script>
+
 <tr style="height:52px" class="hover_btn2">
  <td style="vertical-align:middle">
   <b>
@@ -42,25 +74,24 @@
 	[#endif#]
  </td>
  <td style="vertical-align:middle">
-  [#if IP!=""#]
-   [#IP#]
-  [#else#]
-   &nbsp;
-  [#endif#]
+	[#if IP!=""#]
+		[#IP#]
+		&nbsp;
+		[#if TOKEN!="" && ONLINE==1#]
+			<span class='support'>
+				<i onclick="showInfo('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#miio_info" onMouseOver="this.style.color='blue'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-info-sign" title="Получить сведения miIO.info" id="[#IP#]"></i>
+			</span>	
+		[#endif#]
+	[#else#]
+		&nbsp;
+	[#endif#]
  </td>
  <td style="vertical-align:middle">
-  [#if TOKEN!=""#]
-   [#TOKEN#]
-  [#else#]
-   &nbsp;
-  [#endif#]
- </td>
- <td style="vertical-align:middle">
-  [#if MAC!=""#]
-   [#MAC#]
-  [#else#]
-   &nbsp;
-  [#endif#]
+	[#if TOKEN!=""#]
+		[#TOKEN#]
+	[#else#]
+		&nbsp;
+	[#endif#]
  </td>
  <td style="vertical-align:middle">
 	[#if DEVICE_TYPE!=""#]
@@ -80,29 +111,21 @@
 		&nbsp;
 	[#endif#]
  </td>
- <td style="vertical-align:middle"
-   >
-  [#if HW_VER!=""#]
-   [#HW_VER#]
-  [#else#]
-   &nbsp;
-  [#endif#]
- </td>
- <td style="vertical-align:middle"
-   >
-  [#if UPDATE_PERIOD!=""#]
-   [#UPDATE_PERIOD#]
-  [#else#]
-   &nbsp;
-  [#endif#]
+ <td style="vertical-align:middle">
+	[#if UPDATE_PERIOD!=""#]
+		[#UPDATE_PERIOD#]
+	[#else#]
+		&nbsp;
+	[#endif#]
  </td>
  <td style="vertical-align:middle" width="1%" nowrap>
-  <div style="width:120px">
-  [#if "<#ACTION#>"=="admin"#]
-   <a href="?data_source=<#DATA_SOURCE#>&view_mode=edit_miio_devices&id=[#ID#]" class="btn btn-default" title="Edit"><i class="glyphicon glyphicon-pencil"></i></a>
-    <a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_miio_devices&id=[#ID#]" onClick="return confirm('Are you sure? Please confirm.')" class="btn btn-default" title="Delete"><i class="glyphicon glyphicon-remove"></i></a>
-  [#endif ACTION#]
-  </div>
+	<div style="width:130px">
+	[#if "<#ACTION#>"=="admin"#]
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=propupd_miio_devices&id=[#ID#]" class="btn btn-default [#if TOKEN=="" || ONLINE==0 || DEVICE_TYPE==""#]disabled[#endif#]" title="Получить актуальное состояние"><i class="glyphicon glyphicon-refresh"></i></a>
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=edit_miio_devices&id=[#ID#]" class="btn btn-default" title="Редактировать"><i class="glyphicon glyphicon-pencil"></i></a>
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_miio_devices&id=[#ID#]" onClick="return confirm('Вы уверены? Пожалуйста, подтвердите.')" class="btn btn-default" title="Удалить"><i class="glyphicon glyphicon-remove"></i></a>
+	[#endif ACTION#]
+	</div>
  </td>
 </tr>
 [#end RESULT#]

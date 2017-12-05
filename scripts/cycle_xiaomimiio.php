@@ -3,7 +3,7 @@
 * Xiaomi miIO Cycle
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.5
+* @version 0.6
 */
 
 chdir(dirname(__FILE__) . '/../');
@@ -72,7 +72,6 @@ while (1) {
             $reply = '';
 			$dev->data = '';
             if ($queue[$i]['DEVICE_ID']) {
-                // get status command
                 if ($queue[$i]['IP']) {
                     $dev->ip = $queue[$i]['IP'];
                 } else {
@@ -96,13 +95,13 @@ while (1) {
             if ($reply != '') {
 				if ($cycle_debug) echo date('H:i:s') . " Reply: $reply \n";
                 $url = BASE_URL.'/ajax/xiaomimiio.html?op=process&command='.urlencode($queue[$i]['METHOD']).'&device_id='.$queue[$i]['DEVICE_ID'].'&message='.urlencode($reply);
-                $res = get_headers($url);
+				getURLBackground($url, 0);
 				if ($cycle_debug) echo date('H:i:s') . ' Background processing of the response is started' . PHP_EOL;
             }
         }
     }
-	// TO-DO: проверить на наличие типа устройства (DEVICE_TYPE не пустой)
-    $devices = SQLSelect('SELECT * FROM miio_devices WHERE UPDATE_PERIOD>0 AND NEXT_UPDATE<=NOW()');
+
+    $devices = SQLSelect("SELECT * FROM miio_devices WHERE UPDATE_PERIOD>0 AND NEXT_UPDATE<=NOW() AND DEVICE_TYPE!='' AND TOKEN!=''");
     
 	if ($devices[0]['ID']) {
         $total = count($devices);

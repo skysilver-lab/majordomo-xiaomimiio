@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.5
+* @version 0.6
 */
 
 if ($this->owner->name == 'panel') {
@@ -18,105 +18,107 @@ if ($this->mode == 'update') {
 	$this->getConfig();
 	$ok = 1;
 	
-	// step: default
 	if ($this->tab == '') {
-		/*updating '<%LANG_TITLE%>' (varchar, required)*/
+
 		global $title;
 		$rec['TITLE'] = $title;
 		if ($rec['TITLE'] == '') {
 			$out['ERR_TITLE'] = 1;
 			$ok = 0;
 		}
-		//updating 'IP' (varchar)
+
 		global $ip;
 		$rec['IP'] = $ip;
-		//updating 'TOKEN' (varchar)
+		if ($rec['IP'] == '') {
+			$out['ERR_IP'] = 1;
+			$ok = 0;
+		}
+		
 		global $token;
 		$rec['TOKEN'] = $token;
-		//updating 'DEVICE_TYPE' (varchar)
+		
 		global $device_type;
 		$rec['DEVICE_TYPE'] = $device_type;
-		//updating 'UPDATE_PERIOD' (varchar)
+
 		global $update_period;
 		$rec['UPDATE_PERIOD'] = (int)$update_period;
 		if ($rec['UPDATE_PERIOD'] > 0) {
 			$rec['NEXT_UPDATE'] = date('Y-m-d H:i:s');
 		}
 			
-		$commands=array('online','command','message');
+		$commands = array('online', 'command', 'message');
 	}
 
-	// step: data
-	if ($this->tab == 'data') {
-		//
-	}
-
-	//UPDATING RECORD
 	if ($ok) {
 		if ($rec['ID']) {
-			SQLUpdate($table_name, $rec); // update
+			if ($this->config['API_LOG_DEBMES']) DebMes('Save params for device with IP ' . $rec['IP'], 'xiaomimiio');
+			SQLUpdate($table_name, $rec);
 		} else {
-			$new_rec = 1;
-			$rec['ID'] = SQLInsert($table_name, $rec); // adding new record
+			if ($this->config['API_LOG_DEBMES']) DebMes('Manual add new device with IP ' . $rec['IP'], 'xiaomimiio');
+			$rec['ID'] = SQLInsert($table_name, $rec);
 		}
+		
 		$out['OK'] = 1;
 
 		if ($this->tab == '') {
 			foreach($commands as $cmd) {
-				$cmd_rec=SQLSelectOne("SELECT * FROM miio_commands WHERE DEVICE_ID=".$rec['ID']." AND TITLE = '".$cmd."'");
+				$cmd_rec = SQLSelectOne("SELECT * FROM miio_commands WHERE DEVICE_ID=" . $rec['ID'] . " AND TITLE = '" . $cmd . "'");
 				if (!$cmd_rec['ID']) {
-					$cmd_rec=array();
-					$cmd_rec['TITLE']=$cmd;
-					$cmd_rec['DEVICE_ID']=$rec['ID'];
-					SQLInsert('miio_commands',$cmd_rec);
+					$cmd_rec = array();
+					$cmd_rec['TITLE'] = $cmd;
+					$cmd_rec['DEVICE_ID'] = $rec['ID'];
+					SQLInsert('miio_commands', $cmd_rec);
 				}
 			}
-			$this->requestInfo($rec['ID']);
+			
+			$this->processCommand($rec['ID'], 'online', 0);
+						
+			if ($rec['TOKEN'] != '' && $rec['IP'] != '') $this->requestInfo($rec['ID']);
 			sleep(1);
-			if ($this->config['API_LOG_DEBMES']) DebMes('Save device params [requestStatus] DevID='.$rec['ID'], 'xiaomimiio');
-			if ((int)$update_period == 0) $this->requestStatus($rec['ID']);
+			if ((int)$update_period == 0 && $rec['TOKEN'] != '' && $rec['DEVICE_TYPE'] != '') $this->requestStatus($rec['ID']);
 		}
 	} else {
 		$out['ERR'] = 1;
 	}
 }
 
-// step: default
-if ($this->tab=='') {
-}
-// step: data
-if ($this->tab=='data') {
-	//dataset2
-	$new_id=0;
+if ($this->tab == 'data') {
+	
+	$new_id = 0;
 	global $delete_id;
+	
 	if ($delete_id) {
-		SQLExec("DELETE FROM miio_commands WHERE ID='".(int)$delete_id."'");
+		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
 	}
-	$properties=SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='".$rec['ID']."' ORDER BY ID");
-	$total=count($properties);
-	for($i=0;$i<$total;$i++) {
-		if ($properties[$i]['ID']==$new_id) continue;
-		if ($this->mode=='update') {
-			/*
-				global ${'title'.$properties[$i]['ID']};
-				$properties[$i]['TITLE']=trim(${'title'.$properties[$i]['ID']});
-				global ${'value'.$properties[$i]['ID']};
-				$properties[$i]['VALUE']=trim(${'value'.$properties[$i]['ID']});
-			*/
+	
+	$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY ID");
+	$total = count($properties);
+	
+	for($i = 0; $i < $total; $i++) {
+		if ($properties[$i]['ID'] == $new_id) continue;
+		
+		if ($this->mode == 'update') {
+			
 			global ${'linked_object'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_OBJECT']=trim(${'linked_object'.$properties[$i]['ID']});
+			$properties[$i]['LINKED_OBJECT'] = trim(${'linked_object'.$properties[$i]['ID']});
+			
 			global ${'linked_property'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_PROPERTY']=trim(${'linked_property'.$properties[$i]['ID']});
+			$properties[$i]['LINKED_PROPERTY'] = trim(${'linked_property'.$properties[$i]['ID']});
+			
 			global ${'linked_method'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_METHOD']=trim(${'linked_method'.$properties[$i]['ID']});
+			$properties[$i]['LINKED_METHOD'] = trim(${'linked_method'.$properties[$i]['ID']});
+			
 			SQLUpdate('miio_commands', $properties[$i]);
-			$old_linked_object=$properties[$i]['LINKED_OBJECT'];
-			$old_linked_property=$properties[$i]['LINKED_PROPERTY'];
-			if ($old_linked_object && $old_linked_object!=$properties[$i]['LINKED_OBJECT'] && $old_linked_property && $old_linked_property!=$properties[$i]['LINKED_PROPERTY']) {
+			
+			$old_linked_object = $properties[$i]['LINKED_OBJECT'];
+			$old_linked_property = $properties[$i]['LINKED_PROPERTY'];
+			
+			if ($old_linked_object && $old_linked_object != $properties[$i]['LINKED_OBJECT'] && $old_linked_property && $old_linked_property != $properties[$i]['LINKED_PROPERTY']) {
 				removeLinkedProperty($old_linked_object, $old_linked_property, $this->name);
 			}
 		}
-		$properties[$i]['VALUE']=str_replace('",','", ',$properties[$i]['VALUE']);
+		
+		$properties[$i]['VALUE'] = str_replace('",','", ',$properties[$i]['VALUE']);
 
 		if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
 			addLinkedProperty($properties[$i]['LINKED_OBJECT'], $properties[$i]['LINKED_PROPERTY'], $this->name);

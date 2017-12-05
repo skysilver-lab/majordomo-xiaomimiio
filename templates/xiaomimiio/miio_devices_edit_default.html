@@ -1,128 +1,125 @@
 <!-- Table 'miio_devices' edit -->
 <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
-[#if OK#]
-<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
-[#endif OK#]
-[#if ERR#]
-<div class="alert alert-error"><#LANG_FILLOUT_REQURED#></div>
-[#endif ERR#]
-<fieldset>
-[#if ID=""#]
-<legend><#LANG_NEW_RECORD#></legend>
-[#endif ID#]
-<!-- TITLE (varchar) -->
-<div class="form-group">
- <label class="col-lg-3 control-label"[#if ERR_TITLE#] style="color:red;font-weight:bold"[#endif#]>
- <#LANG_TITLE#> (*):
- </label>
- <div class="col-lg-4"><input type="text" class="form-control" name="title" value="[#TITLE#]" id="title"></div>
-</div>
-<!-- IP (varchar) -->
-<div class="form-group">
- <label class="col-lg-3 control-label"[#if ERR_IP#] style="color:red;font-weight:bold"[#endif#]>
- IP (*):
- </label>
- <div class="col-lg-4"><input type="text" class="form-control" name="ip" value="[#IP#]" id="ip"></div>
-</div>
-<!-- TOKEN (varchar) -->
-<div class="form-group">
- <label class="col-lg-3 control-label"[#if ERR_TOKEN#] style="color:red;font-weight:bold"[#endif#]>
- Токен (*):
- </label>
- <div class="col-lg-4"><input type="text" class="form-control" name="token" value="[#TOKEN#]" id="token"></div>
-</div>
+	[#if OK#]
+	<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
+	[#endif OK#]
+	
+	[#if ERR#]
+	<div class="alert alert-error"><#LANG_FILLOUT_REQURED#></div>
+	[#endif ERR#]
+	
+	<fieldset>
+		[#if ID=""#]
+		<legend><#LANG_NEW_RECORD#></legend>
+		[#endif ID#]
 
-<!-- DEVICE_TYPE (varchar) -->
-<div class="form-group">
-	<label class="col-lg-3 control-label"[#if ERR_DEVICE_TYPE#] style="color:red;font-weight:bold"[#endif#]>
-		<#LANG_TYPE#>:
-	</label>
-	<div class="col-lg-4">
-		<select name="device_type" class="form-control">
-			<option value=""></option>
-			<option value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]>Mi Smart Home Gateway 2</option>
-			<option value="chuangmi.plug.m1" [#if DEVICE_TYPE="chuangmi.plug.m1"#] selected[#endif#]>Mi Smart Socket Plug 2</option>
-			<option value="isa.camera.isc5" [#if DEVICE_TYPE="isa.camera.isc5"#] selected[#endif#]>Mi Square Smart Camera</option>
-			<option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Mi Vacuum Cleaner</option>
-			<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips EyeCare Smart Lamp 2</option>
-			<option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
-			<option value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]>Yeelight Color Bulb</option>
-			<option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
-		</select>
-	</div>
-</div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_TITLE#] style="color:red;font-weight:bold"[#endif#]>
+				<#LANG_TITLE#> (*):
+			</label>
+			<div class="col-lg-4"><input type="text" class="form-control" name="title" value="[#TITLE#]" id="title"></div>
+		</div>
 
-<!-- UPDATE_PERIOD (varchar) -->
-<div class="form-group">
- <label class="col-lg-3 control-label"[#if ERR_UPDATE_PERIOD#] style="color:red;font-weight:bold"[#endif#]>
-  <#LANG_POLLING_PERIOD#>, <#LANG_SECONDS#>:
- </label>
- <div class="col-lg-4"><input type="text" class="form-control" name="update_period" value="[#if UPDATE_PERIOD!=""#][#UPDATE_PERIOD#][#else#]0[#endif#]" id="update_period"></div>
-</div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_IP#] style="color:red;font-weight:bold"[#endif#]>
+				IP (*):
+			</label>
+			<div class="col-lg-4"><input type="text" class="form-control" name="ip" value="[#IP#]" id="ip"></div>
+		</div>
 
- [#if SERIAL!=""#]
- <div class="form-group">
-  <label class="col-lg-3 control-label">
-   Серийный номер:
-  </label>
-  <div class="col-lg-4">[#SERIAL#]</div>
- </div>
- [#endif#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_TOKEN#] style="color:red;font-weight:bold"[#endif#]>
+				Токен:
+			</label>
+			<div class="col-lg-4"><input type="text" class="form-control" name="token" value="[#TOKEN#]" id="token"></div>
+		</div>
 
- [#if DEVICE_TYPE_CODE!=""#]
- <div class="form-group">
-  <label class="col-lg-3 control-label">
-   Код:
-  </label>
-  <div class="col-lg-4">[#DEVICE_TYPE_CODE#]</div>
- </div>
- [#endif#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_DEVICE_TYPE#] style="color:red;font-weight:bold"[#endif#]>
+				<#LANG_TYPE#>:
+			</label>
+			<div class="col-lg-4">
+				<select name="device_type" class="form-control">
+					<option value=""></option>
+					<option value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]>Mi Smart Home Gateway 2</option>
+					<option value="chuangmi.plug.m1" [#if DEVICE_TYPE="chuangmi.plug.m1"#] selected[#endif#]>Mi Smart Socket Plug 2</option>
+					<option value="isa.camera.isc5" [#if DEVICE_TYPE="isa.camera.isc5"#] selected[#endif#]>Mi Square Smart Camera</option>
+					<option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Mi Vacuum Cleaner</option>
+					<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips EyeCare Smart Lamp 2</option>
+					<option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
+					<option value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]>Yeelight Color Bulb</option>
+					<option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
+				</select>
+			</div>
+		</div>
 
- [#if MAC!=""#]
- <div class="form-group">
-  <label class="col-lg-3 control-label"[#if ERR_MAC#] style="color:red;font-weight:bold"[#endif#]>
-   MAC:
-  </label>
-  <div class="col-lg-4">[#MAC#]</div>
- </div>
- [#endif#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_UPDATE_PERIOD#] style="color:red;font-weight:bold"[#endif#]>
+				<#LANG_POLLING_PERIOD#>, <#LANG_SECONDS#>:
+			</label>
+			<div class="col-lg-4"><input type="text" class="form-control" name="update_period" value="[#if UPDATE_PERIOD!=""#][#UPDATE_PERIOD#][#else#]0[#endif#]" id="update_period"></div>
+		</div>
 
- <!-- MODEL (varchar) -->
- [#if MODEL!=""#]
- <div class="form-group">
-  <label class="col-lg-3 control-label"[#if ERR_MODEL#] style="color:red;font-weight:bold"[#endif#]>
-   MODEL:
-  </label>
-  <div class="col-lg-4">[#MODEL#]</div>
- </div>
- [#endif#]
-
- <!-- HW_VER (varchar) -->
- [#if HW_VER!=""#]
- <div class="form-group">
-  <label class="col-lg-3 control-label"[#if ERR_HW_VER#] style="color:red;font-weight:bold"[#endif#]>
-   HW_VER:
-  </label>
-  <div class="col-lg-4">[#HW_VER#]</div>
- </div>
- [#endif#]
-
-
-<div class="form-group">
-        <div class="col-lg-offset-3 col-lg-4">
- [#if ID!=""#]
- <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_SUBMIT#></button>
- [#else ID#]
- <button type="submit" name="subm" value="Add" class="btn btn-primary"><#LANG_ADD#></button>
- [#endif ID#]
- <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_STRING_BACK#></a>
-<input type="hidden" name="id" value="<#ID#>">
-<input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
-<input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
-<input type="hidden" name="mode" value="update">
-<input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
-<input type="hidden" name="tab" value="<#TAB#>">
-        </div>
-</div>
-</fieldset>
+		[#if SERIAL!=""#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label">
+				Серийный номер:
+			</label>
+			<div class="col-lg-4">[#SERIAL#]</div>
+		</div>
+		[#endif#]
+		
+		[#if DEVICE_TYPE_CODE!=""#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label">
+				Код:
+			</label>
+			<div class="col-lg-4">[#DEVICE_TYPE_CODE#]</div>
+		</div>
+		[#endif#]
+		
+		[#if MAC!=""#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_MAC#] style="color:red;font-weight:bold"[#endif#]>
+				MAC:
+			</label>
+			<div class="col-lg-4">[#MAC#]</div>
+		</div>
+		[#endif#]
+		
+		[#if MODEL!=""#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_MODEL#] style="color:red;font-weight:bold"[#endif#]>
+				MODEL:
+			</label>
+			<div class="col-lg-4">[#MODEL#]</div>
+		</div>
+		[#endif#]
+		
+		[#if HW_VER!=""#]
+		<div class="form-group">
+			<label class="col-lg-3 control-label"[#if ERR_HW_VER#] style="color:red;font-weight:bold"[#endif#]>
+				HW_VER:
+			</label>
+			<div class="col-lg-4">[#HW_VER#]</div>
+		</div>
+		[#endif#]
+		
+		<div class="form-group">
+			<div class="col-lg-offset-3 col-lg-4">
+				[#if ID!=""#]
+				<button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_SUBMIT#></button>
+				[#else ID#]
+				<button type="submit" name="subm" value="Add" class="btn btn-primary"><#LANG_ADD#></button>
+				[#endif ID#]
+				<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_STRING_BACK#></a>
+				<input type="hidden" name="id" value="<#ID#>">
+				<input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
+				<input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
+				<input type="hidden" name="mode" value="update">
+				<input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
+				<input type="hidden" name="tab" value="<#TAB#>">
+			</div>
+		</div>
+	</fieldset>
 </form>

@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.5
+* @version 0.6
 */
 
 global $session;
