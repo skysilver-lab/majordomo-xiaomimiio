@@ -3,7 +3,7 @@
 * Xiaomi miIO Cycle
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.6
+* @version 0.7b
 */
 
 chdir(dirname(__FILE__) . '/../');
@@ -61,16 +61,27 @@ while (1) {
 		setGlobal((str_replace('.php', '', basename(__FILE__))) . 'Run', time(), 1);
 	}
 
-	$queue = SQLSelect("SELECT miio_queue.*, miio_devices.TOKEN, miio_devices.DEVICE_TYPE, miio_devices.IP FROM miio_queue LEFT JOIN miio_devices ON miio_queue.DEVICE_ID=miio_devices.ID ORDER BY miio_queue.ADDED");
+	$queue = SQLSelect("SELECT miio_queue.*, miio_devices.TOKEN, miio_devices.DEVICE_TYPE, miio_devices.IP FROM miio_queue LEFT JOIN miio_devices ON miio_queue.DEVICE_ID=miio_devices.ID ORDER BY miio_queue.ID");
     
 	if ($queue[0]['ID']) {
         $total = count($queue);
+		//$prev_id = '';
         for ($i = 0; $i < $total; $i++) {
-
+			
             if ($cycle_debug) echo date('H:i:s') . ' Queue command: ' . json_encode($queue[$i]) . PHP_EOL;
+			
+			//if ($prev_id == $queue[$i]['DEVICE_ID']) {
+				//if ($cycle_debug) echo date('H:i:s') . ' The previous command was to this device. Make a small pause (1 sec).' . PHP_EOL;
+				//sleep(1);
+			//}
+				
+			//$prev_id = $queue[$i]['DEVICE_ID'];
+			
             SQLExec("DELETE FROM miio_queue WHERE ID=" . $queue[$i]['ID']);
+
             $reply = '';
 			$dev->data = '';
+
             if ($queue[$i]['DEVICE_ID']) {
                 if ($queue[$i]['IP']) {
                     $dev->ip = $queue[$i]['IP'];
@@ -85,7 +96,8 @@ while (1) {
 				//TO-DO: перед отправкой команды у-ву нужно задать разницу времени между сервером и локальным временем у-ва.
 				//это значение уникально для каждого у-ва, поэтому логично его хранить в базе и обновлять при периодическом поиске или пинге.
 				//это также избавит от необходимости слать hello-пакет перед каждой командой
-                if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], time())) {
+				$msg_id = substr(time().$i, 3);
+                if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {
 					$reply = $dev->data;
 				} else {
 					if ($cycle_debug) echo date('H:i:s') . " Reply: device not answered \n";

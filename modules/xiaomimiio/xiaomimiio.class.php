@@ -4,14 +4,14 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.6
+* @version 0.7b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
 define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
 
 define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
-define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,cct,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
+define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
 define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
 
@@ -333,10 +333,9 @@ class xiaomimiio extends module {
 						$token = $dev['token'];
 							
 						if (preg_match('/^[0fF]+$/', $token)) $token = '';
-						//if (preg_match('/^0+$/', $token)) $token = '';
-						 //else if (preg_match('/^F+$/', $token)) $token = '';
-						  //else if (preg_match('/^f+$/', $token)) $token = '';
-					
+						
+						//TO-DO: новые сравниваются по sid и devcode, но если устройство было добавлено вручную, то эти параметры будут отсутствовать,
+						//соотвественно устройство добавится как новое, а не перезапишет (обновит) добавленно вручную.
 						$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='$device_type_code' AND SERIAL='$device_serial'");
 					
 						if ($dev_rec['ID']) {
@@ -451,6 +450,7 @@ class xiaomimiio extends module {
 		} else if ($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') {
 			//
 			$this->addToQueue($device_id, 'get_status');
+			sleep(1);
 			$this->addToQueue($device_id, 'get_consumable');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.m1') {
 			//
@@ -460,6 +460,14 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+			//
+			$this->addToQueue($device_id, 'get_prop_fm', '[]');
+			if ($this->view_mode == 'propupd_miio_devices') {
+				$this->addToQueue($device_id, 'get_lumi_dpf_aes_key', '[]');
+				$this->addToQueue($device_id, 'get_zigbee_channel', '[]');
+			}
+			$this->addToQueue($device_id, 'get_channels', '{"start":0}');
 		}
 		
 	}
@@ -584,6 +592,7 @@ class xiaomimiio extends module {
 			for($i = 0; $i < $total; $i++) {
 				// Если есть токен, то обрабатываем команду и ставим ее в очередь. Без токена ничего не делаем.
 				if ($properties[$i]['TOKEN'] != '') {
+					
 					if ($properties[$i]['TITLE'] == 'command') {
 						// Отправка любой команды (метода) без параметров.
 						// Например, miIO.info, toggle, app_start и др.
@@ -612,7 +621,40 @@ class xiaomimiio extends module {
 						if ($value > 100) $value = 100;
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_cct', "[$value]");
 					}
+					
+					if($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+						if ($properties[$i]['TITLE'] == 'current_volume') {
+							// Изменение громкости
+							$value = (int)$value;
+							if ($value < 1) $value = 1;
+							if ($value > 15) $value = 15;
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'volume_ctrl_fm', '["' . $value . '"]');
+						} else if ($properties[$i]['TITLE'] == 'current_status') {
+							// Команды управления проигрыванием (on, off, toggle, next, prev)
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'play_fm', '["' . $value . '"]');
+						} else if ($properties[$i]['TITLE'] == 'add_program') {
+							// Добавление новой радиостанции (по URL)
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'add_channels', '{"chs":[{"id":' . time() . ',"url":"' . $value . '","type":0}]}');
+						} else if ($properties[$i]['TITLE'] == 'current_program') {
+							// Проиграть конкретную (по ID) радиостанцию с текущей громкостью
+							$volume = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='" . $properties[$i]['DEVICE_ID'] . "' AND TITLE='current_volume'")['VALUE'];
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'play_specify_fm', "[$value,$volume]");
+						} else if ($properties[$i]['TITLE'] == 'del_program') {
+							// Удалить радиостанцию (по ID)
+							$all_chs = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='" . $properties[$i]['DEVICE_ID'] . "' AND TITLE='all_program'")['VALUE'];
+							$all_chs = json_decode($all_chs, true);					
+							foreach($all_chs['chs'] as $ch) {
+								if ($ch['id'] == $value) {
+									$ch_url = $ch['url'];
+									break;
+								}
+							}
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'remove_channels', '{"chs":[{"id":' . $value . ',"url":"' . $ch_url . '","type":0}]}');
+						}
+					}
+					
 					SQLExec("UPDATE miio_commands SET VALUE='".DBSafe($value)."' WHERE ID=".$properties[$i]['ID']);
+					//TO-DO: также обновлять поле UPDATED
 				}
 			}
 		}
@@ -720,9 +762,20 @@ class xiaomimiio extends module {
 
 			
 			if ($device['DEVICE_TYPE'] == 'lumi.gateway.v3') {
-				//
-				//TO-DO
-				//
+				if ($command == 'get_prop_fm' && is_array($data['result'])) {
+					foreach($data['result'] as $key => $value) {
+						$res_commands[] = array('command' => $key, 'value' => $value);
+					}
+				}
+				if ($command == 'get_channels' && is_array($data['result'])) {
+					$res_commands[] = array('command' => 'all_program', 'value' => $data['result']);
+				}
+				if ($command == 'get_lumi_dpf_aes_key' && is_array($data['result'])) {
+					$res_commands[] = array('command' => 'lumi_dpf_aes_key', 'value' => $data['result'][0]);
+				}
+				if ($command == 'get_zigbee_channel' && is_array($data['result'])) {
+					$res_commands[] = array('command' => 'zigbee_channel', 'value' => $data['result'][0]);
+				}
 			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.mono1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_YEELIGHT_WHITE_BULB_PROPS);
 				$i = 0;
@@ -755,7 +808,7 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' && $command == 'get_status' && is_array($data['result'])) {
+			} elseif ($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' && ($command == 'get_status' || $command == 'get_consumable') && is_array($data['result'])) {
 				foreach($data['result'][0] as $key => $value) {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					if ($key == 'state') {
@@ -849,18 +902,20 @@ class xiaomimiio extends module {
 			miio_devices: TOKEN varchar(255) NOT NULL DEFAULT ''
 			miio_devices: MAC varchar(255) NOT NULL DEFAULT ''
 			miio_devices: DEVICE_TYPE varchar(255) NOT NULL DEFAULT ''
-			miio_devices: DEVICE_TYPE_CODE varchar(255) NOT NULL DEFAULT '' 
+			miio_devices: DEVICE_TYPE_CODE varchar(255) NOT NULL DEFAULT ''
 			miio_devices: TIME_DIFF int(10) NOT NULL DEFAULT '0'
 			miio_devices: MODEL varchar(255) NOT NULL DEFAULT ''
 			miio_devices: HW_VER varchar(255) NOT NULL DEFAULT ''
-			miio_devices: SERIAL varchar(255) NOT NULL DEFAULT '' 
+			miio_devices: SERIAL varchar(255) NOT NULL DEFAULT ''
+			miio_devices: SETTINGS text NOT NULL DEFAULT ''
 			miio_devices: UPDATE_PERIOD int(10) NOT NULL DEFAULT '0'
 			miio_devices: NEXT_UPDATE datetime
 			miio_devices: UPDATED datetime
  
 			miio_commands: ID int(10) unsigned NOT NULL auto_increment
 			miio_commands: TITLE varchar(100) NOT NULL DEFAULT ''
-			miio_commands: VALUE text
+			miio_commands: NOTE varchar(100) NOT NULL DEFAULT ''
+			miio_commands: VALUE text NOT NULL DEFAULT ''
 			miio_commands: DEVICE_ID int(10) NOT NULL DEFAULT '0'
 			miio_commands: LINKED_OBJECT varchar(100) NOT NULL DEFAULT ''
 			miio_commands: LINKED_PROPERTY varchar(100) NOT NULL DEFAULT ''
@@ -868,9 +923,9 @@ class xiaomimiio extends module {
 			miio_commands: UPDATED datetime
  
 			miio_queue: ID int(10) unsigned NOT NULL auto_increment
-			miio_queue: DEVICE_ID int(10) NOT NULL DEFAULT '0' 
+			miio_queue: DEVICE_ID int(10) NOT NULL DEFAULT '0'
 			miio_queue: METHOD varchar(100)
-			miio_queue: DATA text 
+			miio_queue: DATA text
 			miio_queue: ADDED datetime
 EOD;
 		

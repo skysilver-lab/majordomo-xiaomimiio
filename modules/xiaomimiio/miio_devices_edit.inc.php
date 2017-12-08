@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.6
+* @version 0.7b
 */
 
 if ($this->owner->name == 'panel') {
@@ -47,6 +47,10 @@ if ($this->mode == 'update') {
 		}
 			
 		$commands = array('online', 'command', 'message');
+		if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+			$commands[] = 'add_program';
+			$commands[] = 'del_program';
+		}
 	}
 
 	if ($ok) {
@@ -71,11 +75,14 @@ if ($this->mode == 'update') {
 				}
 			}
 			
+			// При сохранении настроек устройства выставим статус оффлайн, затем
 			$this->processCommand($rec['ID'], 'online', 0);
-						
-			if ($rec['TOKEN'] != '' && $rec['IP'] != '') $this->requestInfo($rec['ID']);
-			sleep(1);
-			if ((int)$update_period == 0 && $rec['TOKEN'] != '' && $rec['DEVICE_TYPE'] != '') $this->requestStatus($rec['ID']);
+			// если есть токен и IP, запросим сведения miIO.info, 
+			if ($rec['TOKEN'] != '' && $rec['IP'] != '') {
+				$this->requestInfo($rec['ID']);
+				// а также, если определен тип устройства, то запросим текущие параметры (статус).
+				if ((int)$update_period == 0 && $rec['DEVICE_TYPE'] != '') $this->requestStatus($rec['ID']);
+			}
 		}
 	} else {
 		$out['ERR'] = 1;
@@ -91,7 +98,13 @@ if ($this->tab == 'data') {
 		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
 	}
 	
-	$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY ID");
+	if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+		// Для шлюза на вкладку data выводим только определенные свойства, т.к. для свойств радио есть отдельная вкладка
+		$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel') ORDER BY ID");
+	} else {
+		$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY ID");
+	}
+	
 	$total = count($properties);
 	
 	for($i = 0; $i < $total; $i++) {
@@ -134,12 +147,62 @@ if ($this->tab == 'data') {
 			if ($properties[$i]['TITLE'] == 'cct') {
 				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
 			}
+			//if ($properties[$i]['TITLE'] == 'rgb') {
+				//$properties[$i]['SDEVICE_TYPE'] = 'rgb';
+			//}
 			if ($properties[$i]['TITLE'] == 'temperature') {
 				$properties[$i]['SDEVICE_TYPE'] = 'sensor_temp';
 			}
 		}
 	}
 	$out['PROPERTIES'] = $properties;   
+}
+
+if ($this->tab == 'gwradio' && $rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+	
+	$new_id = 0;
+	global $delete_id;
+	
+	if ($delete_id) {
+		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
+	}
+	
+	$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('add_program','del_program','current_program','current_progress','current_volume','current_status','all_program') ORDER BY ID");
+	
+	$total = count($properties);
+	
+	for($i = 0; $i < $total; $i++) {
+		if ($properties[$i]['ID'] == $new_id) continue;
+					
+		if ($this->mode == 'update') {
+			
+			global ${'linked_object'.$properties[$i]['ID']};
+			$properties[$i]['LINKED_OBJECT'] = trim(${'linked_object'.$properties[$i]['ID']});
+			
+			global ${'linked_property'.$properties[$i]['ID']};
+			$properties[$i]['LINKED_PROPERTY'] = trim(${'linked_property'.$properties[$i]['ID']});
+			
+			global ${'linked_method'.$properties[$i]['ID']};
+			$properties[$i]['LINKED_METHOD'] = trim(${'linked_method'.$properties[$i]['ID']});
+			
+			SQLUpdate('miio_commands', $properties[$i]);
+			
+			$old_linked_object = $properties[$i]['LINKED_OBJECT'];
+			$old_linked_property = $properties[$i]['LINKED_PROPERTY'];
+			
+			if ($old_linked_object && $old_linked_object != $properties[$i]['LINKED_OBJECT'] && $old_linked_property && $old_linked_property != $properties[$i]['LINKED_PROPERTY']) {
+				removeLinkedProperty($old_linked_object, $old_linked_property, $this->name);
+			}
+		}
+		
+		$properties[$i]['VALUE'] = str_replace('",','", ',$properties[$i]['VALUE']);
+
+		if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
+			addLinkedProperty($properties[$i]['LINKED_OBJECT'], $properties[$i]['LINKED_PROPERTY'], $this->name);
+		}
+	}
+	$out['PROPERTIES'] = $properties;   
+
 }
 
 if (is_array($rec)) {
