@@ -907,7 +907,7 @@ class xiaomimiio extends module {
 			miio_devices: MODEL varchar(255) NOT NULL DEFAULT ''
 			miio_devices: HW_VER varchar(255) NOT NULL DEFAULT ''
 			miio_devices: SERIAL varchar(255) NOT NULL DEFAULT ''
-			miio_devices: SETTINGS text NOT NULL DEFAULT ''
+			miio_devices: SETTINGS text
 			miio_devices: UPDATE_PERIOD int(10) NOT NULL DEFAULT '0'
 			miio_devices: NEXT_UPDATE datetime
 			miio_devices: UPDATED datetime
@@ -915,7 +915,7 @@ class xiaomimiio extends module {
 			miio_commands: ID int(10) unsigned NOT NULL auto_increment
 			miio_commands: TITLE varchar(100) NOT NULL DEFAULT ''
 			miio_commands: NOTE varchar(100) NOT NULL DEFAULT ''
-			miio_commands: VALUE text NOT NULL DEFAULT ''
+			miio_commands: VALUE text
 			miio_commands: DEVICE_ID int(10) NOT NULL DEFAULT '0'
 			miio_commands: LINKED_OBJECT varchar(100) NOT NULL DEFAULT ''
 			miio_commands: LINKED_PROPERTY varchar(100) NOT NULL DEFAULT ''
