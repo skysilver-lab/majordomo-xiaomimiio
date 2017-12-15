@@ -4,16 +4,21 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.7b
+* @version 0.8b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
 define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
+define ('MIIO_YEELIGHT_STRIP_PROPS', 'power,bright,ct,rgb,color_mode');
+define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct');
+define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct');
 
 define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
+define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct');
 define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
 define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
+define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led,mode');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
 														'1' => 	'Initiating',
@@ -406,7 +411,7 @@ class xiaomimiio extends module {
 	/**
 	* requestStatus
 	*
-	* ...
+	* Запрос статусов устройств
 	*
 	* @access public
 	*/
@@ -468,6 +473,46 @@ class xiaomimiio extends module {
 				$this->addToQueue($device_id, 'get_zigbee_channel', '[]');
 			}
 			$this->addToQueue($device_id, 'get_channels', '{"start":0}');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'philips.light.ceiling') {
+			//
+			$props = explode(',', MIIO_PHILIPS_LIGHT_CEILING_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '['.implode(',',$props).']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling1') {
+			//
+			$props = explode(',', MIIO_YEELIGHT_CEILING_LIGHT_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.lamp1') {
+			//
+			$props = explode(',', MIIO_YEELIGHT_LAMP_LIGHT_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.strip1') {
+			//
+			$props = explode(',', MIIO_YEELIGHT_STRIP_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zimi.powerstrip.v2') {
+			//
+			$props = explode(',', MIIO_ZIMI_POWERSTRIP_2_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		}
 		
 	}
@@ -516,6 +561,35 @@ class xiaomimiio extends module {
 				
 				if ($dev->getInfo(time())) {
 					if ($dev->data == '') $info = 'Сведения miIO.info не получены. Вероятно, указан неверный токен.';
+					 else $info = $dev->data;
+				} else $info = 'Что-то пошло не так...';
+				
+				echo $info;
+				exit;
+			} else if ($op == 'test_api_cmd') {
+				
+				$dip = $_GET['dip'];
+				$dtoken = $_GET['dtoken'];
+				$cmd = $_GET['dcmd'];
+				$opt = $_GET['dopt'];
+				
+				header("HTTP/1.0: 200 OK\n");
+				header('Content-Type: text/html; charset=utf-8');
+					
+				if (!class_exists('miIO', false)) {
+					include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
+				}
+				$this->getConfig();
+			
+				if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+				 else $bind_ip = '0.0.0.0';
+				if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+				 else $miio_debug = false;
+			
+				$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
+				
+				if ($dev->msgSendRcv($cmd, $opt, time())) {
+					if ($dev->data == '') $info = 'Результат выполнения команды не получен. Вероятно, указан неверный токен.';
 					 else $info = $dev->data;
 				} else $info = 'Что-то пошло не так...';
 				
@@ -602,7 +676,7 @@ class xiaomimiio extends module {
 						//что может быть неприемлемо.
 						//$this->requestStatus($properties[$i]['DEVICE_ID']);
 					} elseif ($properties[$i]['TITLE'] == 'power') {
-						// Команда на включение и выключени
+						// Команда на включение и выключение
 						if ($value) {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["on"]');
 						} else {
@@ -620,6 +694,27 @@ class xiaomimiio extends module {
 						if ($value < 1) $value = 1;
 						if ($value > 100) $value = 100;
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_cct', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'ct') {
+						// Команда на изменение цветовой температуры (в кельвинах от 1700 до 6500)
+						$value = (int)$value;
+						if ($value < 1700) $value = 1700;
+						if ($value > 6500) $value = 6500;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_ct_abx', '[' . $value . ',"sudden",200]');
+					} elseif ($properties[$i]['TITLE'] == 'rgb') {
+						// Команда на изменение цвета RGB (от 0 до 16777215)
+						// RGB = (R*65536)+(G*256)+B, где R, G и B десятичные значения от 0 до 255.
+						$value = preg_replace('/^#/', '', $value);
+						$val = hexdec($value);
+						if ($val != 0 && $val < 16777216) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_rgb', '[' . $val . ',"smooth",100]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'wifi_led') {
+						// Команда на включение и выключение индикатора wifi
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_wifi_led', '["on"]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_wifi_led', '["off"]');
+						}
 					}
 					
 					if($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') {
@@ -702,7 +797,7 @@ class xiaomimiio extends module {
 	/**
 	* processMessage
 	*
-	* ...
+	* Обработка ответов от устройств
 	*
 	* @access private
 	*/
@@ -805,6 +900,9 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'rgb') {
+						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
+					}
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
@@ -828,13 +926,62 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
+			} elseif ($device['DEVICE_TYPE'] == 'philips.light.ceiling' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_PHILIPS_LIGHT_CEILING_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.ceiling1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_YEELIGHT_CEILING_LIGHT_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.lamp1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_YEELIGHT_LAMP_LIGHT_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.strip1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_YEELIGHT_STRIP_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					if ($key == 'rgb') {
+						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
+					}
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'zimi.powerstrip.v2' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_ZIMI_POWERSTRIP_2_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					if ($key == 'current' || $key == 'power_consume_rate') {
+						if ($value == '' || $value == 'null' || $value == null) $value = '0.00';
+					}
+					if ($key == 'mode') {
+						if ($value == 'null' || $value == null) $value = '';
+					}
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
 			}
 		}
 		
 		foreach ($res_commands as $c) {
             $cmd = $c['command'];
             $val = $c['value'];
-			if ($cmd == 'power') {
+			if ($cmd == 'power' || $cmd == 'wifi_led') {
 				if ($val == 'on') $val = 1;
 				 else if ($val == 'off') $val = 0;
 			}

@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.7b
+* @version 0.8b
 */
 
 if ($this->owner->name == 'panel') {
@@ -147,9 +147,12 @@ if ($this->tab == 'data') {
 			if ($properties[$i]['TITLE'] == 'cct') {
 				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
 			}
-			//if ($properties[$i]['TITLE'] == 'rgb') {
-				//$properties[$i]['SDEVICE_TYPE'] = 'rgb';
-			//}
+			if ($properties[$i]['TITLE'] == 'ct') {
+				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			}
+			if ($properties[$i]['TITLE'] == 'rgb') {
+				$properties[$i]['SDEVICE_TYPE'] = 'rgb';
+			}
 			if ($properties[$i]['TITLE'] == 'temperature') {
 				$properties[$i]['SDEVICE_TYPE'] = 'sensor_temp';
 			}

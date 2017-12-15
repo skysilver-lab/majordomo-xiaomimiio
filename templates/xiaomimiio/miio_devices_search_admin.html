@@ -41,6 +41,40 @@
 	</div>
 </div>
 
+<div class="modal fade" id="api_test" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<b>Тестирование API-команд</b>
+			</div>
+			<div class="modal-body">			
+				<p>
+					IP:&nbsp&nbsp<b><span id="api_dev_ip"></span></b>&nbsp&nbsp&nbsp
+					Токен:&nbsp&nbsp<b><span id="api_dev_token"></span></b>
+				</p>		
+				<div class="input-group">
+					<span class="input-group-addon" id="basic-addon1">M</span>
+					<input type="text" class="form-control" placeholder="Метод" aria-describedby="basic-addon1" id="api_dev_cmd">
+				</div>
+				<br>
+				<div class="input-group">
+					<span class="input-group-addon" id="basic-addon2">P</span>
+					<input type="text" class="form-control" placeholder="Параметры" aria-describedby="basic-addon2" id="api_dev_opt">
+				</div>
+				<br>
+				<div>
+					<button class="btn btn-primary" onclick="sendAPIcmd();">Отправить&nbsp;&nbsp;<span class="glyphicon glyphicon-send icon-white"></span></button>
+				</div>
+				<br>
+				<div>
+					<pre class="pre-scrollable" id="api_dev_log" style="word-wrap: break-word;"></pre>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
 <form action="?" method="post" name="frmList_miio_devices" style="padding:0px" class="form">
 <table  align=center class="table table-striped">
 <tbody>
@@ -55,6 +89,41 @@
 			cache: false,
 			success: function(html){
 				$("#info").html(html);
+			}
+		});
+	}
+	function getIPToken(ip,token){
+		$("#api_dev_ip").html(ip);
+		$("#api_dev_token").html(token);
+		$("#api_dev_log").html('');
+		Data = new Date();
+		Hour = Data.getHours();
+		Minutes = Data.getMinutes();
+		Seconds = Data.getSeconds();
+		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' IP = '+ip+'<br>');
+		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' Token = '+token+'<br>');
+	}
+	function sendAPIcmd(){
+		ip = $("#api_dev_ip").html();
+		token = $("#api_dev_token").html();
+		cmd = $("#api_dev_cmd").val();
+		opt = $("#api_dev_opt").val();
+		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip="+ip+"&dtoken="+token+"&dcmd="+cmd+"&dopt="+opt;
+		
+		Data = new Date();
+		Hour = Data.getHours();
+		Minutes = Data.getMinutes();
+		Seconds = Data.getSeconds();
+
+		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' command = '+cmd+'<br>');
+		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' properties = '+opt+'<br>');
+		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+		
+		$.ajax({
+			url: url,
+			cache: false,
+			success: function(html){
+				$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' '+html);
 			}
 		});
 	}
@@ -80,7 +149,10 @@
 		[#if TOKEN!="" && ONLINE==1#]
 			<span class='support'>
 				<i onclick="showInfo('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#miio_info" onMouseOver="this.style.color='blue'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-info-sign" title="Получить сведения miIO.info" id="[#IP#]"></i>
-			</span>	
+			</span>
+			<span class='support'>
+				<i onclick="getIPToken('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#api_test" onMouseOver="this.style.color='green'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-flash" title="Тестировать API-команды" id="[#IP#]"></i>
+			</span>
 		[#endif#]
 	[#else#]
 		&nbsp;
