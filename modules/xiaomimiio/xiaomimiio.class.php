@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.8b
+* @version 0.9b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -18,7 +18,9 @@ define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct');
 define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
 define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
-define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led,mode');
+define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
+
+define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,mode,temp_dec,humidity,buzzer,led_b,led');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
 														'1' => 	'Initiating',
@@ -513,6 +515,14 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
+			//
+			$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		}
 		
 	}
@@ -682,6 +692,13 @@ class xiaomimiio extends module {
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
 						}
+					} elseif ($properties[$i]['TITLE'] == 'buzzer') {
+						// Команда на включение и выключение
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_buzzer', '["on"]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_buzzer', '["off"]');
+						}
 					} elseif ($properties[$i]['TITLE'] == 'bright') {
 						// Команда на изменение яркости (в % от 1 до 100)
 						$value = (int)$value;
@@ -715,6 +732,10 @@ class xiaomimiio extends module {
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_wifi_led', '["off"]');
 						}
+					} elseif ($properties[$i]['TITLE'] == 'ir_play') {
+						// Команда для отправки IR-кода
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'miIO.ir_play', '{"freq":38400,"code":"' . $value . '"}');
+						//{"id":1,"method":"miIO.ir_play","params":{"freq":38400,"code":"Z6VHABACAABE...QA="}}
 					}
 					
 					if($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') {
@@ -745,6 +766,15 @@ class xiaomimiio extends module {
 								}
 							}
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'remove_channels', '{"chs":[{"id":' . $value . ',"url":"' . $ch_url . '","type":0}]}');
+						}
+					}
+					
+					if($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
+						if ($properties[$i]['TITLE'] == 'mode') {
+							// Изменение режима (silent, medium, high)
+							if ($value == 'silent' || $value == 'medium' || $value == 'high') {
+								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
+							}
 						}
 					}
 					
@@ -975,13 +1005,41 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
+			} elseif ($device['DEVICE_TYPE'] == 'zhimi.humidifier.v1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					if ($key == 'temp_dec') {
+						$value = $value / 10;
+						$key = 'temperature';
+					}
+					if ($key == 'led_b') {
+						switch($value) {
+							case 0:
+								$value = 'bright';
+								break;
+							case 1:
+								$value = 'dim';
+								break;
+							case 2:
+								$value = 'off';
+								break;
+							default:
+								$value = 'unknown';
+								break;
+						}
+					}
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
 			}
 		}
 		
 		foreach ($res_commands as $c) {
             $cmd = $c['command'];
             $val = $c['value'];
-			if ($cmd == 'power' || $cmd == 'wifi_led') {
+			if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer') {
 				if ($val == 'on') $val = 1;
 				 else if ($val == 'off') $val = 0;
 			}

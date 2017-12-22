@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.8b
+* @version 0.9b
 */
 
 if ($this->owner->name == 'panel') {
@@ -51,6 +51,10 @@ if ($this->mode == 'update') {
 			$commands[] = 'add_program';
 			$commands[] = 'del_program';
 		}
+		if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
+			$commands[] = 'ir_play';
+		}
+		
 	}
 
 	if ($ok) {
@@ -141,6 +145,12 @@ if ($this->tab == 'data') {
 			if ($properties[$i]['TITLE'] == 'power') {
 				$properties[$i]['SDEVICE_TYPE'] = 'relay';
 			}
+			if ($properties[$i]['TITLE'] == 'buzzer') {
+				$properties[$i]['SDEVICE_TYPE'] = 'relay';
+			}
+			if ($properties[$i]['TITLE'] == 'wifi_led') {
+				$properties[$i]['SDEVICE_TYPE'] = 'relay';
+			}
 			if ($properties[$i]['TITLE'] == 'bright') {
 				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
 			}
@@ -155,6 +165,15 @@ if ($this->tab == 'data') {
 			}
 			if ($properties[$i]['TITLE'] == 'temperature') {
 				$properties[$i]['SDEVICE_TYPE'] = 'sensor_temp';
+			}
+			if ($properties[$i]['TITLE'] == 'humidity') {
+				$properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
+			}
+			if ($properties[$i]['TITLE'] == 'current') {
+				$properties[$i]['SDEVICE_TYPE'] = 'sensor_current';
+			}
+			if ($properties[$i]['TITLE'] == 'power_consume_rate') {
+				$properties[$i]['SDEVICE_TYPE'] = 'sensor_power';
 			}
 		}
 	}

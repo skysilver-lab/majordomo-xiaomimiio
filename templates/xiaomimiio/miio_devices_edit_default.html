@@ -41,15 +41,16 @@
 			<div class="col-lg-4">
 				<select name="device_type" class="form-control">
 					<option value=""></option>
+					<option value="zhimi.humidifier.v1" [#if DEVICE_TYPE="zhimi.humidifier.v1"#] selected[#endif#]>Mi Air Humidifier</option>
+					<option value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]>Mi IR Remote 360</option>
+					<option value="yeelink.light.lamp1" [#if DEVICE_TYPE="yeelink.light.lamp1"#] selected[#endif#]>Mi LED Desk Lamp</option>
 					<option value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]>Mi Smart Home Gateway 2</option>
-					<option value="chuangmi.plug.m1" [#if DEVICE_TYPE="chuangmi.plug.m1"#] selected[#endif#]>Mi Smart Socket Plug 2</option>
 					<option value="zimi.powerstrip.v2" [#if DEVICE_TYPE="zimi.powerstrip.v2"#] selected[#endif#]>Mi Smart Power Strip 6 Plugs</option>
+					<option value="chuangmi.plug.m1" [#if DEVICE_TYPE="chuangmi.plug.m1"#] selected[#endif#]>Mi Smart Socket Plug 2</option>			
 					<option value="isa.camera.isc5" [#if DEVICE_TYPE="isa.camera.isc5"#] selected[#endif#]>Mi Square Smart Camera</option>
 					<option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Mi Vacuum Cleaner</option>
-					<option value="yeelink.light.lamp1" [#if DEVICE_TYPE="yeelink.light.lamp1"#] selected[#endif#]>Mi LED Desk Lamp</option>
-					<option value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]>Mi IR Remote 360</option>
-					<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips EyeCare Smart Desk Lamp 2</option>
 					<option value="philips.light.ceiling" [#if DEVICE_TYPE="philips.light.ceiling"#] selected[#endif#]>Philips EyeCare Smart Ceiling Lamp</option>
+					<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips EyeCare Smart Desk Lamp 2</option>
 					<option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
 					<option value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]>Yeelight Color Bulb</option>
 					<option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
