@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.9b
+* @version 0.9.5b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -14,13 +14,14 @@ define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct');
 define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct');
 
 define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
-define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct');
+define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct,snm,dv,bl,ac');
+
 define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
 define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
 define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
 
-define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,mode,temp_dec,humidity,buzzer,led_b,led');
+define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,mode,temp_dec,humidity,buzzer,led_b');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
 														'1' => 	'Initiating',
@@ -736,6 +737,30 @@ class xiaomimiio extends module {
 						// Команда для отправки IR-кода
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'miIO.ir_play', '{"freq":38400,"code":"' . $value . '"}');
 						//{"id":1,"method":"miIO.ir_play","params":{"freq":38400,"code":"Z6VHABACAABE...QA="}}
+					} elseif ($properties[$i]['TITLE'] == 'snm') {
+						// Установить фиксированные сцены (1-Яркий, 2-ТВ, 3-тёплый, 4-ночь)
+						if ($value < 1) $value = 1;
+						if ($value > 4) $value = 4;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'apply_fixed_scene', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'dv') {
+						// Таймер отключения (в секундах)
+						if ($value < 0) $value = 1;
+						if ($value > 21600) $value = 21600;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'delay_off', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'bl') {
+						// Интеллектуальный ночник
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_bl', '[1]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_bl', '[0]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'ac') {
+						// Автонастройка цветовой температуры
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_ac', '[1]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_ac', '[0]');
+						}
 					}
 					
 					if($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') {
@@ -775,6 +800,24 @@ class xiaomimiio extends module {
 							if ($value == 'silent' || $value == 'medium' || $value == 'high') {
 								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
 							}
+						}
+						if ($properties[$i]['TITLE'] == 'led_b') {
+							// Управление светодиодом (подсветкой)
+							switch($value) {
+								case 'bright':
+									$value = 0;
+									break;
+								case 'dim':
+									$value = 1;
+									break;
+								case 'off':
+									$value = 2;
+									break;
+								default:
+									$value = 0;
+								break;
+							}
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led_b', "[$value]");
 						}
 					}
 					
