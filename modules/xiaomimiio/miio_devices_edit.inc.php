@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.9b
+* @version 1.0b
 */
 
 if ($this->owner->name == 'panel') {
@@ -14,7 +14,7 @@ $table_name = 'miio_devices';
 $rec = SQLSelectOne("SELECT * FROM $table_name WHERE ID='$id'");
 
 if ($this->mode == 'update') {
-	
+
 	$this->getConfig();
 	$ok = 1;
 	
@@ -86,6 +86,34 @@ if ($this->mode == 'update') {
 				$this->requestInfo($rec['ID']);
 				// а также, если определен тип устройства, то запросим текущие параметры (статус).
 				if ((int)$update_period == 0 && $rec['DEVICE_TYPE'] != '') $this->requestStatus($rec['ID']);
+				// Если тип устройства не указан, то пробуем получить тип устройства из miIO.info
+				if ($rec['DEVICE_TYPE'] == '') {
+					if ($this->config['API_LOG_DEBMES']) DebMes('Try to get device model from miIO.info for the device ' . $rec['IP'], 'xiaomimiio');
+					
+					$this->getConfig();
+					
+					if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+					 else $bind_ip = '0.0.0.0';
+					if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+					 else $miio_debug = false;
+					
+					if (!class_exists('miIO', false)) {
+						include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
+					}
+					$midev = new miIO($rec['IP'], $bind_ip, $rec['TOKEN'], $miio_debug);
+					if ($midev->getInfo(time())) {
+						if ($midev->data != '') {
+							$info = json_decode($midev->data, true);
+							$dev_type = $info['result']['model'];
+							if ($this->config['API_LOG_DEBMES']) DebMes($rec['IP'] . ' is ' . $dev_type, 'xiaomimiio');
+							if ($dev_type != '') {
+								$rec['DEVICE_TYPE'] = $dev_type;
+								SQLUpdate($table_name, $rec);
+								$this->requestStatus($rec['ID']);						
+							}
+						}
+					}
+				}
 			}
 		}
 	} else {
@@ -94,7 +122,7 @@ if ($this->mode == 'update') {
 }
 
 if ($this->tab == 'data') {
-	
+
 	$new_id = 0;
 	global $delete_id;
 	

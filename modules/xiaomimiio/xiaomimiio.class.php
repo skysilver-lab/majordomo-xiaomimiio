@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.9.5b
+* @version 1.0b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -313,16 +313,16 @@ class xiaomimiio extends module {
 			include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
 		}
 		
-		$dev = new miIO(null, $bind_ip, null, $miio_debug);
+		$midev = new miIO(null, $bind_ip, null, $miio_debug);
 		
 		// Выполняем broadcast-поиск устройств в локальной сети
 		if ($this->config['API_LOG_DEBMES']) DebMes("Run miIO-discover command", 'xiaomimiio');
-		$res = $dev->discover();
+		$res = $midev->discover();
 		if ($this->config['API_LOG_DEBMES']) DebMes("End miIO-discover command", 'xiaomimiio');
 		
 		if ($res) {
 			// Обрабатываем результат поиска
-			$reply = $dev->data;
+			$reply = $midev->data;
 			
 			if ($reply != '') {
 				if ($this->config['API_LOG_DEBMES']) DebMes("Reply = $reply", 'xiaomimiio');
@@ -353,7 +353,7 @@ class xiaomimiio extends module {
 						
 							if ($this->config['API_LOG_DEBMES']) DebMes("Update the ip address and the token for the device $ip", 'xiaomimiio');
 							SQLUpdate('miio_devices', $dev_rec);
-						
+							
 							// Ответившее устройство выкинем из претендентов на оффлайн
 							for ($i = 0; $i < $count_devices; $i++) {
 								if ($dev_rec['ID'] == $all_devices[$i]['ID']) {
@@ -364,7 +364,7 @@ class xiaomimiio extends module {
 						
 							$this->processCommand($dev_rec['ID'], 'online', 1);
 						} else {
-							// Если устройство нет в БД, то добавим его и установим свойство online
+							// Если устройство нет в БД, то добавим его
 							$dev_rec = array();
 							$dev_rec['IP'] = $ip;
 							if ($token != '') $dev_rec['TOKEN'] = $token;
@@ -373,7 +373,36 @@ class xiaomimiio extends module {
 							$dev_rec['DEVICE_TYPE_CODE'] = $device_type_code;
 							$dev_rec['TITLE'] = 'New ' . $dev_rec['DEVICE_TYPE_CODE'];
 							if ($this->config['API_LOG_DEBMES']) DebMes("Add new device with $ip", 'xiaomimiio');
+							
+							// Если есть токен, то пробуем получить тип устройства из miIO.info
+							if ($dev_rec['TOKEN']) {
+								if ($this->config['API_LOG_DEBMES']) DebMes('Try to get device model from miIO.info for the device ' . $dev_rec['IP'], 'xiaomimiio');
+								$midev->data = '';
+								$midev->ip = $dev_rec['IP'];
+								$midev->token = $dev_rec['TOKEN'];	
+								if ($midev->getInfo(time())) {
+									if ($midev->data != '') {
+										$info = json_decode($midev->data, true);
+										$dev_type = $info['result']['model'];
+										if ($this->config['API_LOG_DEBMES']) DebMes($dev_rec['IP'] . ' is ' . $dev_type, 'xiaomimiio');
+										if ($dev_type != '') $dev_rec['DEVICE_TYPE'] = $dev_type;
+									}
+								}
+							}
+							
 							$dev_rec['ID'] = SQLInsert('miio_devices', $dev_rec);
+							
+							if ($dev_rec['DEVICE_TYPE'] != '') {
+								$this->requestStatus($dev_rec['ID']);
+								if ($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+									$this->processCommand($dev_rec['ID'], 'add_program', '');
+									$this->processCommand($dev_rec['ID'], 'del_program', '');
+								}
+								if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
+									$this->processCommand($dev_rec['ID'], 'ir_play', '');
+								}
+							}
+							
 							$this->processCommand($dev_rec['ID'], 'online', 1);
 						}
 					}
@@ -631,7 +660,7 @@ class xiaomimiio extends module {
 	*/
 	
 	function edit_miio_devices(&$out, $id) {
-	
+
 		require(DIR_MODULES.$this->name . '/miio_devices_edit.inc.php');
 	
 	}
@@ -925,10 +954,11 @@ class xiaomimiio extends module {
 			} 
 		} elseif ($device['ID']) {
 			
-			$res_commands[] = array('command' => 'message', 'value' => $message);
 			$res_commands[] = array('command' => 'online', 'value' => 1);
-
+			$res_commands[] = array('command' => 'command', 'value' => '');
+			$res_commands[] = array('command' => 'message', 'value' => $message);
 			
+	
 			if ($device['DEVICE_TYPE'] == 'lumi.gateway.v3') {
 				if ($command == 'get_prop_fm' && is_array($data['result'])) {
 					foreach($data['result'] as $key => $value) {

@@ -137,7 +137,7 @@
  </td>
  <td style="vertical-align:middle">
 	[#if DEVICE_TYPE!=""#]
-		<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="40px">
+		<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="40px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
 	[#else#]
 		<img src="../templates/xiaomimiio/img/small/unknown.png" height="36px">
 	[#endif#]

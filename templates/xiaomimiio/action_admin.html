@@ -20,7 +20,7 @@
 			<div class="modal-body">
 				<div class="float-right">
 					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.0.9.5b</b></p>
+					<br><br><p><b>v.1.0b</b></p>
 				</div>
                 <p class="float-left">
 					Модуль поддержки Wi-Fi устройств из экосистемы Xiaomi Mihome, взаимодействующих по протоколу miIO. <br><br>
@@ -130,18 +130,26 @@
 			<li[#if TAB="gwradio"#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwradio">Радио</a>
 			</li>
+			<li[#if TAB="gwzigbee"#] class="active"[#endif#]>
+				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwzigbee">Zigbee</a>
+			</li>
 			[#endif DEVICE_TYPE#]
 		</ul>
-		&nbsp;<br/><br/>
 	[#endif ID#]
 	[#if TAB=""#]
+		&nbsp;<br/><br/>
 		[#inc miio_devices_edit_default.html#]
 	[#endif TAB#]
 	[#if TAB="data"#]
+		&nbsp;<br/><br/>
 		[#inc miio_devices_edit_data.html#]
 	[#endif TAB#]
 	[#if TAB="gwradio"#]
+		&nbsp;<br/><br/>
 		[#inc miio_devices_edit_gwradio.html#]
+	[#endif TAB#]
+	[#if TAB="gwzigbee"#]
+		[#inc miio_devices_edit_gwzigbee.html#]
 	[#endif TAB#]
  [#endif VIEW_MODE#]
  <!-- / table miio_devices edit -->
