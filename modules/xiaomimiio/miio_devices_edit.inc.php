@@ -1,8 +1,8 @@
 <?php
 /*
 * @author <skysilver.da@gmail.com>
-* @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.0b
+* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 1.1b
 */
 
 if ($this->owner->name == 'panel') {
@@ -53,6 +53,10 @@ if ($this->mode == 'update') {
 		}
 		if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
 			$commands[] = 'ir_play';
+		}
+		if ($rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
+			$commands[] = 'vol_up';
+			$commands[] = 'vol_down';
 		}
 		
 	}

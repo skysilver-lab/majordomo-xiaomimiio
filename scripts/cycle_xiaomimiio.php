@@ -2,8 +2,8 @@
 /**
 * Xiaomi miIO Cycle
 * @author <skysilver.da@gmail.com>
-* @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 0.8b
+* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 1.1b
 */
 
 chdir(dirname(__FILE__) . '/../');

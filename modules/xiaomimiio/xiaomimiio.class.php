@@ -3,8 +3,8 @@
 * Xiaomi miIO 
 * @package project
 * @author <skysilver.da@gmail.com>
-* @copyright 2017 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.0b
+* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 1.1b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -12,6 +12,7 @@ define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mod
 define ('MIIO_YEELIGHT_STRIP_PROPS', 'power,bright,ct,rgb,color_mode');
 define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct');
 define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct');
+define ('MIIO_YEELIGHT_BSLAMP1_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flowing,pdo_status,save_state,flow_params,nl_br,nighttime,miband_sleep');
 
 define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
 define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct,snm,dv,bl,ac');
@@ -22,6 +23,8 @@ define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
 define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
 
 define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,mode,temp_dec,humidity,buzzer,led_b');
+
+define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
 														'1' => 	'Initiating',
@@ -342,6 +345,11 @@ class xiaomimiio extends module {
 							
 						if (preg_match('/^[0fF]+$/', $token)) $token = '';
 						
+						if (preg_match('/^[0fF]+$/', $device_type_code) || preg_match('/^[0fF]+$/', $device_serial)) {
+							if ($this->config['API_LOG_DEBMES']) DebMes("Device $ip has wrong type code $device_type_code and serial number $device_serial", 'xiaomimiio');
+							continue;
+						}
+						
 						//TO-DO: новые сравниваются по sid и devcode, но если устройство было добавлено вручную, то эти параметры будут отсутствовать,
 						//соотвественно устройство добавится как новое, а не перезапишет (обновит) добавленно вручную.
 						$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='$device_type_code' AND SERIAL='$device_serial'");
@@ -400,6 +408,10 @@ class xiaomimiio extends module {
 								}
 								if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
 									$this->processCommand($dev_rec['ID'], 'ir_play', '');
+								}
+								if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
+									$this->processCommand($dev_rec['ID'], 'vol_up', '');
+									$this->processCommand($dev_rec['ID'], 'vol_down', '');
 								}
 							}
 							
@@ -548,6 +560,22 @@ class xiaomimiio extends module {
 		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
 			//
 			$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.bslamp1') {
+			//
+			$props = explode(',', MIIO_YEELIGHT_BSLAMP1_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
+			//
+			$props = explode(',', MIIO_MIWIFISPEAKER_V1_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
 				$props[$i] = '"' . $props[$i] . '"';
@@ -790,14 +818,26 @@ class xiaomimiio extends module {
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_ac', '[0]');
 						}
+					} elseif ($properties[$i]['TITLE'] == 'vol_up') {
+						// Команда увеличения громкости на указанную величину
+						$value = (int)$value;
+						if ($value < 1) $value = 1;
+						if ($value > 100) $value = 100;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'vol_up', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'vol_down') {
+						// Команда уменьшения громкости на указанную величину
+						$value = (int)$value;
+						if ($value < 1) $value = 1;
+						if ($value > 100) $value = 100;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'vol_down', "[$value]");
 					}
 					
 					if($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') {
 						if ($properties[$i]['TITLE'] == 'current_volume') {
 							// Изменение громкости
 							$value = (int)$value;
-							if ($value < 1) $value = 1;
-							if ($value > 15) $value = 15;
+							if ($value < 0) $value = 0;
+							if ($value > 100) $value = 100;
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'volume_ctrl_fm', '["' . $value . '"]');
 						} else if ($properties[$i]['TITLE'] == 'current_status') {
 							// Команды управления проигрыванием (on, off, toggle, next, prev)
@@ -1106,6 +1146,23 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
+			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.bslamp1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_YEELIGHT_BSLAMP1_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					if ($key == 'rgb') {
+						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
+					}
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1' && $command == 'get_prop' && is_array($data['result'])) {
+				foreach(json_decode($data['result'][0],true) as $key => $value) {
+					$res_commands[] = array('command' => $key, 'value' => $value);
+				}
+				$res_commands[] = array('command' => 'volume', 'value' => $data['result'][1]);
+				$res_commands[] = array('command' => 'rel_time', 'value' => $data['result'][2]);				
 			}
 		}
 		

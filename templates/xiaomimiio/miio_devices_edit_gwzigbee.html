@@ -34,6 +34,8 @@
 		10: 'sensor_ht',
 		11: 'plug',
 		12: '86sw2',
+		14: '86sw1',
+		15: 'smoke',
 		19: 'weather.v1',
 		20: 'ctrl_ln1',
 		21: 'ctrl_ln2',
@@ -41,10 +43,9 @@
 		53: 'sensor_magnet.aq2',
 		55: 'sensor_wleak.aq1',
 		1001: 'sensor_switch.aq2',
-		1002: '86sw1',
-		1003: 'smoke',
-		1004: 'natgas',
-		1005: '86plug'
+		1002: 'curtain',
+		1003: 'natgas',
+		1004: '86plug'
 	};
 	
 	function getZigbeeDevices(ip,token){
@@ -121,7 +122,8 @@
 				url: url,
 				cache: false,
 				success: function(html){
-					$("#gw_upd_zigbee_alert").html('<pre class="pre-scrollable" id="gw_upd_zigbee_alert" style="word-wrap: break-word;">'+html+'</pre>');
+					$("#gw_upd_zigbee_alert").html('<div class="alert alert-success" role="alert" id="gw_upd_zigbee_alert">Устройство удалено.</div>');
+					setTimeout(getZigbeeDevices('[#IP#]','[#TOKEN#]'), 1000);
 				}
 			});	
 		}
