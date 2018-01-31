@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.1b
+* @version 1.1.5b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
@@ -736,9 +736,15 @@ class xiaomimiio extends module {
 				if ($properties[$i]['TOKEN'] != '') {
 					
 					if ($properties[$i]['TITLE'] == 'command') {
-						// Отправка любой команды (метода) без параметров.
-						// Например, miIO.info, toggle, app_start и др.
-						$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+						if ($value == 'prop_update') {
+							// Обновление сведений об устройстве по запросу
+							$this->requestStatus($properties[$i]['DEVICE_ID']);
+							if ($this->config['API_LOG_DEBMES']) DebMes('Manual update the properties of the device ' . $properties[$i]['DEVICE_ID'], 'xiaomimiio');
+						} else {
+							// Отправка любой команды (метода) без параметров.
+							// Например, miIO.info, toggle, app_start и др.
+							$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+						}
 						//TO-DO: после отправки команды желательно обновить сведения об устройстве,
 						//но при этом перезапишется поле message (удалится результат выполнения команды),
 						//что может быть неприемлемо.
