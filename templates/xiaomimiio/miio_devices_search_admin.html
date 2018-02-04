@@ -12,7 +12,7 @@
 <!-- paging -->
 [#if PAGES#]
 <table border=0>
-<td align=right><b>Pages:</b>&nbsp;</td>
+<td align=right><b><#LANG_PAGES#>:</b>&nbsp;</td>
 [#begin PREVPAGE#]<td><a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&mode=<#MODE#>&save_qry=1&page=[#NUM#]">&lt;&lt;&lt;</a></td>[#end PREVPAGE#]
 <td>
 [#begin PAGES#]
@@ -35,7 +35,7 @@
 				<div id="info" style="word-wrap:break-word"></div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-success" data-dismiss="modal">Закрыть</button>
+				<button type="button" class="btn btn-success" data-dismiss="modal"><#LANG_XIMI_APP_CLOSE#></button>
 			</div>
 		</div>
 	</div>
@@ -45,26 +45,26 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-				<b>Тестирование API-команд</b>
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
+				<b><#LANG_XIMI_APP_TESTING#></b>
 			</div>
 			<div class="modal-body">			
 				<p>
 					IP:&nbsp&nbsp<b><span id="api_dev_ip"></span></b>&nbsp&nbsp&nbsp
-					Токен:&nbsp&nbsp<b><span id="api_dev_token"></span></b>
+					<#LANG_XIMI_APP_TOKEN#>:&nbsp&nbsp<b><span id="api_dev_token"></span></b>
 				</p>		
 				<div class="input-group">
 					<span class="input-group-addon" id="basic-addon1">M</span>
-					<input type="text" class="form-control" placeholder="Метод" aria-describedby="basic-addon1" id="api_dev_cmd">
+					<input type="text" class="form-control" placeholder="<#LANG_METHOD#>" aria-describedby="basic-addon1" id="api_dev_cmd">
 				</div>
 				<br>
 				<div class="input-group">
 					<span class="input-group-addon" id="basic-addon2">P</span>
-					<input type="text" class="form-control" placeholder="Параметры" aria-describedby="basic-addon2" id="api_dev_opt">
+					<input type="text" class="form-control" placeholder="<#LANG_XIMI_APP_OPTIONS#>" aria-describedby="basic-addon2" id="api_dev_opt">
 				</div>
 				<br>
 				<div>
-					<button class="btn btn-primary" onclick="sendAPIcmd();">Отправить&nbsp;&nbsp;<span class="glyphicon glyphicon-send icon-white"></span></button>
+					<button class="btn btn-primary" onclick="sendAPIcmd();"><#LANG_SEND#>&nbsp;&nbsp;<span class="glyphicon glyphicon-send icon-white"></span></button>
 				</div>
 				<br>
 				<div>
@@ -148,10 +148,10 @@
 		&nbsp;
 		[#if TOKEN!="" && ONLINE==1#]
 			<span class='support'>
-				<i onclick="showInfo('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#miio_info" onMouseOver="this.style.color='blue'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-info-sign" title="Получить сведения miIO.info" id="[#IP#]"></i>
+				<i onclick="showInfo('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#miio_info" onMouseOver="this.style.color='blue'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-info-sign" title="<#LANG_XIMI_APP_GET#>" id="[#IP#]"></i>
 			</span>
 			<span class='support'>
-				<i onclick="getIPToken('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#api_test" onMouseOver="this.style.color='green'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-flash" title="Тестировать API-команды" id="[#IP#]"></i>
+				<i onclick="getIPToken('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#api_test" onMouseOver="this.style.color='green'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-flash" title="<#LANG_XIMI_APP_TESTING#>" id="[#IP#]"></i>
 			</span>
 		[#endif#]
 	[#else#]
@@ -162,7 +162,7 @@
 	[#if TOKEN!=""#]
 		[#TOKEN#]
 	[#else#]
-		<h6>Требуется токен устройства</h6>
+		<h6><#LANG_XIMI_APP_REQUIRED#></h6>
 	[#endif#]
  </td>
  <td style="vertical-align:middle">
@@ -175,9 +175,9 @@
  <td style="vertical-align:middle">
 	[#if ONLINE!=""#]
 		[#if ONLINE==1#]
-			<span class="label label-success" title="Устройство в сети">Online</span>
+			<span class="label label-success" title="<#LANG_XIMI_APP_ONLINE#>">Online</span>
 		[#else#]
-			<span class="label label-warning" title="Устройство не доступно">Offline</span>
+			<span class="label label-warning" title="<#LANG_XIMI_APP_OFFLINE#>">Offline</span>
 		[#endif#]
 	[#else#]
 		&nbsp;
@@ -193,9 +193,9 @@
  <td style="vertical-align:middle" width="1%" nowrap>
 	<div style="width:130px">
 	[#if "<#ACTION#>"=="admin"#]
-		<a href="?data_source=<#DATA_SOURCE#>&view_mode=propupd_miio_devices&id=[#ID#]" class="btn btn-default [#if TOKEN=="" || ONLINE==0 || DEVICE_TYPE==""#]disabled[#endif#]" title="Получить актуальное состояние"><i class="glyphicon glyphicon-refresh"></i></a>
-		<a href="?data_source=<#DATA_SOURCE#>&view_mode=edit_miio_devices&id=[#ID#]" class="btn btn-default" title="Редактировать"><i class="glyphicon glyphicon-pencil"></i></a>
-		<a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_miio_devices&id=[#ID#]" onClick="return confirm('Вы уверены? Пожалуйста, подтвердите.')" class="btn btn-default" title="Удалить"><i class="glyphicon glyphicon-remove"></i></a>
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=propupd_miio_devices&id=[#ID#]" class="btn btn-default [#if TOKEN=="" || ONLINE==0 || DEVICE_TYPE==""#]disabled[#endif#]" title="<#LANG_XIMI_APP_CURRENT#>"><i class="glyphicon glyphicon-refresh"></i></a>
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=edit_miio_devices&id=[#ID#]" class="btn btn-default" title="<#LANG_EDIT#>"><i class="glyphicon glyphicon-pencil"></i></a>
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_miio_devices&id=[#ID#]" onClick="return confirm('<#LANG_STRING_DELETE_CONFIRM#>')" class="btn btn-default" title="<#LANG_DELETE#>"><i class="glyphicon glyphicon-remove"></i></a>
 	[#endif ACTION#]
 	</div>
  </td>
@@ -210,7 +210,7 @@
 <!-- paging -->
 [#if PAGES#]
 <table border=0>
-<td align=right><b>Pages:</b>&nbsp;</td>
+<td align=right><b><#LANG_PAGES#>:</b>&nbsp;</td>
 [#begin PREVPAGE#]<td><a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&mode=<#MODE#>&save_qry=1&page=[#NUM#]">&lt;&lt;&lt;</a></td>[#end PREVPAGE#]
 <td>
 [#begin PAGES#]

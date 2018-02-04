@@ -5,7 +5,7 @@
  [#if VIEW_MODE="search_miio_devices" || VIEW_MODE=""#]
 
 <div class="float-right">
-	<button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#about">О модуле&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
+	<button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#about"><#LANG_XIMI_APP_ABOUT#>&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
 	</button>
 </div>
 
@@ -14,34 +14,34 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
 				<h4 class="modal-title">Xiaomi miIO</h4>
 			</div>
 			<div class="modal-body">
 				<div class="float-right">
 					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.1.2b</b></p>
+					<br><br><p><b>v.1.1.5b</b></p>
 				</div>
                 <p class="float-left">
-					Модуль поддержки Wi-Fi устройств из экосистемы Xiaomi Mihome, взаимодействующих по протоколу miIO. <br><br>
-					Обсуждение модуля на <a href="https://majordomo.smartliving.ru/forum/viewtopic.php?f=5&t=4863" target="_blank">форуме</a>.<br>
-					Проект на <a href="https://github.com/skysilver-lab/majordomo-xiaomimiio" target="_blank">Github</a>.<br>
-					Проект в <a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a>.<br>
+					<#LANG_XIMI_APP_MODULE#><br><br>
+					<#LANG_XIMI_APP_DISCUS#> <a href="https://majordomo.smartliving.ru/forum/viewtopic.php?f=5&t=4863" target="_blank"><#LANG_XIMI_APP_DISCUS2#></a>.<br>
+					<#LANG_XIMI_APP_PROJ#> <a href="https://github.com/skysilver-lab/majordomo-xiaomimiio" target="_blank">Github</a>.<br>
+					<#LANG_XIMI_APP_PROJ#> <a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a>.<br>
 				</p>
 				<hr size="1">
 				<p class="float-left">
-				Поддержать разработку и развитие модуля:
+				<#LANG_XIMI_APP_DONATE#>
 				<ul>
 					<li>Yandex: <a href="https://money.yandex.ru/to/410011205062626" target="_blank">410011205062626</a></li>
 					<li>PayPal: <a href="https://www.paypal.me/skysilver" target="_blank">paypal.me/skysilver</a></li>
-					<li>Внутренний счет в <a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a></li>
+					<li><#LANG_XIMI_APP_DONATE2#><a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a></li>
 				</ul>
                 </p>
-				<h6>Благодарности: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>, <b>Genplane</b>.</h6>
+				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>.</h6>
 			</div>
 			<div class="modal-footer">
-				<div class="pull-left">Автор: <a href="https://telegram.me/agafonov_d" target="_blank">skysilver</a></div>
-				<button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+				<div class="pull-left"><#LANG_XIMI_APP_Author#>: <a href="https://telegram.me/agafonov_d" target="_blank">skysilver</a></div>
+				<button type="button" class="btn btn-default" data-dismiss="modal"><#LANG_XIMI_APP_CLOSE#></button>
 			</div>
 		</div>
 	</div>
@@ -53,9 +53,9 @@
 	<a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>
 	&nbsp;&nbsp;&nbsp;
 	[#if CYCLERUN==1#]
-		<span class="label label-success" title="Статус цикла">Цикл запущен</span>
+		<span class="label label-success" title="Статус цикла"><#LANG_XIMI_APP_CYCLE_START#></span>
 	[#else#]
-		<span class="label label-danger" title="Статус цикла">Цикл остановлен</span>
+		<span class="label label-danger" title="Статус цикла"><#LANG_XIMI_APP_CYCLE_STOP#></span>
 	[#endif#]
 </div>
 
@@ -64,16 +64,16 @@
     <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
         <fieldset>
             <div class="form-group">
-                <label class="control-label">IP сервера MajorDoMo 
-				<span class='support' tabindex="1" data-title="Необходимо указать для корректной работы на сервере с двумя и более сетевыми интерфейсами.">
+                <label class="control-label"><#LANG_XIMI_APP_IP#>
+				<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_IP_TOOLTIP#>">
 					<i class="glyphicon glyphicon-info-sign"></i>
 				</span>
                 </label>
                 <div class="col-lg-4"><input class="form-control" type="text" name="api_ip" value="<#API_IP#>" class="input"></div>
             </div>
 			<div class="form-group">
-                <label class="control-label">Период автопоиска 
-				<span class='support' tabindex="1" data-title="Период (в секундах) поиска устройств в сети с помощью широковещательного запроса. Механизм предназначен для поиска новых устройств, определения доступности (онлайн/оффлайн) текущих и обновления их IP-адресов.">
+                <label class="control-label"><#LANG_XIMI_APP_PERIOD#>
+				<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_PERIOD_TOOLTIP#>">
 					<i class="glyphicon glyphicon-info-sign"></i>
 				</span>
                 </label>
@@ -81,24 +81,24 @@
             </div>
             <div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
-					Отладка DebMes
-					<span class='support' tabindex="1" data-title="Запись обмена сообщениями между сервером и устройствами в отдельный лог-файл YYYY-mm-dd_xiaomimiio.log. Для вступления изменений в силу требуется перезапустить цикл.">
+					<#LANG_XIMI_APP_DEBUG#> DebMes
+					<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP#>">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>
             </div>
 			<div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_miio" value="1"[#if API_LOG_MIIO="1"#] checked[#endif#]> 
-					Отладка miIO-Lib
-					<span class='support' tabindex="1" data-title="Запись отладочных сообщений библиотеки miIO-Lib в лог-файл цикла log_YYYY-mm-dd-cycle_xiaomimiio.php.txt. Для вступления изменений в силу требуется перезапустить цикл.">
+					<#LANG_XIMI_APP_DEBUG#> miIO-Lib
+					<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP2#>">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>
             </div>
 			<div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_cycle" value="1"[#if API_LOG_CYCLE="1"#] checked[#endif#]> 
-					Отладка Cycle
-					<span class='support' tabindex="1" data-title="Запись отладочных сообщений цикла в лог-файл log_YYYY-mm-dd-cycle_xiaomimiio.php.txt. Для вступления изменений в силу требуется перезапустить цикл.">
+					<#LANG_XIMI_APP_DEBUG#> Cycle
+					<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP3#>">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>
@@ -128,7 +128,7 @@
 			</li>
 			[#if DEVICE_TYPE=="lumi.gateway.v3"#]
 			<li[#if TAB="gwradio"#] class="active"[#endif#]>
-				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwradio">Радио</a>
+				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwradio"><#LANG_XIMI_APP_RADIO#></a>
 			</li>
 			<li[#if TAB="gwzigbee"#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwzigbee">Zigbee</a>
