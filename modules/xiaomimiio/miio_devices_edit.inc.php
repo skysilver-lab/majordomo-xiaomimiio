@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.1b
+* @version 1.2b
 */
 
 if ($this->owner->name == 'panel') {
@@ -53,6 +53,7 @@ if ($this->mode == 'update') {
 		}
 		if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
 			$commands[] = 'ir_play';
+			//$commands[] = 'freq';
 		}
 		if ($rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
 			$commands[] = 'vol_up';
@@ -83,9 +84,14 @@ if ($this->mode == 'update') {
 				}
 			}
 			
-			// При сохранении настроек устройства выставим статус оффлайн, затем
+			// При сохранении настроек устройства выставим статус оффлайн
 			$this->processCommand($rec['ID'], 'online', 0);
-			// если есть токен и IP, запросим сведения miIO.info, 
+			
+			if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
+				//$this->processCommand($rec['ID'], 'freq', 38400);
+			}
+			
+			// Если есть токен и IP, запросим сведения miIO.info, 
 			if ($rec['TOKEN'] != '' && $rec['IP'] != '') {
 				$this->requestInfo($rec['ID']);
 				// а также, если определен тип устройства, то запросим текущие параметры (статус).

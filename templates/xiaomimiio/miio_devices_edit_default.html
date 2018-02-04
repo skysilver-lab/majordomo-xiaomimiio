@@ -41,6 +41,7 @@
 			<div class="col-lg-4">
 				<select name="device_type" class="form-control">
 					<option value=""></option>
+					<option value="lumi.camera.aq1" [#if DEVICE_TYPE="lumi.camera.aq1"#] selected[#endif#]>Aqara Smart Camera Gateway</option>
 					<option value="zhimi.humidifier.v1" [#if DEVICE_TYPE="zhimi.humidifier.v1"#] selected[#endif#]>Mi Air Humidifier</option>
 					<option value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]>Mi IR Remote 360</option>
 					<option value="xiaomi.wifispeaker.v1" [#if DEVICE_TYPE="xiaomi.wifispeaker.v1"#] selected[#endif#]>Mi Internet Speaker</option>
@@ -116,6 +117,17 @@
 		</div>
 		[#endif#]
 		
+		[#if DEVICE_TYPE="chuangmi.ir.v2"#] 
+		<div class="form-group">
+			<label class="col-lg-3 control-label">
+				Обучение IR-коду:
+			</label>
+			<div class="col-lg-4">
+				<span onclick="" data-toggle="modal" data-target="#ir_learn" class="btn btn-success [#if TOKEN=="" || DEVICE_TYPE==""#]disabled[#endif#]" title="Обучить IR-коду" id="[#IP#]">Обучить</span>
+			</div>
+		</div>
+		[#endif#]
+		
 		<div class="form-group">
 			<div class="col-lg-offset-3 col-lg-4">
 				[#if ID!=""#]
@@ -134,3 +146,154 @@
 		</div>
 	</fieldset>
 </form>
+
+<div class="modal fade" id="ir_learn" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<b>Обучение IR-командам</b>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="float-right">
+						<img src="../templates/xiaomimiio/img/mi_ir_learn.png" class="img-rounded">
+					</div>
+					<p class="float-left">
+						Чтобы считать IR-код с пульта дистанционного управления, нажмите кнопку <b>Старт</b>, направьте пульт в сторону <b>Mi IR Remote</b> и нажмите несколько раз кнопку, код которой требуется узнать. При успешном завершении процедуры прочитанный код отобразится в логе.
+					</p>
+					<br><br>
+					<div>
+						<button class="btn btn-primary" onclick="startLearnIR();">Старт</button>&nbsp;&nbsp;&nbsp;<b><i id="ir_learn_timer"></i></b>
+					</div>
+				</div>
+				<div class="row">
+					<br>
+					<div>
+						<pre class="pre-scrollable" id="ir_learn_log" style="word-wrap: break-word;"></pre>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	
+	function startLearnIR(){
+		
+		var slot=getRandomInt(1,100000);
+		var dopt='{"key":"'+slot+'"}';
+		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_learn&dopt="+dopt;
+		//var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.info&dopt="+dopt;
+
+		$("#ir_learn_log").html('');
+		
+		Data = new Date();
+		Hour = Data.getHours();
+		Minutes = Data.getMinutes();
+		Seconds = Data.getSeconds();
+		
+		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' ip = '+'[#IP#]'+'<br>');
+		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' token = '+'[#TOKEN#]'+'<br>');
+		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+		
+		$.ajax({
+			url: url,
+			cache: false,
+			success: function(html){
+				//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+html+'<br>');
+				var resp = tryParseJSON(html);
+				if (resp !== false) {
+					if(typeof resp.error === 'undefined') {
+						if((typeof resp.result !== 'undefined') && (resp.result === 0)) {
+							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Режим обучения активирован.<br>');
+							if($("#ir_learn_timer").html()=='') {
+								$('#ir_learn_timer').html('10');
+								setTimeout('learnTimer('+slot+')', 1000);
+							}
+						} else {
+							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Ошибка - bad response.<br>');
+						}
+					} else {
+						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Ошибка - '+resp.error.message+'<br>');
+					}
+				} else {
+					$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Проблема с получением данных от Mi IR Remote 360.<br>');
+				}
+			}
+		});
+	}
+	
+	function learnTimer(slot){
+		var obj = document.getElementById('ir_learn_timer');
+		var dopt='{"key":"'+slot+'"}';
+		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_read&dopt="+dopt;
+				
+		Data = new Date();
+		Hour = Data.getHours();
+		Minutes = Data.getMinutes();
+		Seconds = Data.getSeconds();
+
+		obj.innerHTML--;
+		
+		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+obj.innerHTML+'<br>');
+		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+		
+		if (obj.innerHTML == 0){
+			$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Сеанс обучения завершен<br>');
+			$('#ir_learn_timer').html('');
+			setTimeout(function(){}, 1000);
+		} else {
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function(html){
+					//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+html+'<br>');
+					var resp = tryParseJSON(html);
+					//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp+'<br>');   
+					if (resp !== false) {
+						if(typeof resp.error === 'undefined') {
+							if((typeof resp.result !== 'undefined') && (resp.result !== '')) {
+								//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result+'<br>');
+								if((typeof resp.result.code !== 'undefined') && (typeof resp.result.key !== 'undefined')) {
+									if((resp.result.code!=='') && (resp.result.code.length > 10) && (resp.result.key == slot)) {
+										$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' IR-код получен успешно!<br>');
+										$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result.code+'<br>');
+										$('#ir_learn_timer').html('');
+										setTimeout(function(){}, 1000);
+									} else if (resp.result.code==='') {
+										//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' IR-кода нет. Слушаем дальше...<br>');
+										setTimeout('learnTimer('+slot+')', 1000);
+									}  
+								}
+							}
+						} else {
+							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Ошибка - '+resp.error.message+'<br>');
+							$('#ir_learn_timer').html('');
+							setTimeout(function(){}, 1000);
+						}
+					} else {
+						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' Проблема с получением данных от Mi IR Remote 360.<br>');
+						$('#ir_learn_timer').html('');
+						setTimeout(function(){}, 1000);
+					}
+				}
+			});	
+		}
+	}
+	
+	function tryParseJSON (jsonString){
+		try {
+			var o = JSON.parse(jsonString);
+			if (o && typeof o === "object") return o;
+		}
+		catch (e) { }
+		return false;
+	};
+	
+	function getRandomInt(min, max){
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	
+</script>
