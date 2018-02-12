@@ -6,14 +6,14 @@
  * @author <skysilver.da@gmail.com>
  * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
  * @localization Alex Sokolov aka Gelezako <admin@gelezako.com> http://blog.gelezako.com
- * @version 1.1.5b
+ * @version 1.3b
  *
  **/
 
 $dictionary = array(
 
 'XIMI_SCRIPT_NAME'=>'Название сценария',
-'XIMI_APP_ABOUT' => 'Про модуль',
+'XIMI_APP_ABOUT' => 'О модуле',
 'XIMI_APP_CLOSE' => 'Закрыть',
 'XIMI_APP_MODULE' => 'Модуль поддержки Wi-Fi устройств из экосистемы Xiaomi Mihome, взаимодействующих по протоколу miIO.',
 'XIMI_APP_PROJ' => 'Проект в',
@@ -36,9 +36,10 @@ $dictionary = array(
 'XIMI_APP_DEBUG_TOOLTIP3' => 'Запись отладочных сообщений цикла в лог-файл log_YYYY-mm-dd-cycle_xiaomimiio.php.txt. Для вступления изменений в силу требуется перезапустить цикл.',
 'XIMI_APP_RADIO' => 'Радио',
 'XIMI_APP_TOKEN' => 'Токен',
-'XIMI_APP_TEACH' => 'Обучить коду',
+'XIMI_APP_TEACH' => 'Обучить',
+'XIMI_APP_TEACH1' => 'Обучить IR-коду',
 'XIMI_APP_TEACH2' => 'Обучение IR-командам',
-'XIMI_APP_TEACH_TEXT' => 'Чтобы считать IR-код с пульта дистанционного управления, нажмите кнопку "Старт", направьте пульт в сторону Mi IR Remote 360 и нажмите несколько раз кнопку, код которой требуется узнать. При успешном завершении процедуры прочитанный код отобразится в логе.',
+'XIMI_APP_TEACH_TEXT' => 'Чтобы считать IR-код с пульта дистанционного управления, нажмите кнопку <b>Старт</b>, направьте пульт в сторону <b>Mi IR Remote 360</b> и нажмите несколько раз кнопку, код которой требуется узнать. При успешном завершении процедуры прочитанный код отобразится в логе.',
 'XIMI_APP_START' => 'Старт',
 'XIMI_APP_TRAINING' => 'Режим обучения активирован',
 'XIMI_APP_ERROR' => 'Проблема с получением данных от устройства',
@@ -58,7 +59,7 @@ $dictionary = array(
 'XIMI_APP_OPTIONS' => 'Параметры',
 'XIMI_APP_GET' => 'Получить сведения miIO.info',
 'XIMI_APP_REQUIRED' => 'Требуется токен устройства',
-'XIMI_APP_CURRENT' => 'Получить актуальное состояние',
+'XIMI_APP_CURRENT' => 'Получить актуальное состояние'
 
 );
 

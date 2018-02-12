@@ -41,6 +41,10 @@
 			<div class="col-lg-4">
 				<select name="device_type" class="form-control">
 					<option value=""></option>
+					<optgroup label="Aqara">
+					<option value="lumi.camera.aq1" [#if DEVICE_TYPE="lumi.camera.aq1"#] selected[#endif#]>Aqara Smart Camera Gateway</option>
+					</optgroup>
+					<optgroup label="Xiaomi">
 					<option value="zhimi.humidifier.v1" [#if DEVICE_TYPE="zhimi.humidifier.v1"#] selected[#endif#]>Mi Air Humidifier</option>
 					<option value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]>Mi IR Remote 360</option>
 					<option value="xiaomi.wifispeaker.v1" [#if DEVICE_TYPE="xiaomi.wifispeaker.v1"#] selected[#endif#]>Mi Internet Speaker</option>
@@ -52,14 +56,19 @@
 					<option value="isa.camera.df3" [#if DEVICE_TYPE="isa.camera.df3"#] selected[#endif#]>Mi Dafang Smart Camera 120</option>			
 					<option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Mi Vacuum Cleaner</option>
 					<option value="xiaomi.repeater.v2" [#if DEVICE_TYPE="xiaomi.repeater.v2"#] selected[#endif#]>Mi WiFi Amplifier 2</option>
+					</optgroup>
+					<optgroup label="Philips">
 					<option value="philips.light.ceiling" [#if DEVICE_TYPE="philips.light.ceiling"#] selected[#endif#]>Philips EyeCare Smart Ceiling Lamp</option>
 					<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips EyeCare Smart Desk Lamp 2</option>
 					<option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
+					</optgroup>
+					<optgroup label="Yeelight">
 					<option value="yeelink.light.bslamp1" [#if DEVICE_TYPE="yeelink.light.bslamp1"#] selected[#endif#]>Yeelight Bedside Lamp</option>
 					<option value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]>Yeelight Color Bulb</option>
 					<option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
 					<option value="yeelink.light.ceiling1" [#if DEVICE_TYPE="yeelink.light.ceiling1"#] selected[#endif#]>Yeelight Ceiling Light</option>
 					<option value="yeelink.light.strip1" [#if DEVICE_TYPE="yeelink.light.strip1"#] selected[#endif#]>Yeelight LED Lightstrip</option>
+					</optgroup>					
 				</select>
 			</div>
 		</div>
@@ -119,10 +128,10 @@
 		[#if DEVICE_TYPE="chuangmi.ir.v2"#] 
 		<div class="form-group">
 			<label class="col-lg-3 control-label">
-				<#LANG_XIMI_APP_TEACH#>:
+				<#LANG_XIMI_APP_TEACH1#>:
 			</label>
 			<div class="col-lg-4">
-				<span onclick="" data-toggle="modal" data-target="#ir_learn" class="btn btn-success [#if TOKEN=="" || ONLINE==1 || DEVICE_TYPE==""#]disabled[#endif#]" title="<#LANG_XIMI_APP_TEACH#>" id="[#IP#]"><#LANG_XIMI_APP_TEACH#></span>
+				<span onclick="" data-toggle="modal" data-target="#ir_learn" class="btn btn-success [#if TOKEN=="" || DEVICE_TYPE==""#]disabled[#endif#]" title="<#LANG_XIMI_APP_TEACH2#>" id="[#IP#]"><#LANG_XIMI_APP_TEACH#></span>
 			</div>
 		</div>
 		[#endif#]
@@ -153,15 +162,24 @@
 				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XXIMI_APP_CLOSE#></span></button>
 				<b><#LANG_XIMI_APP_TEACH2#></b>
 			</div>
-			<div class="modal-body">			
-				<p><#LANG_XIMI_APP_TEACH_TEXT#></p>
-				<br>
-				<div>
-					<button class="btn btn-primary" onclick="startLearnIR();"><#LANG_XIMI_APP_START#></button>&nbsp;&nbsp;&nbsp;<b><i id="ir_learn_timer"></i></b>
+			<div class="modal-body">
+				<div class="row">
+					<div class="float-right">
+						<img src="../templates/xiaomimiio/img/mi_ir_learn.png" class="img-rounded">
+					</div>
+					<p class="float-left">
+						<#LANG_XIMI_APP_TEACH_TEXT#>
+					</p>
+					<br><br>
+					<div>
+						<button class="btn btn-primary" onclick="startLearnIR();"><#LANG_XIMI_APP_START#></button>&nbsp;&nbsp;&nbsp;<b><i id="ir_learn_timer"></i></b>
+					</div>
 				</div>
-				<br>
-				<div>
-					<pre class="pre-scrollable" id="ir_learn_log" style="word-wrap: break-word;"></pre>
+				<div class="row">
+					<br>
+					<div>
+						<pre class="pre-scrollable" id="ir_learn_log" style="word-wrap: break-word;"></pre>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -175,8 +193,7 @@
 		var slot=getRandomInt(1,100000);
 		var dopt='{"key":"'+slot+'"}';
 		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_learn&dopt="+dopt;
-		//var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.info&dopt="+dopt;
-		//{"id":10,"method":"miIO.ir_learn","params":{"key":"512430662268481"}}
+
 		$("#ir_learn_log").html('');
 		
 		Data = new Date();
@@ -186,7 +203,6 @@
 		
 		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' ip = '+'[#IP#]'+'<br>');
 		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' token = '+'[#TOKEN#]'+'<br>');
-		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' properties = '+dopt+'<br>');
 		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
 		
 		$.ajax({
@@ -198,31 +214,28 @@
 				if (resp !== false) {
 					if(typeof resp.error === 'undefined') {
 						if((typeof resp.result !== 'undefined') && (resp.result === 0)) {
-							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING#><br>');
+							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING#>.<br>');
 							if($("#ir_learn_timer").html()=='') {
 								$('#ir_learn_timer').html('10');
 								setTimeout('learnTimer('+slot+')', 1000);
 							}
+						} else {
+							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - bad response.<br>');
 						}
 					} else {
-						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#STRING_ERROR#> - '+resp.error.message+'<br>');
+						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
 					}
 				} else {
-					$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#><br>');
+					$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
 				}
 			}
 		});
-		
-		//$('#ir_learn_timer').html('10');
-		//setTimeout('learnTimer('+slot+')', 1000);
-				
 	}
 	
 	function learnTimer(slot){
 		var obj = document.getElementById('ir_learn_timer');
 		var dopt='{"key":"'+slot+'"}';
 		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_read&dopt="+dopt;
-		//{"id":11,"method":"miIO.ir_read","params":{"key":"512430662268481"}}
 				
 		Data = new Date();
 		Hour = Data.getHours();
@@ -235,24 +248,21 @@
 		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
 		
 		if (obj.innerHTML == 0){
-			$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#><br>');
+			$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#>.<br>');
 			$('#ir_learn_timer').html('');
 			setTimeout(function(){}, 1000);
 		} else {
-			
-			//setTimeout('learnTimer('+slot+')', 1000);
-			
 			$.ajax({
 				url: url,
 				cache: false,
 				success: function(html){
-					//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+html+'<br>');
+					
 					var resp = tryParseJSON(html);
-					//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp+'<br>');   
+					
 					if (resp !== false) {
 						if(typeof resp.error === 'undefined') {
 							if((typeof resp.result !== 'undefined') && (resp.result !== '')) {
-								//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result+'<br>');
+								
 								if((typeof resp.result.code !== 'undefined') && (typeof resp.result.key !== 'undefined')) {
 									if((resp.result.code!=='') && (resp.result.code.length > 10) && (resp.result.key == slot)) {
 										$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_SUCCESSFULLY#><br>');
@@ -260,28 +270,22 @@
 										$('#ir_learn_timer').html('');
 										setTimeout(function(){}, 1000);
 									} else if (resp.result.code==='') {
-										//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' IR-кода нет. Слушаем дальше...<br>');
 										setTimeout('learnTimer('+slot+')', 1000);
 									}  
 								}
 							}
 						} else {
-							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#STRING_ERROR#> - '+resp.error.message+'<br>');
+							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
 							$('#ir_learn_timer').html('');
 							setTimeout(function(){}, 1000);
 						}
 					} else {
-						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#><br>');
+						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
 						$('#ir_learn_timer').html('');
 						setTimeout(function(){}, 1000);
 					}
 				}
-			});
-			//если {"result":{"key":"512430662268481","code":""},"id":11} то ИЩЕМ ДАЛЬШЕ
-			//если {‘error’: {‘code’: -5002, ‘message’: ‘no code for this key’}, ‘id’: 5} то КОД НЕ ПОЛУЧЕН
-			//если {‘error’: {‘code’: -5003, ‘message’: ‘learn timeout’}, ‘id’: 17} то ВРЕМЯ ОБУЧЕНИЯ ИСТЕКЛО
-			//если {"result":{"key":"512430662268481","code":"Z6VLALABAAA0AgAAmQYAAOEIAACjEQ=="},"id":15} то НАШЛИ
-			
+			});	
 		}
 	}
 	
@@ -294,10 +298,8 @@
 		return false;
 	};
 	
-	
 	function getRandomInt(min, max){
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
-
 	
 </script>

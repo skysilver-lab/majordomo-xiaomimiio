@@ -6,7 +6,7 @@
  * @author <skysilver.da@gmail.com>
  * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
  * @localization Alex Sokolov aka Gelezako <admin@gelezako.com> http://blog.gelezako.com
- * @version 1.1.5b
+ * @version 1.3b
  *
  **/
 
@@ -37,6 +37,7 @@ $dictionary = array(
 'XIMI_APP_RADIO' => 'Радіо',
 'XIMI_APP_TOKEN' => 'Токен',
 'XIMI_APP_TEACH' => 'Навчити коду',
+'XIMI_APP_TEACH1' => 'Навчити коду',
 'XIMI_APP_TEACH2' => 'Навчання IR-командам',
 'XIMI_APP_TEACH_TEXT' => 'Щоб отримати IR-код з пульта дистанційного керування, натисніть кнопку "Старт", направте пульт в сторону Mi IR Remote 360 і натисніть кілька разів кнопку, код якої потрібно дізнатися. При успішному завершенні процедури отриманий код відобразиться на сторінці.',
 'XIMI_APP_START' => 'Старт',
@@ -44,13 +45,13 @@ $dictionary = array(
 'XIMI_APP_ERROR' => 'Проблема з отриманням даних від пристрою',
 'XIMI_APP_TRAINING_END' => 'Сеанс навчання завершено',
 'XIMI_APP_SUCCESSFULLY' => 'IR-код отримано успішно!',
-'XIMI_APP_SNAP' => "Прив'язати",
+'XIMI_APP_SNAP' => "Прив&#39;язати",
 'XIMI_APP_ONLINE' => 'Пристрій в мережі',
 'XIMI_APP_OFFLINE' => 'Пристрій не доступний',
-'XIMI_APP_UNBIND' => "Відв'язати пристрій від шлюзу",
+'XIMI_APP_UNBIND' => "Відв&#39;язати пристрій від шлюзу",
 'XIMI_APP_LINKING' => 'Перемикання шлюзу у режим сполучення',
 'XIMI_APP_LINKING2' => 'Шлюз в режимі сполучення',
-'XIMI_APP_UNLINKING' => "Ви дійсно хочете відв'язати пристрій ",
+'XIMI_APP_UNLINKING' => "Ви дійсно хочете відвязати пристрій ",
 'XIMI_APP_UNLINKING2' => ' від шлюза?',
 'XIMI_APP_DELETE' => 'Пристрій видалено',
 'XIMI_APP_COMPLETE' => 'Сеанс сполучення завершено',
@@ -58,7 +59,7 @@ $dictionary = array(
 'XIMI_APP_OPTIONS' => 'Параметри',
 'XIMI_APP_GET' => 'Отримати відомості miIO.info',
 'XIMI_APP_REQUIRED' => 'Потрібен токен пристрою',
-'XIMI_APP_CURRENT' => 'Отримати актуальний стан',
+'XIMI_APP_CURRENT' => 'Отримати актуальний стан'
 
 );
 
