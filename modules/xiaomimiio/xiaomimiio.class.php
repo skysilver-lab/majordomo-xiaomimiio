@@ -927,6 +927,8 @@ class xiaomimiio extends module {
 		$cmd_rec['VALUE'] = $value;
 		$cmd_rec['UPDATED'] = date('Y-m-d H:i:s');
 		SQLUpdate('miio_commands', $cmd_rec);
+		
+		if ($old_value == $value) return;
 
 		if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_PROPERTY']) {
 			setGlobal($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_PROPERTY'], $value, array($this->name => '0'));
