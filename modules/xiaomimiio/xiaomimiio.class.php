@@ -4,13 +4,13 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.2b
+* @version 1.4b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
 define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
 define ('MIIO_YEELIGHT_STRIP_PROPS', 'power,bright,ct,rgb,color_mode');
-define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct');
+define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct,nl_br,color_mode,flowing');
 define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct');
 define ('MIIO_YEELIGHT_BSLAMP1_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flowing,pdo_status,save_state,flow_params,nl_br,nighttime,miband_sleep');
 
@@ -20,6 +20,8 @@ define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct,snm,dv,bl,ac');
 define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
 define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
+define ('MIIO_CHUANGMI_PLUG_V1_PROPS', 'power,temperature,usb_on,wifi_led');
+
 define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
 
 define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,mode,temp_dec,humidity,buzzer,led_b');
@@ -509,6 +511,14 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.v1') {
+			//
+			$props = explode(',', MIIO_CHUANGMI_PLUG_V1_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
 			//
 			$this->addToQueue($device_id, 'get_prop_fm', '[]');
@@ -723,11 +733,12 @@ class xiaomimiio extends module {
 		$table = 'miio_commands';
 	
 		$properties = SQLSelect("SELECT miio_commands.*, miio_devices.TOKEN, miio_devices.DEVICE_TYPE FROM miio_commands LEFT JOIN miio_devices ON miio_devices.ID=miio_commands.DEVICE_ID WHERE miio_commands.LINKED_OBJECT LIKE '".DBSafe($object)."' AND miio_commands.LINKED_PROPERTY LIKE '".DBSafe($property)."'");
+
 		/*
-			ID 	TITLE 	VALUE 	DEVICE_ID 	LINKED_OBJECT 	LINKED_PROPERTY 	LINKED_METHOD 	UPDATED	TOKEN	DEVICE_TYPE
-			3 	command NULL	2 			ThisComputer 	GwCmd 								NULL	xxxxx	lumi.gateway.v3
-			10 	command NULL	3 			ThisComputer 	GwCmd 								NULL			isa.camera.isc5
+			ID	TITLE	NOTE	VALUE	DEVICE_ID	LINKED_OBJECT	LINKED_PROPERTY	LINKED_METHOD	UPDATE				TOKEN	DEVICE_TYPE
+			122	power	""		0		19			miioRelay01		status			""				2018-03-20 00:50:34	xxxxx	yeelink.light.mono1	
 		*/
+		
 		$total = count($properties);
    
 		if ($total) {
@@ -756,6 +767,7 @@ class xiaomimiio extends module {
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
 						}
+						// TO-DO: Если у-во yeelight, то используем дополнительные опции команды (effect, duration, mode).
 					} elseif ($properties[$i]['TITLE'] == 'buzzer') {
 						// Команда на включение и выключение
 						if ($value) {
@@ -796,6 +808,13 @@ class xiaomimiio extends module {
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_wifi_led', '["off"]');
 						}
+					} elseif ($properties[$i]['TITLE'] == 'usb_on') {
+						// Команда на включение и выключение usb-порта розетки
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_usb_on', '[]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_usb_off', '[]');
+						}
 					} elseif ($properties[$i]['TITLE'] == 'ir_play') {
 						// Команда для отправки IR-кода
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'miIO.ir_play', '{"freq":38400,"code":"' . $value . '"}');
@@ -823,6 +842,15 @@ class xiaomimiio extends module {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_ac', '[1]');
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_ac', '[0]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'nl_br') {
+						// Ночной режим (ночник, "луна")
+						if ($value) {
+							$bright = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'bright' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID']);
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_scene', '["nightlight",' . $bright['VALUE'] . ']');
+						} else {
+							$ct = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'ct' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID']);
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_ct_abx', '[' . $ct['VALUE'] . ',"sudden",100]');
 						}
 					} elseif ($properties[$i]['TITLE'] == 'vol_up') {
 						// Команда увеличения громкости на указанную величину
@@ -1077,6 +1105,18 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
+			} elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.v1' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_CHUANGMI_PLUG_V1_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					if ($key == 'usb_on') {
+						if ($value == 'true') $value = 1;
+						 else if ($value == 'false') $value = 0;
+					}
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
 			} elseif ($device['DEVICE_TYPE'] == 'philips.light.ceiling' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_PHILIPS_LIGHT_CEILING_PROPS);
 				$i = 0;
@@ -1090,7 +1130,11 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
-					$res_commands[] = array('command' => $key, 'value' => $value);
+					if ($key == 'nl_br' && $value != 0) {
+						$res_commands[4]['value'] = $value;	// свойство bright
+					} else {
+						$res_commands[] = array('command' => $key, 'value' => $value);
+					}
 					$i++;
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.lamp1' && $command == 'get_prop' && is_array($data['result'])) {

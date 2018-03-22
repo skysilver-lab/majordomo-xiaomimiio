@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.2b
+* @version 1.4b
 */
 
 if ($this->owner->name == 'panel') {
@@ -189,6 +189,9 @@ if ($this->tab == 'data') {
 			if ($properties[$i]['TITLE'] == 'wifi_led') {
 				$properties[$i]['SDEVICE_TYPE'] = 'relay';
 			}
+			if ($properties[$i]['TITLE'] == 'usb_on') {
+				$properties[$i]['SDEVICE_TYPE'] = 'relay';
+			}
 			if ($properties[$i]['TITLE'] == 'bright') {
 				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
 			}
@@ -196,6 +199,9 @@ if ($this->tab == 'data') {
 				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
 			}
 			if ($properties[$i]['TITLE'] == 'ct') {
+				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			}
+			if ($properties[$i]['TITLE'] == 'nl_br') {
 				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
 			}
 			if ($properties[$i]['TITLE'] == 'rgb') {
