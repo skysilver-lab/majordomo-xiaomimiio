@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.4b
+* @version 1.5b
 */
 
 if ($this->owner->name == 'panel') {
@@ -47,7 +47,7 @@ if ($this->mode == 'update') {
 		}
 			
 		$commands = array('online', 'command', 'message');
-		if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+		if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {	
 			$commands[] = 'add_program';
 			$commands[] = 'del_program';
 		}
@@ -140,7 +140,7 @@ if ($this->tab == 'data') {
 		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
 	}
 	
-	if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+	if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 		// Для шлюза на вкладку data выводим только определенные свойства, т.к. для свойств радио есть отдельная вкладка
 		$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel') ORDER BY ID");
 	} else {
@@ -178,53 +178,39 @@ if ($this->tab == 'data') {
 		if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
 			addLinkedProperty($properties[$i]['LINKED_OBJECT'], $properties[$i]['LINKED_PROPERTY'], $this->name);
 		}
-	
+
 		if (file_exists(DIR_MODULES . 'devices/devices.class.php')) {
-			if ($properties[$i]['TITLE'] == 'power') {
-				$properties[$i]['SDEVICE_TYPE'] = 'relay';
-			}
-			if ($properties[$i]['TITLE'] == 'buzzer') {
-				$properties[$i]['SDEVICE_TYPE'] = 'relay';
-			}
-			if ($properties[$i]['TITLE'] == 'wifi_led') {
-				$properties[$i]['SDEVICE_TYPE'] = 'relay';
-			}
-			if ($properties[$i]['TITLE'] == 'usb_on') {
-				$properties[$i]['SDEVICE_TYPE'] = 'relay';
-			}
-			if ($properties[$i]['TITLE'] == 'bright') {
-				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
-			}
-			if ($properties[$i]['TITLE'] == 'cct') {
-				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
-			}
-			if ($properties[$i]['TITLE'] == 'ct') {
-				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
-			}
-			if ($properties[$i]['TITLE'] == 'nl_br') {
-				$properties[$i]['SDEVICE_TYPE'] = 'dimmer';
-			}
-			if ($properties[$i]['TITLE'] == 'rgb') {
-				$properties[$i]['SDEVICE_TYPE'] = 'rgb';
-			}
-			if ($properties[$i]['TITLE'] == 'temperature') {
-				$properties[$i]['SDEVICE_TYPE'] = 'sensor_temp';
-			}
-			if ($properties[$i]['TITLE'] == 'humidity') {
-				$properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
-			}
-			if ($properties[$i]['TITLE'] == 'current') {
-				$properties[$i]['SDEVICE_TYPE'] = 'sensor_current';
-			}
-			if ($properties[$i]['TITLE'] == 'power_consume_rate') {
-				$properties[$i]['SDEVICE_TYPE'] = 'sensor_power';
-			}
+			if ($properties[$i]['TITLE'] == 'power') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'buzzer') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'wifi_led') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'usb_on') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'led') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'child_lock') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'bright') $properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			elseif ($properties[$i]['TITLE'] == 'cct') $properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			elseif ($properties[$i]['TITLE'] == 'ct') $properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			elseif ($properties[$i]['TITLE'] == 'nl_br') $properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			elseif ($properties[$i]['TITLE'] == 'rgb') $properties[$i]['SDEVICE_TYPE'] = 'rgb';
+			elseif ($properties[$i]['TITLE'] == 'temperature') $properties[$i]['SDEVICE_TYPE'] = 'sensor_temp';
+			elseif ($properties[$i]['TITLE'] == 'humidity') $properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
+			elseif ($properties[$i]['TITLE'] == 'illumination') $properties[$i]['SDEVICE_TYPE'] = 'sensor_light';
+			elseif ($properties[$i]['TITLE'] == 'current') $properties[$i]['SDEVICE_TYPE'] = 'sensor_current';
+			elseif ($properties[$i]['TITLE'] == 'power_consume_rate') $properties[$i]['SDEVICE_TYPE'] = 'sensor_power';
+			elseif ($properties[$i]['TITLE'] == 'aqi') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'average_aqi') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'favorite_level') $properties[$i]['SDEVICE_TYPE'] = 'dimmer';
+			elseif ($properties[$i]['TITLE'] == 'filter1_life') $properties[$i]['SDEVICE_TYPE'] = 'sensor_percentage';
+			elseif ($properties[$i]['TITLE'] == 'f1_hour_used') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'use_time') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'motor1_speed') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'purify_volume') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'f1_hour') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 		}
 	}
 	$out['PROPERTIES'] = $properties;   
 }
 
-if ($this->tab == 'gwradio' && $rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
+if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3'))) {
 	
 	$new_id = 0;
 	global $delete_id;
@@ -271,6 +257,16 @@ if ($this->tab == 'gwradio' && $rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
 
 }
 
+if ($this->tab == 'help') {
+	$out['LANG'] = SETTINGS_SITE_LANGUAGE;
+	$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $rec['DEVICE_TYPE'] . '.html';
+	// Проверим наличие файла-справки для текущего языка МДМ
+	if (!file_exists($out['HELP_PATH'])) {
+		// если файла нет, то выводим файл-справку на русском языке
+		$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/ru/help_' . $rec['DEVICE_TYPE'] . '.html';
+	}
+}
+
 if (is_array($rec)) {
 	foreach($rec as $k => $v) {
 		if (!is_array($v)) {
@@ -278,5 +274,15 @@ if (is_array($rec)) {
 		}
 	}
 }
+
+//DebMes(serialize($out), 'xiaomimiio');
+/*
+	{s:6:"API_IP";s:0:""; s:15:"API_DISC_PERIOD";i:120; s:14:"API_LOG_DEBMES";i:1; s:13:"API_LOG_CYCLE";i:1; s:12:"API_LOG_MIIO";i:0; s:8:"CYCLERUN";i:0; s:14:"SET_DATASOURCE";i:1; s:12:"CONTROLPANEL";i:1; s:4:"LANG";s:2:"ru";}
+*/
+
+//DebMes(serialize($rec), 'xiaomimiio');
+/*
+	{s:2:"ID";s:2:"33"; s:5:"TITLE";s:18:"Mi Air Purifier 2S"; s:2:"IP";s:13:"192.168.1.200"; s:5:"TOKEN";s:0:""; s:3:"MAC"; s:0:""; s:11:"DEVICE_TYPE";s:21:"zhimi.airpurifier.ma2"; s:16:"DEVICE_TYPE_CODE";s:0:""; s:9:"TIME_DIFF";s:1:"0"; s:5:"MODEL";s:0:""; s:6:"HW_VER";s:0:""; s:6:"SERIAL";s:0:""; s:8:"SETTINGS";s:0:""; s:13:"UPDATE_PERIOD";s:1:"0"; s:11:"NEXT_UPDATE";s:0:""; s:7:"UPDATED";s:0:"";}
+*/
 
 outHash($rec, $out);

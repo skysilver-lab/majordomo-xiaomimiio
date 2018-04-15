@@ -19,7 +19,7 @@
 			<div class="modal-body">
 				<div class="float-right">
 					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.1.4b</b></p>
+					<br><br><p><b>v.1.5b</b></p>
 				</div>
                 <p class="float-left">
 					<#LANG_XIMI_APP_MODULE#><br><br>
@@ -36,7 +36,7 @@
 					<li><#LANG_XIMI_APP_DONATE2#><a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a></li>
 				</ul>
                 </p>
-				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>, <b>Genplane</b>, <b>TurburatoR</b>, <b>Alex77</b>.</h6>
+				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>, <b>Genplane</b>, <b>TurburatoR</b>, <b>Alex77</b>, <b>iden</b>.</h6>
 			</div>
 			<div class="modal-footer">
 				<div class="pull-left"><#LANG_XIMI_APP_Author#>: <a href="https://telegram.me/agafonov_d" target="_blank">skysilver</a></div>
@@ -118,6 +118,7 @@
  [#if VIEW_MODE="edit_miio_devices"#]
 	[#if ID!=""#]
 		[#if TITLE!=""#]<h4>[#TITLE#]</h4>[#endif TITLE#]
+		
 		<ul class="nav nav-tabs">
 			<li[#if TAB=""#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
@@ -125,7 +126,7 @@
 			<li[#if TAB="data"#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=data"><#LANG_DATA#></a>
 			</li>
-			[#if DEVICE_TYPE=="lumi.gateway.v3"#]
+			[#if DEVICE_TYPE=="lumi.gateway.v3" or DEVICE_TYPE=="lumi.acpartner.v3"#]
 			<li[#if TAB="gwradio"#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwradio"><#LANG_XIMI_APP_RADIO#></a>
 			</li>
@@ -133,6 +134,9 @@
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=gwzigbee">Zigbee</a>
 			</li>
 			[#endif DEVICE_TYPE#]
+			<li [#if TAB=="help"#] class="active"[#endif#]>
+				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=help"><#LANG_XIMI_APP_HELP#></a>
+			</li> 
 		</ul>
 	[#endif ID#]
 	[#if TAB=""#]
@@ -150,13 +154,16 @@
 	[#if TAB="gwzigbee"#]
 		[#inc miio_devices_edit_gwzigbee.html#]
 	[#endif TAB#]
+	[#if TAB="help"#]
+		[#inc ../.<#HELP_PATH#>#] 
+	[#endif#] 
  [#endif VIEW_MODE#]
  <!-- / table miio_devices edit -->
  <!-- table miio_devices view --> 
  [#if VIEW_MODE="view_miio_devices"#]
-   [#if TAB=""#]
-    [#inc miio_devices_view_default.html#]
-   [#endif TAB#]
+	[#if TAB=""#]
+		[#inc miio_devices_view_default.html#]
+	[#endif TAB#]
  [#endif VIEW_MODE#]
  <!-- / table miio_devices view -->
  [#endif DATA_SOURCE#]

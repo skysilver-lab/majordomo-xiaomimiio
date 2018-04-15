@@ -44,8 +44,8 @@
 		52: 'sensor_motion.aq2',
 		53: 'sensor_magnet.aq2',
 		55: 'sensor_wleak.aq1',
-		1003: 'natgas',
-		1004: '86plug'
+		65: '86plug',
+		1003: 'natgas'
 	};
 	
 	function getZigbeeDevices(ip,token){
@@ -71,10 +71,10 @@
 							if(id === '0') continue;
 							if(online == 1) {
 								online = '<span class="label label-success" title="<#LANG_XIMI_APP_ONLINE#>">Online</span>';
-								unpair = '<i id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-resize-full"></i></i>';
+								unpair = '<i id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-trash"></i></i>';
 							} else {
 								online = '<span class="label label-warning" title="<#LANG_XIMI_APP_OFFLINE#>">Offline</span>';
-								unpair = '<i id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-resize-full"></i></i>';
+								unpair = '<i id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-trash"></i></i>';
 							}
 							if (types[type]) {
 								model = types[type];
@@ -97,20 +97,32 @@
 	}
 	
 	function pairNewZigbee(){
-		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=start_zigbee_join&dopt=[30]";
+		var url = "/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=start_zigbee_join&dopt=[30]";
+		var token = "[#TOKEN#]";
+		var ip = "[#IP#]";
+
 		$("#gw_upd_zigbee_log").html('');
-		$('#gw_upd_zigbee_log').html('<#LANG_XIMI_APP_LINKING#>');
-		$.ajax({
-			url: url,
-			cache: false,
-			success: function(html){
-				$("#gw_upd_zigbee_log").html(html);
-				$('#gw_upd_zigbee_log').html('<#LANG_XIMI_APP_LINKING2#>');
-				$('#gw_upd_zigbee_timer').html('30');
-				setTimeout(pairTimer, 1000);
-			}
-		});
+		$("#gw_upd_zigbee_alert").html('');
 		
+		if (token !== '' && ip !== '') {
+			$('#gw_upd_zigbee_log').html('<#LANG_XIMI_APP_LINKING#>');
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function(html){
+					var resp = tryParseJSON(html);
+					if (resp !== false) {
+						$('#gw_upd_zigbee_log').html('<#LANG_XIMI_APP_LINKING2#>');
+						$('#gw_upd_zigbee_timer').html('30');
+						setTimeout(pairTimer, 1000);
+					} else {
+						$("#gw_upd_zigbee_alert").html('<div class="alert alert-warning" role="alert" id="gw_upd_zigbee_alert"><#LANG_XIMI_APP_ERROR#>.</div>');
+					}
+				}
+			});			
+		} else {
+			$("#gw_upd_zigbee_alert").html('<div class="alert alert-warning" role="alert" id="gw_upd_zigbee_alert"><#LANG_XIMI_APP_ERROR#>.</div>');
+		}
 	}
 	
 	function unpairZigbee(sid){

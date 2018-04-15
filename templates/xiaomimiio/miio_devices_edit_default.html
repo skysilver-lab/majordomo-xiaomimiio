@@ -42,10 +42,12 @@
 				<select name="device_type" class="form-control">
 					<option value=""></option>
 					<optgroup label="Aqara">
+					<option value="lumi.acpartner.v3" [#if DEVICE_TYPE="lumi.acpartner.v3"#] selected[#endif#]>Aqara AC Companion Gateway</option>
 					<option value="lumi.camera.aq1" [#if DEVICE_TYPE="lumi.camera.aq1"#] selected[#endif#]>Aqara Smart Camera Gateway</option>
 					</optgroup>
 					<optgroup label="Xiaomi">
 					<option value="zhimi.humidifier.v1" [#if DEVICE_TYPE="zhimi.humidifier.v1"#] selected[#endif#]>Mi Air Humidifier</option>
+					<option value="zhimi.airpurifier.ma2" [#if DEVICE_TYPE="zhimi.airpurifier.ma2"#] selected[#endif#]>Mi Air Purifier 2S</option>
 					<option value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]>Mi IR Remote 360</option>
 					<option value="xiaomi.wifispeaker.v1" [#if DEVICE_TYPE="xiaomi.wifispeaker.v1"#] selected[#endif#]>Mi Internet Speaker</option>
 					<option value="yeelink.light.lamp1" [#if DEVICE_TYPE="yeelink.light.lamp1"#] selected[#endif#]>Mi LED Desk Lamp</option>
@@ -126,7 +128,7 @@
 		</div>
 		[#endif#]
 		
-		[#if DEVICE_TYPE="chuangmi.ir.v2"#] 
+		[#if DEVICE_TYPE="chuangmi.ir.v2"#]
 		<div class="form-group">
 			<label class="col-lg-3 control-label">
 				<#LANG_XIMI_APP_TEACH1#>:
@@ -156,6 +158,7 @@
 	</fieldset>
 </form>
 
+[#if DEVICE_TYPE="chuangmi.ir.v2"#]
 <div class="modal fade" id="ir_learn" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -304,3 +307,4 @@
 	}
 	
 </script>
+[#endif#]

@@ -12,9 +12,10 @@
 
 $dictionary = array(
 
-'XIMI_SCRIPT_NAME'=>'Название сценария',
 'XIMI_APP_ABOUT' => 'О модуле',
+'XIMI_APP_HELP' => 'Справка',
 'XIMI_APP_CLOSE' => 'Закрыть',
+'XIMI_APP_IN_DEVELOPMENT' => 'Раздел находится в разработке.',
 'XIMI_APP_MODULE' => 'Модуль поддержки Wi-Fi устройств из экосистемы Xiaomi Mihome, взаимодействующих по протоколу miIO.',
 'XIMI_APP_PROJ' => 'Проект в',
 'XIMI_APP_DISCUS' => 'Обсуждение модуля на',
