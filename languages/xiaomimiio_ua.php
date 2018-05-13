@@ -6,16 +6,16 @@
  * @author <skysilver.da@gmail.com>
  * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
  * @localization Alex Sokolov aka Gelezako <admin@gelezako.com> http://blog.gelezako.com
- * @version 1.3b
+ * @version 1.6b
  *
  **/
 
 $dictionary = array(
 
 'XIMI_APP_ABOUT' => 'Про модуль',
-'XIMI_APP_HELP' => 'Справка',
+'XIMI_APP_HELP' => 'Довідка',
 'XIMI_APP_CLOSE' => 'Закрити',
-'XIMI_APP_IN_DEVELOPMENT' => 'Раздел находится в разработке.',
+'XIMI_APP_IN_DEVELOPMENT' => 'Розділ знаходиться в розробці.',
 'XIMI_APP_MODULE' => 'Модуль підтримки Wi-Fi пристроїв з екосистеми Xiaomi Mihome, взаємодіючих по протоколу miIO.',
 'XIMI_APP_PROJ' => 'Проект у',
 'XIMI_APP_DISCUS' => 'Обговорення модуля на ',
@@ -26,7 +26,7 @@ $dictionary = array(
 'XIMI_APP_THANKS' => 'Подяки',
 'XIMI_APP_NAME' => 'Xiaomi miIO',
 'XIMI_APP_CYCLE_START' => 'Цикл увімкнено',
-'XIMI_APP_CYCLE_STOP' => 'Ццикл зупинений',
+'XIMI_APP_CYCLE_STOP' => 'Цикл зупинений',
 'XIMI_APP_IP' => 'IP сервера MajorDoMo ',
 'XIMI_APP_IP_TOOLTIP' => 'Необхідно вказати для коректної роботи на сервері з двома і більше мережевими інтерфейсами.',
 'XIMI_APP_PERIOD' => 'Період автопошуку ',
@@ -60,7 +60,9 @@ $dictionary = array(
 'XIMI_APP_OPTIONS' => 'Параметри',
 'XIMI_APP_GET' => 'Отримати відомості miIO.info',
 'XIMI_APP_REQUIRED' => 'Потрібен токен пристрою',
-'XIMI_APP_CURRENT' => 'Отримати актуальний стан'
+'XIMI_APP_CURRENT' => 'Отримати актуальний стан',
+'XIMI_APP_ZIGBEE_NOTICE' => 'Даний модуль дозволяє тільки прив&#39;язати, відв&#39;язати і переглянути список прив&#39;язаних до шлюзу zigbee-пристроїв. Робота з zigbee-пристроями в повному обсязі здійснюється в модулі <b>Xiaomi Home</b>. Встановіть його з маркету доповнень MajorDoMo.',
+'XIMI_APP_ATTENTION' => 'Увага'
 
 );
 

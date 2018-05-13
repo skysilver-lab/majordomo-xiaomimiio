@@ -1,0 +1,24 @@
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Неизвестное устройство</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>

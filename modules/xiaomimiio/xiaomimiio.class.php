@@ -1,20 +1,21 @@
 <?php
 /**
-* Xiaomi miIO 
+* Xiaomi miIO
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.5b
+* @version 1.6b
 */
 
-define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright');
-define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode');
-define ('MIIO_YEELIGHT_STRIP_PROPS', 'power,bright,ct,rgb,color_mode');
-define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct,nl_br,color_mode,flowing');
-define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct');
-define ('MIIO_YEELIGHT_BSLAMP1_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flowing,pdo_status,save_state,flow_params,nl_br,nighttime,miband_sleep');
+define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
+define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flow_params,flowing');
+define ('MIIO_YEELIGHT_STRIP_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flow_params,flowing');
+define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct,nl_br,color_mode,flow_params,flowing');
+define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct,flow_params,flowing');
+define ('MIIO_YEELIGHT_BSLAMP1_PROPS', 'power,bright,ct,rgb,hue,sat,nl_br,color_mode,flow_params,flowing,pdo_status,save_state,nighttime,miband_sleep');
 
 define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
+define ('MIIO_PHILIPS_LIGHT_CANDLE_PROPS', 'power,bright,cct');
 define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct,snm,dv,bl,ac');
 
 define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
@@ -24,7 +25,8 @@ define ('MIIO_CHUANGMI_PLUG_V1_PROPS', 'power,temperature,usb_on,wifi_led');
 
 define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
 
-define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,mode,temp_dec,humidity,buzzer,led_b');
+define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,humidity,temp_dec,mode,led_b,buzzer');
+define ('MIIO_ZHIMI_HUMIDIFIER_2_PROPS', 'power,humidity,temp_dec,mode,depth,speed,dry,use_time,led_b,buzzer,child_lock');
 
 define ('MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS', 'power,aqi,average_aqi,humidity,temp_dec,bright,mode,favorite_level,filter1_life,use_time,purify_volume,led,buzzer,child_lock');
 
@@ -476,6 +478,14 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '['.implode(',',$props).']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'philips.light.candle') {
+			//
+			$props = explode(',', MIIO_PHILIPS_LIGHT_CANDLE_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '['.implode(',',$props).']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'philips.light.sread1') {
 			//
 			$props = explode(',', MIIO_PHILIPS_EYECARE_LAMP_2_PROPS);
@@ -572,6 +582,14 @@ class xiaomimiio extends module {
 		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
 			//
 			$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.humidifier.ca1') {
+			//
+			$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_2_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
 				$props[$i] = '"' . $props[$i] . '"';
@@ -894,6 +912,55 @@ class xiaomimiio extends module {
 						if ($value < 0) $value = 0;
 						if ($value > 100) $value = 100;
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_level_favorite', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'dry') {
+						// 
+						if ($value) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_dry', '["on"]');
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_dry', '["off"]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'led_b') {
+						// Управление светодиодом (подсветкой)
+						switch($value) {
+							case 'bright':
+								$value = 0;
+								break;
+							case 'dim':
+								$value = 1;
+								break;
+							case 'off':
+								$value = 2;
+								break;
+							default:
+								$value = 0;
+							break;
+						}
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led_b', '["' . $value . '"]');	
+					} elseif ($properties[$i]['TITLE'] == 'mode') {
+						// 
+						if($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
+							// Изменение режима (silent, medium, high)
+							if ($value == 'silent' || $value == 'medium' || $value == 'high') {
+								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
+							}
+						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca1') {
+							// Изменение режима (auto, silent, medium, high)
+							if ($value == 'auto' || $value == 'silent' || $value == 'medium' || $value == 'high') {
+								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
+							}
+						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2') {
+							// Изменение режима (silent, auto, favorite)
+							if ($value == 'silent' || $value == 'auto' || $value == 'favorite') {
+								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
+							}
+						}
+					} elseif ($properties[$i]['TITLE'] == 'flow') {
+						// 
+						if ($value != '') {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'start_cf', "[$value]");
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'stop_cf', '[]');
+						}
 					}
 					
 					if(($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
@@ -924,42 +991,6 @@ class xiaomimiio extends module {
 								}
 							}
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'remove_channels', '{"chs":[{"id":' . $value . ',"url":"' . $ch_url . '","type":0}]}');
-						}
-					}
-					
-					if($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
-						if ($properties[$i]['TITLE'] == 'mode') {
-							// Изменение режима (silent, medium, high)
-							if ($value == 'silent' || $value == 'medium' || $value == 'high') {
-								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
-							}
-						}
-						if ($properties[$i]['TITLE'] == 'led_b') {
-							// Управление светодиодом (подсветкой)
-							switch($value) {
-								case 'bright':
-									$value = 0;
-									break;
-								case 'dim':
-									$value = 1;
-									break;
-								case 'off':
-									$value = 2;
-									break;
-								default:
-									$value = 0;
-								break;
-							}
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led_b', "[$value]");
-						}
-					}
-					
-					if($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2') {
-						if ($properties[$i]['TITLE'] == 'mode') {
-							// Изменение режима (silent, auto, favorite)
-							if ($value == 'silent' || $value == 'auto' || $value == 'favorite') {
-								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
-							}
 						}
 					}
 					
@@ -1094,11 +1125,20 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'philips.light.bulb' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'philips.light.candle' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_PHILIPS_LIGHT_CANDLE_PROPS);
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
@@ -1118,6 +1158,7 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';
 					if ($key == 'rgb') {
 						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
 					}
@@ -1169,6 +1210,7 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';
 					if ($key == 'nl_br' && $value != 0) {
 						$res_commands[4]['value'] = $value;	// свойство bright
 					} else {
@@ -1181,6 +1223,7 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';					
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
@@ -1189,6 +1232,7 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';
 					if ($key == 'rgb') {
 						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
 					}
@@ -1209,33 +1253,39 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'zhimi.humidifier.v1' && $command == 'get_prop' && is_array($data['result'])) {
-				$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_PROPS);
-				$i = 0;
-				foreach($props as $key) {
-					$value = $data['result'][$i];
-					if ($key == 'temp_dec') {
-						$value = $value / 10;
-						$key = 'temperature';
+			} elseif (($device['DEVICE_TYPE'] == 'zhimi.humidifier.v1') || ($device['DEVICE_TYPE'] == 'zhimi.humidifier.ca1')) {
+				if ($command == 'get_prop' && is_array($data['result'])) {
+					if ($device['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
+						$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_PROPS);
+					} elseif ($device['DEVICE_TYPE'] == 'zhimi.humidifier.ca1') {
+						$props = explode(',', MIIO_ZHIMI_HUMIDIFIER_2_PROPS);
 					}
-					if ($key == 'led_b') {
-						switch($value) {
-							case 0:
-								$value = 'bright';
-								break;
-							case 1:
-								$value = 'dim';
-								break;
-							case 2:
-								$value = 'off';
-								break;
-							default:
-								$value = 'unknown';
-								break;
+					$i = 0;
+					foreach($props as $key) {
+						$value = $data['result'][$i];
+						if ($key == 'temp_dec') {
+							$value = $value / 10;
+							$key = 'temperature';
 						}
+						if ($key == 'led_b') {
+							switch($value) {
+								case 0:
+									$value = 'bright';
+									break;
+								case 1:
+									$value = 'dim';
+									break;
+								case 2:
+									$value = 'off';
+									break;
+								default:
+									$value = 'unknown';
+									break;
+							}
+						}
+						$res_commands[] = array('command' => $key, 'value' => $value);
+						$i++;
 					}
-					$res_commands[] = array('command' => $key, 'value' => $value);
-					$i++;
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS);
@@ -1255,6 +1305,7 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';
 					if ($key == 'rgb') {
 						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
 					}
@@ -1273,7 +1324,7 @@ class xiaomimiio extends module {
 		foreach ($res_commands as $c) {
             $cmd = $c['command'];
             $val = $c['value'];
-			if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock') {
+			if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock'|| $cmd == 'dry') {
 				if ($val == 'on') $val = 1;
 				 else if ($val == 'off') $val = 0;
 			}

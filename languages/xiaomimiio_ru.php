@@ -6,7 +6,7 @@
  * @author <skysilver.da@gmail.com>
  * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
  * @localization Alex Sokolov aka Gelezako <admin@gelezako.com> http://blog.gelezako.com
- * @version 1.3b
+ * @version 1.6b
  *
  **/
 
@@ -60,7 +60,9 @@ $dictionary = array(
 'XIMI_APP_OPTIONS' => 'Параметры',
 'XIMI_APP_GET' => 'Получить сведения miIO.info',
 'XIMI_APP_REQUIRED' => 'Требуется токен устройства',
-'XIMI_APP_CURRENT' => 'Получить актуальное состояние'
+'XIMI_APP_CURRENT' => 'Получить актуальное состояние',
+'XIMI_APP_ZIGBEE_NOTICE' => 'Данный модуль позволяет только привязать, отвязать и просмотреть список привязанных к шлюзу zigbee-устройств. Работа с zigbee-устройствами в полном объеме осуществляется в модуле <b>Xiaomi Home</b>. Установите его из маркета дополнений MajorDoMo.',
+'XIMI_APP_ATTENTION' => 'Внимание'
 
 );
 

@@ -1,3 +1,110 @@
-<br/>
-<br/>
-<#LANG_XIMI_APP_IN_DEVELOPMENT#>
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Yeelight Color Bulb</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div class="panel-group" id="accordion">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#metrics_help">Описание метрик устройства</a>
+		</div>
+		<div class="panel-body collapse" id="metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>power</b></td><td>Включение и выключение питания</td><td>1 и 0</td><td nowrap>Чтение и запись</td></tr>
+					<tr><td><b>bright</b></td><td>Яркость</td><td>От 1 до 100%</td><td>Чтение и запись</td></tr>
+					<tr><td><b>ct</b></td><td>Цветовая температура</td><td>От 1700 до 6500K</td><td>Чтение и запись</td></tr>
+					<tr><td><b>rgb</b></td><td>Цвет в модели RGB</td><td>От 000000 до FFFFFF</td><td>Чтение и запись</td></tr>
+					<tr><td><b>hue</b></td><td>Цветовой тон в модели HSV</td><td>От 0 до 359</td><td>Чтение</td></tr>
+					<tr><td><b>sat</b></td><td>Насыщенность в модели HSV</td><td>От 0 до 100</td><td>Чтение</td></tr>
+					<tr><td><b>color_mode</b></td><td>Режим</td><td>1: режим RGB<br>2: режим CT<br>3: режим HSV</td><td>Чтение</td></tr>
+					<tr><td><b>flow</b></td><td>Управление цветовыми сценариями</td><td>Набор параметров в виде строки</td><td>Чтение и запись</td></tr>
+					<tr><td><b>flowing</b></td><td>Статус цветового сценария</td><td>1 и 0</td><td>Чтение</td></tr>
+				</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#flow_help">Работа с цветовыми сценариями <b>flow</b></a>
+		</div>
+		<div class="panel-body collapse" id="flow_help">
+			<p>Цветовой сценарий представляет собой серию изменений состояния лампы. Это может быть изменение яркости, изменение цвета или изменение цветовой температуры (набор возможностей зависит от модели лампы). Это весьма продвинутая функция, с помощью которой реализованы рекомендуемые сцены в приложениях <var><b>Mihome</b></var> и <var><b>Yeelight</b></var>, например, восход солнца, теплый закат, вечеринка, свечение свечи и др. С помощью <b>flow-сценария</b> можно фактически "запрограммировать" световой эффект на лампе, и она будет его автономно выполнять без какого-либо участия сервера <var><b>MajorDoMo</b></var>.
+			</p>
+			<p>Запуск цветового сценария выполняется с помощью записи в метрику <b>flow</b> набора параметров (выражения) в виде строки, который определяет алгоритм работы лампы в сценарии. При запуске сценария лампа должна находиться во включенном состоянии. Чтобы остановить выполняемый сценарий, нужно записать в <b>flow</b> пустое значение.</p>
+			<p>Метрика <b>flowing</b> отображает текущее состояние сценария: 1 - запущен и работает, 0 - остановлен.</p>
+			<p><b>flow-выражение</b> состоит из трех параметров:</p>
+			<dl class="dl-horizontal">
+				<dt class="text-danger"><b>count</b></dt>
+				<dd>Общее количество изменений состояния лампы (итераций) до остановки сценария. Если <b>count</b> равно <b>0</b>, то сценарий будет выполняться бесконечно.</dd>
+				<dt class="text-danger"><b>action</b></dt>
+				<dd>Действие после завершения (остановки) сценария.  <b>0</b> - лампа вернется в состояние, которое было перед запуском сценария. <b>1</b> - лампа останется в состоянии, на котором завершился сценарий. <b>2</b> - лампа выключится.</dd>
+				<dt class="text-danger"><b>flow_expression</b></dt>
+				<dd>Непосредственно сама последовательность команд для изменения состояния лампы.</dd>
+			</dl>
+			<p>Пример <b>flow-выражения</b>:<br>
+				<pre><b>4,2,"<span class="text-warning">1000,2,2700,100</span>,<span class="text-primary">500,1,255,10</span>,<span class="text-success">5000,7,0,0</span>,<span class="text-danger">500,2,5000,1</span>"</b></pre>
+			</p>
+			<p>Каждое состояние в <b>flow_expression</b> состоит из 4-х элементов: <samp>duration, mode, value, brightness</samp> (длительность, режим, величина, яркость). Цветовой сценарий - это и есть последовательность таких серий смены состояния лампы. Для примера выше получаем такую последовательность: изменить цветовую температуру на 2700К и поднять яркость на 100% в течение 1000 мс, затем изменить цвет на красный и уменьшить яркость до 10% в течение 500мс, затем оставаться в этом состоянии 5 секунд, затем изменить цветовую температуру на 5000К и уменьшить яркость до 1% в течение 500 мс. По окончанию 4-х итераций цветовой сценарий останавливается, а лампа выключается.</p>
+			<dl class="dl-horizontal">
+				<dt class="text-danger"><b>duration</b></dt>
+				<dd>Длительность постепенного изменения или паузы (сна) в миллисекундах. Минимальное значение 50 мс.</dd>
+				<dt class="text-danger"><b>mode</b></dt>
+				<dd>Режим. <b>1</b> - цвет, <b>2</b> - цветовая температура, <b>7</b> - пауза (сон).</dd>
+				<dt class="text-danger"><b>value</b></dt>
+				<dd>Величина. В режиме <b>1</b> - это RGB-цвет в десятичном формате, в режиме <b>2</b> - цветовая температура в Кельвинах, в режиме <b>7</b> значение игнорируется.</dd>
+				<dt class="text-danger"><b>brightness</b></dt>
+				<dd>Яркость. Принимаемые значения от <b>1</b> до <b>100</b> и <b>-1</b>. В режиме <b>7</b> значение яркости игнорируется. Если значение равно <b>-1</b>, то яркость игнорируется и не изменяется (будут меняться только цвет или цветовая температура).</dd>
+			</dl>
+			<p>Примеры цветовых сценариев:
+			<dl class="dl-horizontal">
+				<dt class="text-info"><b>Мигалка</b></dt>
+				<dd><samp><b>8,0,"<span class="text-warning">1000,2,4000,50</span>,<span class="text-danger">1000,2,4000,1</span>"</b></samp></dd>
+				<dt class="text-info"><b>Рассвет</b></dt>
+				<dd><samp><b>3,1,"<span class="text-warning">50,1,16731392,1</span>,<span class="text-danger">360000,2,1700,10</span>,<span class="text-success">540000,2,2700,100</span>"</b></samp></dd>
+				<dt class="text-info"><b>Закат</b></dt>
+				<dd><samp><b>2,2,"<span class="text-warning">50,2,4000,75</span>,<span class="text-danger">900000,2,4000,1</span>"</b></samp></dd>
+				<dt class="text-info"><b>Диско</b></dt>
+				<dd><samp><b>50,0,"<span class="text-warning">100,1,255,100</span>,<span class="text-danger">100,1,32768,100</span>,<span class="text-success">100,1,16711680,100</span>"</b></samp></dd>
+				<dt class="text-info"><b>Вечеринка</b></dt>
+				<dd><samp><b>0,1,"<span class="text-warning">1996,1,14438425,80</span>,<span class="text-danger">1996,1,14448670,80</span>,<span class="text-success">1996,1,11153940,80</span>"</b></samp></dd>
+				<dt class="text-info"><b>Романтика</b></dt>
+				<dd><samp><b>0,1,"<span class="text-warning">4000,1,5838189,1</span>,<span class="text-danger">4000,1,6689834,1</span>"</b></samp></dd>
+				<dt class="text-info"><b>Мерцание свечи</b></dt>
+				<dd><samp><b>0,0,"<span class="text-warning">800,2,2700,50</span>,<span class="text-primary">800,2,2700,30</span>,<span class="text-success">1200,2,2700,80</span>,<br><span class="text-danger">800,2,2700,60</span>,<span class="text-default">1200,2,2700,90</span>,<span class="text-info">2400,2,2700,50</span>,<br><span class="text-warning">1200,2,2700,80</span>,<span class="text-primary">800,2,2700,60</span>,<span class="text-success">400,2,2700,70</span>"</b></samp></dd>
+				<dt class="text-info"><b>Уведомление blue</b></dt>
+				<dd><samp><b>5,0,"<span class="text-warning">100,1,255,100</span>,<span class="text-danger">100,1,255,1</span>"</b></samp></dd>
+				<dt class="text-info"><b>Уведомление green</b></dt>
+				<dd><samp><b>5,0,"<span class="text-warning">100,1,32768,100</span>,<span class="text-danger">100,1,32768,1</span>"</b></samp></dd>
+				<dt class="text-info"><b>Уведомление red</b></dt>
+				<dd><samp><b>5,0,"<span class="text-warning">100,1,16711680,100</span>,<span class="text-danger">100,1,16711680,1</span>"</b></samp></dd>
+			</dl>
+			</p>
+		</div>
+	</div>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>

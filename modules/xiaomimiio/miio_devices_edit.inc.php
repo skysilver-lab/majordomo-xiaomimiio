@@ -205,6 +205,14 @@ if ($this->tab == 'data') {
 			elseif ($properties[$i]['TITLE'] == 'motor1_speed') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'purify_volume') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'f1_hour') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'dry') $properties[$i]['SDEVICE_TYPE'] = 'relay';
+			elseif ($properties[$i]['TITLE'] == 'depth') $properties[$i]['SDEVICE_TYPE'] = 'sensor_percentage';
+			elseif ($properties[$i]['TITLE'] == 'speed') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'flow') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'flowing') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'hue') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'sat') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'color_mode') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 		}
 	}
 	$out['PROPERTIES'] = $properties;   
@@ -259,11 +267,18 @@ if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($
 
 if ($this->tab == 'help') {
 	$out['LANG'] = SETTINGS_SITE_LANGUAGE;
-	$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $rec['DEVICE_TYPE'] . '.html';
+	if ($rec['DEVICE_TYPE'] != '') {
+		$devType = $rec['DEVICE_TYPE'];
+	} else {
+		$devType = 'unknown';
+	}
+	
+	$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
+	
 	// Проверим наличие файла-справки для текущего языка МДМ
 	if (!file_exists($out['HELP_PATH'])) {
 		// если файла нет, то выводим файл-справку на русском языке
-		$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/ru/help_' . $rec['DEVICE_TYPE'] . '.html';
+		$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/ru/help_' . $devType . '.html';
 	}
 }
 
