@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.5b
+* @version 1.7b
 */
 
 if ($this->owner->name == 'panel') {
@@ -47,7 +47,7 @@ if ($this->mode == 'update') {
 		}
 			
 		$commands = array('online', 'command', 'message');
-		if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {	
+		if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 			$commands[] = 'add_program';
 			$commands[] = 'del_program';
 		}
@@ -119,7 +119,7 @@ if ($this->mode == 'update') {
 							if ($dev_type != '') {
 								$rec['DEVICE_TYPE'] = $dev_type;
 								SQLUpdate($table_name, $rec);
-								$this->requestStatus($rec['ID']);						
+								$this->requestStatus($rec['ID']);
 							}
 						}
 					}
@@ -196,6 +196,7 @@ if ($this->tab == 'data') {
 			elseif ($properties[$i]['TITLE'] == 'illumination') $properties[$i]['SDEVICE_TYPE'] = 'sensor_light';
 			elseif ($properties[$i]['TITLE'] == 'current') $properties[$i]['SDEVICE_TYPE'] = 'sensor_current';
 			elseif ($properties[$i]['TITLE'] == 'power_consume_rate') $properties[$i]['SDEVICE_TYPE'] = 'sensor_power';
+			elseif ($properties[$i]['TITLE'] == 'load_power') $properties[$i]['SDEVICE_TYPE'] = 'sensor_power';
 			elseif ($properties[$i]['TITLE'] == 'aqi') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'average_aqi') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'favorite_level') $properties[$i]['SDEVICE_TYPE'] = 'dimmer';
@@ -213,6 +214,11 @@ if ($this->tab == 'data') {
 			elseif ($properties[$i]['TITLE'] == 'hue') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'sat') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'color_mode') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'snm') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'dv') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'bl') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'ac') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
+			elseif ($properties[$i]['TITLE'] == 'limit_hum') $properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
 		}
 	}
 	$out['PROPERTIES'] = $properties;   

@@ -1,50 +1,7 @@
- <!-- action usual -->
- [#if DATA_SOURCE="miio_devices" || DATA_SOURCE=""#]
- <!-- table miio_devices search -->
- [#if VIEW_MODE="search_miio_devices" || VIEW_MODE=""#]
-
-<div class="float-right">
-	<button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#about"><#LANG_XIMI_APP_ABOUT#>&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
-	</button>
-</div>
-
-<div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
-<!-- <div id="about" class="modal hide"> -->
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
-				<h4 class="modal-title">Xiaomi miIO</h4>
-			</div>
-			<div class="modal-body">
-				<div class="float-right">
-					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.1.6b</b></p>
-				</div>
-                <p class="float-left">
-					<#LANG_XIMI_APP_MODULE#><br><br>
-					<#LANG_XIMI_APP_DISCUS#> <a href="https://majordomo.smartliving.ru/forum/viewtopic.php?f=5&t=4863" target="_blank"><#LANG_XIMI_APP_DISCUS2#></a>.<br>
-					<#LANG_XIMI_APP_PROJ#> <a href="https://github.com/skysilver-lab/majordomo-xiaomimiio" target="_blank">Github</a>.<br>
-					<#LANG_XIMI_APP_PROJ#> <a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a>.<br>
-				</p>
-				<hr size="1">
-				<p class="float-left">
-				<#LANG_XIMI_APP_DONATE#>
-				<ul>
-					<li>Yandex: <a href="https://money.yandex.ru/to/410011205062626" target="_blank">410011205062626</a></li>
-					<li>PayPal: <a href="https://www.paypal.me/skysilver" target="_blank">paypal.me/skysilver</a></li>
-					<li><#LANG_XIMI_APP_DONATE2#><a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a></li>
-				</ul>
-                </p>
-				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>, <b>Genplane</b>, <b>TurburatoR</b>, <b>Alex77</b>, <b>iden</b>.</h6>
-			</div>
-			<div class="modal-footer">
-				<div class="pull-left"><#LANG_XIMI_APP_Author#>: <a href="https://telegram.me/agafonov_d" target="_blank">skysilver</a></div>
-				<button type="button" class="btn btn-default" data-dismiss="modal"><#LANG_XIMI_APP_CLOSE#></button>
-			</div>
-		</div>
-	</div>
-</div>
+<!-- action usual -->
+[#if DATA_SOURCE="miio_devices" || DATA_SOURCE=""#]
+<!-- table miio_devices search -->
+[#if VIEW_MODE="search_miio_devices" || VIEW_MODE=""#]
 
 <div>
 	<img src="../templates/xiaomimiio/milogo.png"  width="30" height="30">
@@ -56,6 +13,9 @@
 	[#else#]
 		<span class="label label-danger" title="Статус цикла"><#LANG_XIMI_APP_CYCLE_STOP#></span>
 	[#endif#]
+	<div class="float-right">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+	<button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#about"><#LANG_XIMI_APP_ABOUT#>&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
+	</button>
 </div>
 
 <div class="collapse" id='api_settings'>
@@ -118,7 +78,6 @@
  [#if VIEW_MODE="edit_miio_devices"#]
 	[#if ID!=""#]
 		[#if TITLE!=""#]<h4>[#TITLE#]</h4>[#endif TITLE#]
-		
 		<ul class="nav nav-tabs">
 			<li[#if TAB=""#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
@@ -185,3 +144,41 @@
  [#endif VIEW_MODE#]
  <!-- / table miio_commands view -->
  [#endif DATA_SOURCE#]
+ 
+ <!-- About -->
+ <div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
+				<h4 class="modal-title">Xiaomi miIO</h4>
+			</div>
+			<div class="modal-body">
+				<div class="float-right">
+					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
+					<br><br><p><b>v.1.7b</b></p>
+				</div>
+                <p class="float-left">
+					<#LANG_XIMI_APP_MODULE#><br><br>
+					<#LANG_XIMI_APP_DISCUS#> <a href="https://majordomo.smartliving.ru/forum/viewtopic.php?f=5&t=4863" target="_blank"><#LANG_XIMI_APP_DISCUS2#></a>.<br>
+					<#LANG_XIMI_APP_PROJ#> <a href="https://github.com/skysilver-lab/majordomo-xiaomimiio" target="_blank">Github</a>.<br>
+					<#LANG_XIMI_APP_PROJ#> <a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a>.<br>
+				</p>
+				<hr size="1">
+				<p class="float-left">
+				<#LANG_XIMI_APP_DONATE#>
+				<ul>
+					<li>Yandex: <a href="https://money.yandex.ru/to/410011205062626" target="_blank">410011205062626</a></li>
+					<li>PayPal: <a href="https://www.paypal.me/skysilver" target="_blank">paypal.me/skysilver</a></li>
+					<li><#LANG_XIMI_APP_DONATE2#><a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a></li>
+				</ul>
+                </p>
+				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>, <b>Genplane</b>, <b>TurburatoR</b>, <b>Alex77</b>, <b>iden</b>, <b>TrDA</b>.</h6>
+			</div>
+			<div class="modal-footer">
+				<div class="pull-left"><#LANG_XIMI_APP_Author#>: <a href="https://telegram.me/agafonov_d" target="_blank">skysilver</a></div>
+				<button type="button" class="btn btn-default" data-dismiss="modal"><#LANG_XIMI_APP_CLOSE#></button>
+			</div>
+		</div>
+	</div>
+</div>

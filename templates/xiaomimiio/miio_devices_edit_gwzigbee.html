@@ -49,10 +49,11 @@
 		52: 'sensor_motion.aq2',
 		53: 'sensor_magnet.aq2',
 		55: 'sensor_wleak.aq1',
+		59: 'lock.aq1',
 		65: '86plug',
 		1003: 'natgas'
 	};
-	
+
 	function getZigbeeDevices(ip,token){
 		$("#gw_upd_zigbee_table").html('');
 		$("#gw_upd_zigbee_alert").html('');
@@ -70,7 +71,7 @@
 						let indx = 1;
 						for(let i=0; i<zdev_count; i+=5) {
 							var id = zdev.result[i];
-							if(id.indexOf('lumi.') === 0) id = id.substring(5);						
+							if(id.indexOf('lumi.') === 0) id = id.substring(5);
 							var type = zdev.result[i+1];
 							var online = zdev.result[i+2];
 							if(id === '0') continue;
@@ -100,7 +101,7 @@
 			}
 		});
 	}
-	
+
 	function pairNewZigbee(){
 		var url = "/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=start_zigbee_join&dopt=[30]";
 		var token = "[#TOKEN#]";
@@ -129,7 +130,7 @@
 			$("#gw_upd_zigbee_alert").html('<div class="alert alert-warning" role="alert" id="gw_upd_zigbee_alert"><#LANG_XIMI_APP_ERROR#>.</div>');
 		}
 	}
-	
+
 	function unpairZigbee(sid){
 		var yesno = confirm("<#LANG_XIMI_APP_UNLINKING#>"+sid+"<#LANG_XIMI_APP_UNLINKING2#>");
 		if (yesno) {
@@ -145,7 +146,7 @@
 			});	
 		}
 	}
-	
+
 	function pairTimer(){
 		var obj = document.getElementById('gw_upd_zigbee_timer');
 		obj.innerHTML--;
@@ -159,7 +160,6 @@
 		}
 	}
 
-	
 	function tryParseJSON (jsonString){
 		try {
 			var o = JSON.parse(jsonString);

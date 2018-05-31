@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.6b
+* @version 1.7b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
@@ -26,20 +26,20 @@ define ('MIIO_CHUANGMI_PLUG_V1_PROPS', 'power,temperature,usb_on,wifi_led');
 define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
 
 define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,humidity,temp_dec,mode,led_b,buzzer');
-define ('MIIO_ZHIMI_HUMIDIFIER_2_PROPS', 'power,humidity,temp_dec,mode,depth,speed,dry,use_time,led_b,buzzer,child_lock');
+define ('MIIO_ZHIMI_HUMIDIFIER_2_PROPS', 'power,humidity,temp_dec,mode,depth,speed,dry,use_time,led_b,buzzer,child_lock,limit_hum');
 
 define ('MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS', 'power,aqi,average_aqi,humidity,temp_dec,bright,mode,favorite_level,filter1_life,use_time,purify_volume,led,buzzer,child_lock');
 
 define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 
-define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
+define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
 														'1' => 	'Initiating',
 														'2' => 	'Sleeping',
 														'3' => 	'Waiting',
-														'4' => 	'Unknown',
+														'4' => 	'Remote control active',
 														'5' => 	'Cleaning',
 														'6' => 	'Back to home',
-														'7' => 	'Unknown',
+														'7' => 	'Manual mode',
 														'8' => 	'Charging',
 														'9' => 	'Charging Error',
 														'10' => 'Pause',
@@ -48,9 +48,11 @@ define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>  'Unknown',
 														'13' => 'Shutting down',
 														'14' => 'Updating',
 														'15' => 'Docking',
+														'16' => 'Going to target',
+														'17' => 'Zoned cleaning',
 														'100' => 'Full')));
 
-define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>  'No error',
+define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>	'No error',
 														'1' => 	'Laser distance sensor error',
 														'2' => 	'Collision sensor error',
 														'3' => 	'Wheels on top of void, move robot',
@@ -470,7 +472,7 @@ class xiaomimiio extends module {
 		
 		$device_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=" . (int)$device_id);
 
-		if ($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') {
+		if (($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') || ($device_rec['DEVICE_TYPE'] == 'philips.light.downlight')) {
 			//
 			$props = explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
 			$total = count($props);
@@ -510,7 +512,7 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		} else if ($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') {
+		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
 			//
 			$this->addToQueue($device_id, 'get_status');
 			sleep(1);
@@ -523,7 +525,7 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		} elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.v1') {
+		} elseif (($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.v1') || ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.v3')) {
 			//
 			$props = explode(',', MIIO_CHUANGMI_PLUG_V1_PROPS);
 			$total = count($props);
@@ -531,6 +533,10 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+			if ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.v3') {
+				sleep(1);
+				$this->addToQueue($device_id, 'get_power');
+			}
 		} elseif (($device_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 			//
 			$this->addToQueue($device_id, 'get_prop_fm', '[]');
@@ -620,7 +626,7 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		}
-				
+
 	}
 
 	/**
@@ -961,8 +967,19 @@ class xiaomimiio extends module {
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'stop_cf', '[]');
 						}
+					} elseif ($properties[$i]['TITLE'] == 'filter1_life') {
+						// Сброс ресурса фильтра
+						if ($value == '0' || $value == '') {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_f1_hour_used', '[0]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'limit_hum') {
+						// Установка верхнего предела увлажнения (30, 40, 50, 60, 70, 80)
+						$value = (int)$value;
+						if (($value >= 30) && ($value <= 80) && (($value%10) == 0)) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_limit_hum', "[$value]");
+						}
 					}
-					
+
 					if(($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 						if ($properties[$i]['TITLE'] == 'current_volume') {
 							// Изменение громкости
@@ -983,7 +1000,7 @@ class xiaomimiio extends module {
 						} else if ($properties[$i]['TITLE'] == 'del_program') {
 							// Удалить радиостанцию (по ID)
 							$all_chs = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='" . $properties[$i]['DEVICE_ID'] . "' AND TITLE='all_program'")['VALUE'];
-							$all_chs = json_decode($all_chs, true);					
+							$all_chs = json_decode($all_chs, true);
 							foreach($all_chs['chs'] as $ch) {
 								if ($ch['id'] == $value) {
 									$ch_url = $ch['url'];
@@ -1129,13 +1146,15 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'philips.light.bulb' && $command == 'get_prop' && is_array($data['result'])) {
-				$props = explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
-				$i = 0;
-				foreach($props as $key) {
-					$value = $data['result'][$i];
-					$res_commands[] = array('command' => $key, 'value' => $value);
-					$i++;
+			} elseif (($device['DEVICE_TYPE'] == 'philips.light.bulb') || ($device['DEVICE_TYPE'] == 'philips.light.downlight')) {
+				if ($command == 'get_prop' && is_array($data['result'])) {
+					$props = explode(',', MIIO_PHILIPS_LIGHT_BULB_PROPS);
+					$i = 0;
+					foreach($props as $key) {
+						$value = $data['result'][$i];
+						$res_commands[] = array('command' => $key, 'value' => $value);
+						$i++;
+					}
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'philips.light.candle' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_PHILIPS_LIGHT_CANDLE_PROPS);
@@ -1165,17 +1184,19 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' && ($command == 'get_status' || $command == 'get_consumable') && is_array($data['result'])) {
-				foreach($data['result'][0] as $key => $value) {
-					$res_commands[] = array('command' => $key, 'value' => $value);
-					if ($key == 'state') {
-						$state_codes = unserialize (MIIO_MIVACUUM_1_STATE_CODES);
-						if (array_key_exists($value, $state_codes)) $res_commands[] = array('command' => 'state_text', 'value' => $state_codes[$value]);
+			} elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
+				if (($command == 'get_status' || $command == 'get_consumable') && is_array($data['result'])) {
+					foreach($data['result'][0] as $key => $value) {
+						$res_commands[] = array('command' => $key, 'value' => $value);
+						if ($key == 'state') {
+							$state_codes = unserialize (MIIO_MIVACUUM_1_STATE_CODES);
+							if (array_key_exists($value, $state_codes)) $res_commands[] = array('command' => 'state_text', 'value' => $state_codes[$value]);
+						}
+						if ($key == 'error_code') {
+							$error_codes = unserialize (MIIO_MIVACUUM_1_ERROR_CODES);
+							if (array_key_exists($value, $error_codes)) $res_commands[] = array('command' => 'error_text', 'value' => $error_codes[$value]);
+						}
 					}
-					if ($key == 'error_code') {
-						$error_codes = unserialize (MIIO_MIVACUUM_1_ERROR_CODES);
-						if (array_key_exists($value, $error_codes)) $res_commands[] = array('command' => 'error_text', 'value' => $error_codes[$value]);
-					}				
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.m1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
@@ -1185,17 +1206,25 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.v1' && $command == 'get_prop' && is_array($data['result'])) {
-				$props = explode(',', MIIO_CHUANGMI_PLUG_V1_PROPS);
-				$i = 0;
-				foreach($props as $key) {
-					$value = $data['result'][$i];
-					if ($key == 'usb_on') {
-						if ($value == 'true') $value = 1;
-						 else if ($value == 'false') $value = 0;
+			} elseif (($device['DEVICE_TYPE'] == 'chuangmi.plug.v1') || ($device['DEVICE_TYPE'] == 'chuangmi.plug.v3')) {
+				if ($command == 'get_prop' && is_array($data['result'])) {
+					$props = explode(',', MIIO_CHUANGMI_PLUG_V1_PROPS);
+					$i = 0;
+					foreach($props as $key) {
+						$value = $data['result'][$i];
+						if ($key == 'usb_on') {
+							if ($value == 'true') $value = 1;
+							else if ($value == 'false') $value = 0;
+						}
+						$res_commands[] = array('command' => $key, 'value' => $value);
+						$i++;
 					}
+				} elseif ($command == 'get_power') {
+					$key = 'load_power';
+					$value = $data['result'][0];
+					if ($value == '' || $value == 'null' || $value == null) $value = '0';
+					$value = $value / 100;
 					$res_commands[] = array('command' => $key, 'value' => $value);
-					$i++;
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'philips.light.ceiling' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_PHILIPS_LIGHT_CEILING_PROPS);
@@ -1223,7 +1252,7 @@ class xiaomimiio extends module {
 				$i = 0;
 				foreach($props as $key) {
 					$value = $data['result'][$i];
-					if ($key == 'flow_params') $key = 'flow';					
+					if ($key == 'flow_params') $key = 'flow';
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
@@ -1317,7 +1346,7 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 				}
 				$res_commands[] = array('command' => 'volume', 'value' => $data['result'][1]);
-				$res_commands[] = array('command' => 'rel_time', 'value' => $data['result'][2]);				
+				$res_commands[] = array('command' => 'rel_time', 'value' => $data['result'][2]);
 			}
 		}
 		

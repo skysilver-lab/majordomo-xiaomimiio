@@ -1,4 +1,5 @@
-<!-- Table 'miio_devices' edit -->
+<link rel="stylesheet" href="../templates/xiaomimiio/css/bootstrap-select.min.css">
+
 <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
 	[#if OK#]
 	<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
@@ -39,41 +40,47 @@
 				<#LANG_TYPE#>:
 			</label>
 			<div class="col-lg-4">
-				<select name="device_type" class="form-control">
+				<select name="device_type" class="selectpicker show-tick form-control">
+					<!-- шаблон для нового устройства
+					<option data-content="<img src='../templates/xiaomimiio/img/small/NEW_DEV.png' width='20' height='20'> NEW_DEV_NAME" value="NEW_DEV" [#if DEVICE_TYPE="NEW_DEV"#] selected[#endif#]></option>
+					-->
 					<option value=""></option>
 					<optgroup label="Aqara">
-					<option value="lumi.acpartner.v3" [#if DEVICE_TYPE="lumi.acpartner.v3"#] selected[#endif#]>Aqara AC Companion Gateway</option>
-					<option value="lumi.camera.aq1" [#if DEVICE_TYPE="lumi.camera.aq1"#] selected[#endif#]>Aqara Smart Camera Gateway</option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/lumi.acpartner.v3.png' width='20' height='20'> Aqara AC Companion Gateway" value="lumi.acpartner.v3" [#if DEVICE_TYPE="lumi.acpartner.v3"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/lumi.camera.aq1.png' width='20' height='20'> Aqara Smart Camera Gateway" value="lumi.camera.aq1" [#if DEVICE_TYPE="lumi.camera.aq1"#] selected[#endif#]></option>
 					</optgroup>
 					<optgroup label="Xiaomi">
-					<option value="zhimi.humidifier.v1" [#if DEVICE_TYPE="zhimi.humidifier.v1"#] selected[#endif#]>Mi Air Humidifier</option>
-					<option value="zhimi.humidifier.ca1" [#if DEVICE_TYPE="zhimi.humidifier.ca1"#] selected[#endif#]>Mi Air Humidifier 2</option>
-					<option value="zhimi.airpurifier.ma2" [#if DEVICE_TYPE="zhimi.airpurifier.ma2"#] selected[#endif#]>Mi Air Purifier 2S</option>
-					<option value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]>Mi IR Remote 360</option>
-					<option value="xiaomi.wifispeaker.v1" [#if DEVICE_TYPE="xiaomi.wifispeaker.v1"#] selected[#endif#]>Mi Internet Speaker</option>
-					<option value="yeelink.light.lamp1" [#if DEVICE_TYPE="yeelink.light.lamp1"#] selected[#endif#]>Mi LED Desk Lamp</option>
-					<option value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]>Mi Smart Home Gateway 2</option>
-					<option value="zimi.powerstrip.v2" [#if DEVICE_TYPE="zimi.powerstrip.v2"#] selected[#endif#]>Mi Smart Power Strip 6 Plugs</option>
-					<option value="chuangmi.plug.v1" [#if DEVICE_TYPE="chuangmi.plug.v1"#] selected[#endif#]>Mi Smart Socket Plug with USB</option>
-					<option value="chuangmi.plug.m1" [#if DEVICE_TYPE="chuangmi.plug.m1"#] selected[#endif#]>Mi Smart Socket Plug 2</option>
-					<option value="isa.camera.isc5" [#if DEVICE_TYPE="isa.camera.isc5"#] selected[#endif#]>Mi Square Smart Camera</option>
-					<option value="isa.camera.df3" [#if DEVICE_TYPE="isa.camera.df3"#] selected[#endif#]>Mi Dafang Smart Camera 120</option>
-					<option value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]>Mi Vacuum Cleaner</option>
-					<option value="xiaomi.repeater.v2" [#if DEVICE_TYPE="xiaomi.repeater.v2"#] selected[#endif#]>Mi WiFi Amplifier 2</option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/zhimi.humidifier.v1.png' width='20' height='20'> Mi Air Humidifier" value="zhimi.humidifier.v1" [#if DEVICE_TYPE="zhimi.humidifier.v1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/zhimi.humidifier.ca1.png' width='20' height='20'> Mi Air Humidifier 2" value="zhimi.humidifier.ca1" [#if DEVICE_TYPE="zhimi.humidifier.ca1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/zhimi.airpurifier.ma2.png' width='20' height='20'> Mi Air Purifier 2S" value="zhimi.airpurifier.ma2" [#if DEVICE_TYPE="zhimi.airpurifier.ma2"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/chuangmi.ir.v2.png' width='20' height='20'> Mi IR Remote 360" value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/xiaomi.wifispeaker.v1.png' width='20' height='20'> Mi Internet Speaker" value="xiaomi.wifispeaker.v1" [#if DEVICE_TYPE="xiaomi.wifispeaker.v1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.lamp1.png' width='20' height='20'> Mi LED Desk Lamp" value="yeelink.light.lamp1" [#if DEVICE_TYPE="yeelink.light.lamp1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/lumi.gateway.v3.png' width='20' height='20'> Mi Smart Home Gateway 2" value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/zimi.powerstrip.v2.png' width='20' height='20'> Mi Smart Power Strip 6 Plugs" value="zimi.powerstrip.v2" [#if DEVICE_TYPE="zimi.powerstrip.v2"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/chuangmi.plug.v1.png' width='20' height='20'> Mi Smart Socket Plug with USB" value="chuangmi.plug.v1" [#if DEVICE_TYPE="chuangmi.plug.v1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/chuangmi.plug.v3.png' width='20' height='20'> Mi Smart Socket Plug with 2 USB" value="chuangmi.plug.v3" [#if DEVICE_TYPE="chuangmi.plug.v3"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/chuangmi.plug.m1.png' width='20' height='20'> Mi Smart Socket Plug 2" value="chuangmi.plug.m1" [#if DEVICE_TYPE="chuangmi.plug.m1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/isa.camera.isc5.png' width='20' height='20'> Mi Square Smart Camera" value="isa.camera.isc5" [#if DEVICE_TYPE="isa.camera.isc5"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/isa.camera.df3.png' width='20' height='20'> Mi Dafang Smart Camera 120" value="isa.camera.df3" [#if DEVICE_TYPE="isa.camera.df3"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/roborock.vacuum.s5.png' width='20' height='20'> Mi Roborock S50/S51" value="roborock.vacuum.s5" [#if DEVICE_TYPE="roborock.vacuum.s5"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/rockrobo.vacuum.v1.png' width='20' height='20'> Mi Vacuum Cleaner" value="rockrobo.vacuum.v1" [#if DEVICE_TYPE="rockrobo.vacuum.v1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/xiaomi.repeater.v2.png' width='20' height='20'> Mi WiFi Amplifier 2" value="xiaomi.repeater.v2" [#if DEVICE_TYPE="xiaomi.repeater.v2"#] selected[#endif#]></option>
 					</optgroup>
 					<optgroup label="Philips">
-					<option value="philips.light.ceiling" [#if DEVICE_TYPE="philips.light.ceiling"#] selected[#endif#]>Philips EyeCare Smart Ceiling Lamp</option>
-					<option value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]>Philips EyeCare Smart Desk Lamp 2</option>
-					<option value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]>Philips Light Bulb</option>
-					<option value="philips.light.candle" [#if DEVICE_TYPE="philips.light.candle"#] selected[#endif#]>Philips Rui Chi Candle Light Bulb</option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/philips.light.ceiling.png' width='20' height='20'> Philips EyeCare Smart Ceiling Lamp" value="philips.light.ceiling" [#if DEVICE_TYPE="philips.light.ceiling"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/philips.light.sread1.png' width='20' height='20'> Philips EyeCare Smart Desk Lamp 2" value="philips.light.sread1" [#if DEVICE_TYPE="philips.light.sread1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/philips.light.bulb.png' width='20' height='20'> Philips Light Bulb" value="philips.light.bulb" [#if DEVICE_TYPE="philips.light.bulb"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/philips.light.candle.png' width='20' height='20'> Philips Rui Chi Candle Light Bulb" value="philips.light.candle" [#if DEVICE_TYPE="philips.light.candle"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/philips.light.downlight.png' width='20' height='20'> Philips Zhirui Downlight" value="philips.light.downlight" [#if DEVICE_TYPE="philips.light.downlight"#] selected[#endif#]></option>
 					</optgroup>
 					<optgroup label="Yeelight">
-					<option value="yeelink.light.bslamp1" [#if DEVICE_TYPE="yeelink.light.bslamp1"#] selected[#endif#]>Yeelight Bedside Lamp</option>
-					<option value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]>Yeelight Color Bulb</option>
-					<option value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]>Yeelight White Bulb</option>
-					<option value="yeelink.light.ceiling1" [#if DEVICE_TYPE="yeelink.light.ceiling1"#] selected[#endif#]>Yeelight Ceiling Light</option>
-					<option value="yeelink.light.strip1" [#if DEVICE_TYPE="yeelink.light.strip1"#] selected[#endif#]>Yeelight LED Lightstrip</option>
-					</optgroup>					
+					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.bslamp1.png' width='20' height='20'> Yeelight Bedside Lamp" value="yeelink.light.bslamp1" [#if DEVICE_TYPE="yeelink.light.bslamp1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.color1.png' width='20' height='20'> Yeelight Color Bulb" value="yeelink.light.color1" [#if DEVICE_TYPE="yeelink.light.color1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.mono1.png' width='20' height='20'> Yeelight White Bulb" value="yeelink.light.mono1" [#if DEVICE_TYPE="yeelink.light.mono1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.ceiling1.png' width='20' height='20'> Yeelight Ceiling Light" value="yeelink.light.ceiling1" [#if DEVICE_TYPE="yeelink.light.ceiling1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.strip1.png' width='20' height='20'> Yeelight LED Lightstrip" value="yeelink.light.strip1" [#if DEVICE_TYPE="yeelink.light.strip1"#] selected[#endif#]></option>
+					</optgroup>
 				</select>
 			</div>
 		</div>
@@ -242,7 +249,7 @@
 		var obj = document.getElementById('ir_learn_timer');
 		var dopt='{"key":"'+slot+'"}';
 		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_read&dopt="+dopt;
-				
+
 		Data = new Date();
 		Hour = Data.getHours();
 		Minutes = Data.getMinutes();
@@ -310,3 +317,16 @@
 	
 </script>
 [#endif#]
+
+<script>
+
+var script = document.createElement('script');
+script.src = "../templates/xiaomimiio/css/bootstrap-select.min.js"
+document.body.appendChild(script);
+
+script.onload = function() {
+	// после подгрузки js-файла перерисуем элемент select
+	$('.selectpicker').selectpicker('render');
+}
+
+</script>
