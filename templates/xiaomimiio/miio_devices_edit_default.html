@@ -100,7 +100,7 @@
 			<div class="col-lg-4">[#SERIAL#]</div>
 		</div>
 		[#endif#]
-		
+
 		[#if DEVICE_TYPE_CODE!=""#]
 		<div class="form-group">
 			<label class="col-lg-3 control-label">
@@ -109,7 +109,26 @@
 			<div class="col-lg-4">[#DEVICE_TYPE_CODE#]</div>
 		</div>
 		[#endif#]
-		
+
+      [#if DEVICE_TYPE="lumi.gateway.v3" || DEVICE_TYPE="lumi.acpartner.v3"#]
+      <div class="form-group">
+         <label class="col-lg-3 control-label">
+            <#LANG_XIMI_APP_LAN_MODE#>:
+         </label>
+         <div class="col-lg-8">
+            [#if LAN_KEY!=""#]
+               <span class="label label-success"><#LANG_XIMI_APP_ACTIVE#></span>&nbsp&nbsp
+               <b><#LANG_XIMI_APP_KEY#>:</b> [#LAN_KEY#]&nbsp&nbsp
+               <span onclick="lanModeOff();" data-toggle="modal" data-target="#lan_mode" class="btn btn-default [#if TOKEN=="" || DEVICE_TYPE==""#]disabled[#endif#]" title="<#LANG_XIMI_APP_DEACTIVATE_LAN_MODE#>" id="[#IP#]"><#LANG_XIMI_APP_OFF#></span>
+            [#else LAN_KEY#]
+               <span class="label label-warning"><#LANG_XIMI_APP_NOTACTIVE#></span>&nbsp&nbsp
+               <span onclick="lanModeOn();" data-toggle="modal" data-target="#lan_mode" class="btn btn-default [#if TOKEN=="" || DEVICE_TYPE==""#]disabled[#endif#]" title="<#LANG_XIMI_APP_ACTIVATE_LAN_MODE#>" id="[#IP#]"><#LANG_XIMI_APP_ON#></span>
+            [#endif LAN_KEY#]
+            <div id="lan_mode_alert"></div>
+         </div>
+      </div>
+      [#endif#]
+
 		[#if MAC!=""#]
 		<div class="form-group">
 			<label class="col-lg-3 control-label"[#if ERR_MAC#] style="color:red;font-weight:bold"[#endif#]>
@@ -137,7 +156,8 @@
 		</div>
 		[#endif#]
 		
-		[#if DEVICE_TYPE="chuangmi.ir.v2"#]
+      <!--[#if DEVICE_TYPE="chuangmi.ir.v2" || DEVICE_TYPE="lumi.acpartner.v3"#]-->
+      [#if DEVICE_TYPE="chuangmi.ir.v2"#]
 		<div class="form-group">
 			<label class="col-lg-3 control-label">
 				<#LANG_XIMI_APP_TEACH1#>:
@@ -167,12 +187,118 @@
 	</fieldset>
 </form>
 
-[#if DEVICE_TYPE="chuangmi.ir.v2"#]
+[#if DEVICE_TYPE="lumi.gateway.v3" || DEVICE_TYPE="lumi.acpartner.v3"#]
+<script type="text/javascript">
+
+   function generateKey() {
+      const CHARS = '0123456789abcdefghijklmnopqrstuvwxyz';
+      let result = '';
+      for(let i=0; i<16; i++) {
+         let idx = Math.floor(Math.random() * CHARS.length);
+         result += CHARS[idx];
+      }
+      return result;
+   }
+
+   function tabUpdate() {
+      var link = $('#general-tab-link')[0];
+      var linkEvent = document.createEvent('MouseEvents');
+      linkEvent.initEvent('click', true, true);
+      link.dispatchEvent(linkEvent);
+      e.preventDefault();
+   }
+
+   function lanModeOff(){
+      var yesno = confirm("<#LANG_XIMI_APP_LAN_MODE_OFF_ASK#>");
+      if (yesno) {
+         var url = '/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=set_lumi_dpf_aes_key&dopt=[""]';
+         var token = "[#TOKEN#]";
+         var ip = "[#IP#]";
+
+         $("#lan_mode_alert").html('');
+
+         if (token !== '' && ip !== '') {
+            $.ajax({
+               url: url,
+               cache: false,
+               success: function(html){
+                  var resp = tryParseJSON(html);
+                  if (resp !== false) {
+                     $("#lan_mode_alert").html('<div class="alert alert-success" role="alert"><#LANG_XIMI_APP_LAN_MODE_OFF#>.</div>');
+                     var url = "/ajax/xiaomimiio.html?op=single_prop_update&did=[#ID#]&dcmd=get_lumi_dpf_aes_key&dopt=[]";
+                     $.ajax({
+                        url: url,
+                        cache: false,
+                        success: function(html){
+                           setTimeout('tabUpdate()', 1000);
+                        }
+                     });
+                  } else {
+                     $("#lan_mode_alert").html('<div class="alert alert-warning" role="alert"><#LANG_XIMI_APP_ERROR#>.</div>');
+                  }
+               }
+            });
+         } else {
+            $("#lan_mode_alert").html('<div class="alert alert-warning" role="alert"><#LANG_XIMI_APP_ERROR#>.</div>');
+         }
+      }
+   }
+
+   function lanModeOn(){
+      var yesno = confirm("<#LANG_XIMI_APP_LAN_MODE_ON_ASK#>");
+      if (yesno) {
+         var key = generateKey();
+         var url = '/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=set_lumi_dpf_aes_key&dopt=["'+key+'"]';
+         var token = "[#TOKEN#]";
+         var ip = "[#IP#]";
+
+         $("#lan_mode_alert").html('');
+
+         if (token !== '' && ip !== '') {
+            $.ajax({
+               url: url,
+               cache: false,
+               success: function(html){
+                  var resp = tryParseJSON(html);
+                  if (resp !== false) {
+                     $("#lan_mode_alert").html('<div class="alert alert-success" role="alert"><#LANG_XIMI_APP_LAN_MODE_ON#>.</div>');
+                     var url = "/ajax/xiaomimiio.html?op=single_prop_update&did=[#ID#]&dcmd=get_lumi_dpf_aes_key&dopt=[]";
+                     $.ajax({
+                        url: url,
+                        cache: false,
+                        success: function(html){
+                           setTimeout('tabUpdate()', 1000);
+                        }
+                     });
+                  } else {
+                     $("#lan_mode_alert").html('<div class="alert alert-warning" role="alert"><#LANG_XIMI_APP_ERROR#>.</div>');
+                  }
+               }
+            });
+         } else {
+            $("#lan_mode_alert").html('<div class="alert alert-warning" role="alert"><#LANG_XIMI_APP_ERROR#>.</div>');
+         }
+      }
+   }
+
+   function tryParseJSON (jsonString){
+      try {
+         var o = JSON.parse(jsonString);
+         if (o && typeof o === "object") return o;
+      }
+      catch (e) { }
+      return false;
+   };
+
+</script>
+[#endif#]
+
+[#if DEVICE_TYPE="chuangmi.ir.v2" || DEVICE_TYPE="lumi.acpartner.v3"#]
 <div class="modal fade" id="ir_learn" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XXIMI_APP_CLOSE#></span></button>
+				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
 				<b><#LANG_XIMI_APP_TEACH2#></b>
 			</div>
 			<div class="modal-body">

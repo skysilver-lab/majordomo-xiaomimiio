@@ -9,9 +9,9 @@
 	<a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>
 	&nbsp;&nbsp;&nbsp;
 	[#if CYCLERUN==1#]
-		<span class="label label-success" title="Статус цикла"><#LANG_XIMI_APP_CYCLE_START#></span>
+		<span class="label label-success" title="<#LANG_XIMI_APP_CYCLE_STATE#>"><#LANG_XIMI_APP_CYCLE_START#></span>
 	[#else#]
-		<span class="label label-danger" title="Статус цикла"><#LANG_XIMI_APP_CYCLE_STOP#></span>
+		<span class="label label-danger" title="<#LANG_XIMI_APP_CYCLE_STATE#>"><#LANG_XIMI_APP_CYCLE_STOP#></span>
 	[#endif#]
 	<div class="float-right">&nbsp;&nbsp;&nbsp;&nbsp;</div>
 	<button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#about"><#LANG_XIMI_APP_ABOUT#>&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
@@ -24,7 +24,7 @@
         <fieldset>
             <div class="form-group">
                 <label class="control-label"><#LANG_XIMI_APP_IP#>
-				<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_IP_TOOLTIP#>">
+				<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_IP_TOOLTIP#>">
 					<i class="glyphicon glyphicon-info-sign"></i>
 				</span>
                 </label>
@@ -32,7 +32,7 @@
             </div>
 			<div class="form-group">
                 <label class="control-label"><#LANG_XIMI_APP_PERIOD#>
-				<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_PERIOD_TOOLTIP#>">
+				<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_PERIOD_TOOLTIP#>">
 					<i class="glyphicon glyphicon-info-sign"></i>
 				</span>
                 </label>
@@ -41,7 +41,7 @@
             <div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
 					<#LANG_XIMI_APP_DEBUG#> DebMes
-					<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP#>">
+					<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP#>">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>
@@ -49,7 +49,7 @@
 			<div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_miio" value="1"[#if API_LOG_MIIO="1"#] checked[#endif#]> 
 					<#LANG_XIMI_APP_DEBUG#> miIO-Lib
-					<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP2#>">
+					<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP2#>">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>
@@ -57,7 +57,7 @@
 			<div class="form-group">
                 <div class="controls"><input type="checkbox" name="api_log_cycle" value="1"[#if API_LOG_CYCLE="1"#] checked[#endif#]> 
 					<#LANG_XIMI_APP_DEBUG#> Cycle
-					<span class='support' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP3#>">
+					<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP3#>">
 						<i class="glyphicon glyphicon-info-sign"></i>
 					</span>
 				</div>
@@ -80,7 +80,7 @@
 		[#if TITLE!=""#]<h4>[#TITLE#]</h4>[#endif TITLE#]
 		<ul class="nav nav-tabs">
 			<li[#if TAB=""#] class="active"[#endif#]>
-				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
+				<a id="general-tab-link" href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab="><#LANG_GENERAL#></a>
 			</li>
 			<li[#if TAB="data"#] class="active"[#endif#]>
 				<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&id=<#ID#>&tab=data"><#LANG_DATA#></a>
@@ -156,10 +156,11 @@
 			<div class="modal-body">
 				<div class="float-right">
 					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.1.7b</b></p>
+					<br><br><p><b>v.1.8</b></p>
 				</div>
-                <p class="float-left">
+            <p class="float-left">
 					<#LANG_XIMI_APP_MODULE#><br><br>
+               <#LANG_XIMI_APP_DOCS#> <a href="https://kb.smartliving.ru/category/moduli-v-majordomo/xiaomi-miio/" target="_blank"><#LANG_XIMI_APP_INKB#></a>.<br>
 					<#LANG_XIMI_APP_DISCUS#> <a href="https://majordomo.smartliving.ru/forum/viewtopic.php?f=5&t=4863" target="_blank"><#LANG_XIMI_APP_DISCUS2#></a>.<br>
 					<#LANG_XIMI_APP_PROJ#> <a href="https://github.com/skysilver-lab/majordomo-xiaomimiio" target="_blank">Github</a>.<br>
 					<#LANG_XIMI_APP_PROJ#> <a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a>.<br>
@@ -173,7 +174,8 @@
 					<li><#LANG_XIMI_APP_DONATE2#><a href="https://connect.smartliving.ru/tasks/51.html" target="_blank">Connect</a></li>
 				</ul>
                 </p>
-				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, <b>ypiter2006</b>, <b>Genplane</b>, <b>TurburatoR</b>, <b>Alex77</b>, <b>iden</b>, <b>TrDA</b>.</h6>
+				<h6><#LANG_XIMI_APP_THANKS#>: <b>webms</b>, <b>srvsrvsrv</b>, <b>SergeJey</b>, <b>Gelezako</b>, <b>horas</b>, <b>ингвар</b>, <b>Dicont</b>, <b>shawk</b>, 
+            <b>ypiter2006</b>, <b>Genplane</b>, <b>TurburatoR</b>, <b>Alex77</b>, <b>iden</b>, <b>TrDA</b>, <b>newz20</b>, <b>axisvega</b>.</h6>
 			</div>
 			<div class="modal-footer">
 				<div class="pull-left"><#LANG_XIMI_APP_Author#>: <a href="https://telegram.me/agafonov_d" target="_blank">skysilver</a></div>

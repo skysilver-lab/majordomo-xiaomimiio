@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.7b
+* @version 1.8b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
@@ -636,9 +636,9 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
-	
+
 	function usual(&$out) {
-		
+
 		if ($this->ajax) {
 			global $op;
 			if ($op == 'process') {
@@ -652,62 +652,73 @@ class xiaomimiio extends module {
 				$this->discover();
 				if ($this->config['API_LOG_DEBMES']) DebMes('Periodic search for devices in the network is finished', 'xiaomimiio');
 			} else if ($op == 'get_miio_info') {
-				
+
 				$dip = $_GET['dip'];
 				$dtoken = $_GET['dtoken'];
-				
+
 				header("HTTP/1.0: 200 OK\n");
 				header('Content-Type: text/html; charset=utf-8');
-					
+
 				if (!class_exists('miIO', false)) {
 					include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
 				}
 				$this->getConfig();
-			
+
 				if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
 				 else $bind_ip = '0.0.0.0';
 				if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
 				 else $miio_debug = false;
-			
+
 				$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
-				
+
 				if ($dev->getInfo(time())) {
 					if ($dev->data == '') $info = 'Сведения miIO.info не получены. Вероятно, указан неверный токен.';
 					 else $info = $dev->data;
 				} else $info = 'Что-то пошло не так...';
-				
+
 				echo $info;
 				exit;
 			} else if ($op == 'test_api_cmd') {
-				
+
 				$dip = $_GET['dip'];
 				$dtoken = $_GET['dtoken'];
 				$cmd = $_GET['dcmd'];
 				$opt = $_GET['dopt'];
-				
+
 				header("HTTP/1.0: 200 OK\n");
 				header('Content-Type: text/html; charset=utf-8');
-					
+
 				if (!class_exists('miIO', false)) {
 					include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
 				}
 				$this->getConfig();
-			
+
 				if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
 				 else $bind_ip = '0.0.0.0';
 				if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
 				 else $miio_debug = false;
-			
+
 				$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
-				
+
 				if ($dev->msgSendRcv($cmd, $opt, time())) {
 					if ($dev->data == '') $info = 'Результат выполнения команды не получен. Вероятно, указан неверный токен.';
 					 else $info = $dev->data;
 				} else $info = 'Что-то пошло не так...';
-				
+
 				echo $info;
 				exit;
-			}
+			} else if ($op == 'prop_update') {
+            $did = $_GET['did'];
+            $this->requestStatus($did);
+            if ($this->config['API_LOG_DEBMES']) DebMes('Manual update the properties of the device ' . $did, 'xiaomimiio');
+         } else if ($op == 'single_prop_update') {
+            $did = $_GET['did'];
+            $cmd = $_GET['dcmd'];
+            $opt = $_GET['dopt'];
+            $this->addToQueue($did, $cmd, $opt);
+            $this->getConfig();
+            if ($this->config['API_LOG_DEBMES']) DebMes('Manual update the one propertie ' . $cmd . 'of the device ' . $did, 'xiaomimiio');
+         }
 			echo 'OK';
 			exit;
 		}
@@ -1081,7 +1092,12 @@ class xiaomimiio extends module {
 
 		$data = json_decode($message, true);
 
-		if ($command == 'discover_all') {
+      if (isset($data['error']) && $data['error'] == 'Device not answered') {
+         if ($device['ID']) {
+            $res_commands[] = array('command' => 'online', 'value' => 0);
+            $res_commands[] = array('command' => 'message', 'value' => $message);
+         }
+      } elseif ($command == 'discover_all') {
 			if (is_array($data['devices'])) {
 				foreach($data['devices'] as $dev) {
 					$dev = json_decode($dev, true);
@@ -1349,18 +1365,18 @@ class xiaomimiio extends module {
 				$res_commands[] = array('command' => 'rel_time', 'value' => $data['result'][2]);
 			}
 		}
-		
-		foreach ($res_commands as $c) {
-            $cmd = $c['command'];
-            $val = $c['value'];
-			if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock'|| $cmd == 'dry') {
-				if ($val == 'on') $val = 1;
-				 else if ($val == 'off') $val = 0;
-			}
-			$this->processCommand($device['ID'], $cmd, $val);
-        }
 
-	}
+      foreach ($res_commands as $c) {
+         $cmd = $c['command'];
+         $val = $c['value'];
+         if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock'|| $cmd == 'dry') {
+            if ($val == 'on') $val = 1;
+             else if ($val == 'off') $val = 0;
+         }
+         $this->processCommand($device['ID'], $cmd, $val);
+      }
+
+   }
 	
 	/**
 	* Install

@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.7b
+* @version 1.8b
 */
 
 if ($this->owner->name == 'panel') {
@@ -221,7 +221,7 @@ if ($this->tab == 'data') {
 			elseif ($properties[$i]['TITLE'] == 'limit_hum') $properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
 		}
 	}
-	$out['PROPERTIES'] = $properties;   
+	$out['PROPERTIES'] = $properties;
 }
 
 if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3'))) {
@@ -269,6 +269,18 @@ if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($
 	}
 	$out['PROPERTIES'] = $properties;   
 
+}
+
+if ($this->tab == '' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3'))) {
+
+   $lanKey = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE='lumi_dpf_aes_key'");
+
+   if (!empty($lanKey) && isset($lanKey['VALUE']) && $lanKey['VALUE'] != '') {
+      $out['LAN_KEY'] = $lanKey['VALUE'];
+   } else {
+      $out['LAN_KEY'] = '';
+   }
+   //$out['LAN_KEY'] = '';
 }
 
 if ($this->tab == 'help') {
