@@ -319,22 +319,22 @@ class xiaomimiio extends module {
 		 else $bind_ip = '0.0.0.0';
 		if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
 		 else $miio_debug = false;
-		
+
 		if (!class_exists('miIO', false)) {
 			include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
 		}
-		
+
 		$midev = new miIO(null, $bind_ip, null, $miio_debug);
-		
+
 		// Выполняем broadcast-поиск устройств в локальной сети
 		if ($this->config['API_LOG_DEBMES']) DebMes("Run miIO-discover command", 'xiaomimiio');
 		$res = $midev->discover();
 		if ($this->config['API_LOG_DEBMES']) DebMes("End miIO-discover command", 'xiaomimiio');
-		
+
 		if ($res) {
 			// Обрабатываем результат поиска
 			$reply = $midev->data;
-			
+
 			if ($reply != '') {
 				if ($this->config['API_LOG_DEBMES']) DebMes("Reply = $reply", 'xiaomimiio');
 
@@ -342,7 +342,7 @@ class xiaomimiio extends module {
 				$count_devices = count($all_devices);
 				if ($this->config['API_LOG_DEBMES']) DebMes("Current count of devices $count_devices", 'xiaomimiio');
 				$found_devices = json_decode($reply, true);
-			
+
 				if (is_array($found_devices['devices'])) {
 					foreach($found_devices['devices'] as $dev) {
 						$dev = json_decode($dev, true);
@@ -350,26 +350,26 @@ class xiaomimiio extends module {
 						$device_type_code = $dev['devicetype'];
 						$device_serial = $dev['serial'];
 						$token = $dev['token'];
-							
+
 						if (preg_match('/^[0fF]+$/', $token)) $token = '';
-						
+
 						if (preg_match('/^[0fF]+$/', $device_type_code) || preg_match('/^[0fF]+$/', $device_serial)) {
 							if ($this->config['API_LOG_DEBMES']) DebMes("Device $ip has wrong type code $device_type_code and serial number $device_serial", 'xiaomimiio');
 							continue;
 						}
-						
+
 						//TO-DO: новые сравниваются по sid и devcode, но если устройство было добавлено вручную, то эти параметры будут отсутствовать,
 						//соотвественно устройство добавится как новое, а не перезапишет (обновит) добавленно вручную.
 						$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='$device_type_code' AND SERIAL='$device_serial'");
-					
+
 						if ($dev_rec['ID']) {
 							// Если устройство уже есть в БД, то обновим его IP, токен и свойство online
 							$dev_rec['IP'] = $ip;
 							if ($token != '') $dev_rec['TOKEN'] = $token;
-						
+
 							if ($this->config['API_LOG_DEBMES']) DebMes("Update the ip address and the token for the device $ip", 'xiaomimiio');
 							SQLUpdate('miio_devices', $dev_rec);
-							
+
 							// Ответившее устройство выкинем из претендентов на оффлайн
 							for ($i = 0; $i < $count_devices; $i++) {
 								if ($dev_rec['ID'] == $all_devices[$i]['ID']) {
@@ -377,7 +377,7 @@ class xiaomimiio extends module {
 									break;
 								}
 							}
-						
+
 							$this->processCommand($dev_rec['ID'], 'online', 1);
 						} else {
 							// Если устройство нет в БД, то добавим его
@@ -389,13 +389,13 @@ class xiaomimiio extends module {
 							$dev_rec['DEVICE_TYPE_CODE'] = $device_type_code;
 							$dev_rec['TITLE'] = 'New ' . $dev_rec['DEVICE_TYPE_CODE'];
 							if ($this->config['API_LOG_DEBMES']) DebMes("Add new device with $ip", 'xiaomimiio');
-							
+
 							// Если есть токен, то пробуем получить тип устройства из miIO.info
 							if ($dev_rec['TOKEN']) {
 								if ($this->config['API_LOG_DEBMES']) DebMes('Try to get device model from miIO.info for the device ' . $dev_rec['IP'], 'xiaomimiio');
 								$midev->data = '';
 								$midev->ip = $dev_rec['IP'];
-								$midev->token = $dev_rec['TOKEN'];	
+								$midev->token = $dev_rec['TOKEN'];
 								if ($midev->getInfo(time())) {
 									if ($midev->data != '') {
 										$info = json_decode($midev->data, true);
@@ -405,25 +405,32 @@ class xiaomimiio extends module {
 									}
 								}
 							}
-							
+
 							$dev_rec['ID'] = SQLInsert('miio_devices', $dev_rec);
-							
-							if ($dev_rec['DEVICE_TYPE'] != '') {
+
+                     // Базовые метрики устройств
+                     $this->processCommand($dev_rec['ID'], 'online', 1);
+                     $this->processCommand($dev_rec['ID'], 'command', '');
+                     $this->processCommand($dev_rec['ID'], 'message', '');
+
+                     if ($dev_rec['DEVICE_TYPE'] != '') {
 								$this->requestStatus($dev_rec['ID']);
 								if (($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 									$this->processCommand($dev_rec['ID'], 'add_program', '');
 									$this->processCommand($dev_rec['ID'], 'del_program', '');
 								}
-								if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
+								if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
 									$this->processCommand($dev_rec['ID'], 'ir_play', '');
 								}
 								if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
 									$this->processCommand($dev_rec['ID'], 'vol_up', '');
 									$this->processCommand($dev_rec['ID'], 'vol_down', '');
 								}
+                        if ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                           $this->processCommand($dev_rec['ID'], 'power', '');
+                           $this->processCommand($dev_rec['ID'], 'load_power', '');
+                        }
 							}
-							
-							$this->processCommand($dev_rec['ID'], 'online', 1);
 						}
 					}
 				}
@@ -539,12 +546,17 @@ class xiaomimiio extends module {
 			}
 		} elseif (($device_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 			//
-			$this->addToQueue($device_id, 'get_prop_fm', '[]');
+         if ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+            $this->addToQueue($device_id, 'get_device_prop', '["lumi.0","ac_power"]');
+         }
+         $this->addToQueue($device_id, 'get_prop_fm', '[]');
 			if ($this->view_mode == 'propupd_miio_devices') {
 				$this->addToQueue($device_id, 'get_lumi_dpf_aes_key', '[]');
 				$this->addToQueue($device_id, 'get_zigbee_channel', '[]');
 			}
 			$this->addToQueue($device_id, 'get_channels', '{"start":0}');
+         //TODO: $this->addToQueue($device_id, 'get_channels', '{"start":10}');
+         //      Если станций больше 10, 20.
 		} elseif ($device_rec['DEVICE_TYPE'] == 'philips.light.ceiling') {
 			//
 			$props = explode(',', MIIO_PHILIPS_LIGHT_CEILING_PROPS);
@@ -755,12 +767,12 @@ class xiaomimiio extends module {
 	*/
 	
 	function delete_miio_devices($id) {
-		
+
 		$rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID='$id'");
-		
+
 		SQLExec("DELETE FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "'");
 		SQLExec("DELETE FROM miio_devices WHERE ID='" . $rec['ID'] . "'");
-		
+
 	}
 	
 	/**
@@ -806,13 +818,18 @@ class xiaomimiio extends module {
 						//что может быть неприемлемо.
 						//$this->requestStatus($properties[$i]['DEVICE_ID']);
 					} elseif ($properties[$i]['TITLE'] == 'power') {
-						// Команда на включение и выключение
-						if ($value) {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["on"]');
-						} else {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_power', '["off"]');
-						}
-						// TO-DO: Если у-во yeelight, то используем дополнительные опции команды (effect, duration, mode).
+                  // Команда на включение и выключение
+                  if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                     $method = 'toggle_plug';
+                  } else {
+                     $method = 'set_power';
+                  }
+                  if ($value) {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], $method, '["on"]');
+                  } else {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], $method, '["off"]');
+                  }
+                  // TO-DO: Если у-во yeelight, то используем дополнительные опции команды (effect, duration, mode).
 					} elseif ($properties[$i]['TITLE'] == 'buzzer') {
 						// Команда на включение и выключение пищалки
 						if ($value) {
@@ -861,9 +878,14 @@ class xiaomimiio extends module {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_usb_off', '[]');
 						}
 					} elseif ($properties[$i]['TITLE'] == 'ir_play') {
-						// Команда для отправки IR-кода
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'miIO.ir_play', '{"freq":38400,"code":"' . $value . '"}');
-						//{"id":1,"method":"miIO.ir_play","params":{"freq":38400,"code":"Z6VHABACAABE...QA="}}
+                  // Команда для отправки IR-кода
+                  if ($properties[$i]['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'miIO.ir_play', '{"freq":38400,"code":"' . $value . '"}');
+                  }
+                  else if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'send_ir_code', '["' . $value . '"]');
+                  }
+                  //{"id":1,"method":"miIO.ir_play","params":{"freq":38400,"code":"Z6VHABACAABE...QA="}}
 					} elseif ($properties[$i]['TITLE'] == 'snm') {
 						// Установить фиксированные сцены (1-Яркий, 2-ТВ, 3-тёплый, 4-ночь)
 						if ($value < 1) $value = 1;
@@ -1021,9 +1043,7 @@ class xiaomimiio extends module {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'remove_channels', '{"chs":[{"id":' . $value . ',"url":"' . $ch_url . '","type":0}]}');
 						}
 					}
-					
-					SQLExec("UPDATE miio_commands SET VALUE='".DBSafe($value)."' WHERE ID=".$properties[$i]['ID']);
-					//TO-DO: также обновлять поле UPDATED
+					SQLExec("UPDATE miio_commands SET VALUE='" . DBSafe($value) . "', UPDATED='" . date('Y-m-d H:i:s') . "' WHERE ID=" . $properties[$i]['ID']);
 				}
 			}
 		}
@@ -1036,11 +1056,11 @@ class xiaomimiio extends module {
 	*
 	* @access private
 	*/
-	
+
 	function processCommand($device_id, $command, $value, $params = 0) {
-		
+
 		$cmd_rec = SQLSelectOne("SELECT * FROM miio_commands WHERE DEVICE_ID=".(int)$device_id." AND TITLE LIKE '".DBSafe($command)."'");
-		
+
 		if (!$cmd_rec['ID']) {
 			$cmd_rec = array();
 			$cmd_rec['TITLE'] = $command;
@@ -1053,23 +1073,29 @@ class xiaomimiio extends module {
 		$cmd_rec['VALUE'] = $value;
 		$cmd_rec['UPDATED'] = date('Y-m-d H:i:s');
 		SQLUpdate('miio_commands', $cmd_rec);
-		
-		if ($old_value == $value) return;
 
-		if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_PROPERTY']) {
-			setGlobal($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_PROPERTY'], $value, array($this->name => '0'));
-		}
-		
-		if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_METHOD']) {
-			if (!is_array($params)) {
-				$params = array();
-			}
-			$params['VALUE'] = $value;
-			callMethodSafe($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_METHOD'], $params);
-		}
+      // Если значение метрики не изменилось, то выходим.
+      if ($old_value == $value) return;
+
+      // Иначе обновляем привязанное свойство.
+      if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_PROPERTY']) {
+         setGlobal($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_PROPERTY'], $value, array($this->name => '0'));
+      }
+
+      // И вызываем привязанный метод.
+      if ($cmd_rec['LINKED_OBJECT'] && $cmd_rec['LINKED_METHOD']) {
+         if (!is_array($params)) {
+            $params = array();
+         }
+         $params['VALUE'] = $value;
+         $params['OLD_VALUE'] = $old_value;
+         $params['NEW_VALUE'] = $value;
+
+         callMethodSafe($cmd_rec['LINKED_OBJECT'] . '.' . $cmd_rec['LINKED_METHOD'], $params);
+      }
 
 	}
-	
+
 	/**
 	* processMessage
 	*
@@ -1132,12 +1158,10 @@ class xiaomimiio extends module {
 				}
 			} 
 		} elseif ($device['ID']) {
-			
+
 			$res_commands[] = array('command' => 'online', 'value' => 1);
-			$res_commands[] = array('command' => 'command', 'value' => '');
 			$res_commands[] = array('command' => 'message', 'value' => $message);
-			
-	
+
 			if (($device['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($device['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 				if ($command == 'get_prop_fm' && is_array($data['result'])) {
 					foreach($data['result'] as $key => $value) {
@@ -1153,6 +1177,11 @@ class xiaomimiio extends module {
 				if ($command == 'get_zigbee_channel' && is_array($data['result'])) {
 					$res_commands[] = array('command' => 'zigbee_channel', 'value' => $data['result'][0]);
 				}
+            if ($device['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+               if ($command == 'get_device_prop' && is_array($data['result'])) {
+                  $res_commands[] = array('command' => 'load_power', 'value' => $data['result'][0]);
+               }
+            }
 			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.mono1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_YEELIGHT_WHITE_BULB_PROPS);
 				$i = 0;

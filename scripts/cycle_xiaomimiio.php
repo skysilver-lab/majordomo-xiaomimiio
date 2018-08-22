@@ -3,7 +3,7 @@
 * Xiaomi miIO Cycle
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.8b
+* @version 1.8.5b
 */
 
 chdir(dirname(__FILE__) . '/../');
@@ -92,11 +92,7 @@ while (1) {
             if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {
                $reply = $dev->data;
             } else {
-               if ($cycle_debug) echo date('H:i:s') . ' Reply: device not answered' . PHP_EOL;
                $reply = '{"error":"Device not answered"}';
-               $url = BASE_URL.'/ajax/xiaomimiio.html?op=process&command='.urlencode($queue[$i]['METHOD']).'&device_id='.$queue[$i]['DEVICE_ID'].'&message='.urlencode($reply);
-               getURLBackground($url, 0);
-               if ($cycle_debug) echo date('H:i:s') . ' Background processing of the response is started' . PHP_EOL;
             }
          }
 

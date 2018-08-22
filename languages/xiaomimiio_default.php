@@ -43,6 +43,7 @@ $dictionary = array(
 'XIMI_APP_TEACH1' => 'Learning IR code',
 'XIMI_APP_TEACH2' => 'IR-code learning',
 'XIMI_APP_TEACH_TEXT' => 'To read the IR code from the remote control, press the <b>Start</b> button, point the remote control towards <b>Mi IR Remote 360</b> and press the button whose code you want to know several times. Upon successful completion of the procedure, the code read will be displayed in the log.',
+'XIMI_APP_TEACH_TEXT_AQARA' => 'To read the IR code from the remote control, press the <b>Start</b> button, point the remote control towards <b>Aqara AC Companion</b> and press the button whose code you want to know several times. Upon successful completion of the procedure, the code read will be displayed in the log.',
 'XIMI_APP_START' => 'Start',
 'XIMI_APP_TRAINING' => 'Learning mode activated',
 'XIMI_APP_ERROR' => 'The problem with getting data from the device',

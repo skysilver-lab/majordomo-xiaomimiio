@@ -156,8 +156,7 @@
 		</div>
 		[#endif#]
 		
-      <!--[#if DEVICE_TYPE="chuangmi.ir.v2" || DEVICE_TYPE="lumi.acpartner.v3"#]-->
-      [#if DEVICE_TYPE="chuangmi.ir.v2"#]
+      [#if DEVICE_TYPE="chuangmi.ir.v2" || DEVICE_TYPE="lumi.acpartner.v3"#]
 		<div class="form-group">
 			<label class="col-lg-3 control-label">
 				<#LANG_XIMI_APP_TEACH1#>:
@@ -295,153 +294,287 @@
 
 [#if DEVICE_TYPE="chuangmi.ir.v2" || DEVICE_TYPE="lumi.acpartner.v3"#]
 <div class="modal fade" id="ir_learn" tabindex="-1" role="dialog" aria-labelledby="about1" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
-				<b><#LANG_XIMI_APP_TEACH2#></b>
-			</div>
-			<div class="modal-body">
-				<div class="row">
-					<div class="float-right">
-						<img src="../templates/xiaomimiio/img/mi_ir_learn.png" class="img-rounded">
-					</div>
-					<p class="float-left">
-						<#LANG_XIMI_APP_TEACH_TEXT#>
-					</p>
-					<br><br>
-					<div>
-						<button class="btn btn-primary" onclick="startLearnIR();"><#LANG_XIMI_APP_START#></button>&nbsp;&nbsp;&nbsp;<b><i id="ir_learn_timer"></i></b>
-					</div>
-				</div>
-				<div class="row">
-					<br>
-					<div>
-						<pre class="pre-scrollable" id="ir_learn_log" style="word-wrap: break-word;"></pre>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <button class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"><#LANG_XIMI_APP_CLOSE#></span></button>
+            <b><#LANG_XIMI_APP_TEACH2#></b>
+         </div>
+         <div class="modal-body">
+            <div class="row">
+               <div class="float-right">
+                  [#if DEVICE_TYPE="chuangmi.ir.v2"#]
+                     <img src="../templates/xiaomimiio/img/mi_ir_learn.png" class="img-rounded">
+                  [#endif#]
+                  [#if DEVICE_TYPE="lumi.acpartner.v3"#]
+                     <img src="../templates/xiaomimiio/img/aqara_ir_learn.png" class="img-rounded">
+                  [#endif#]
+               </div>
+               <p class="float-left">
+                  [#if DEVICE_TYPE="chuangmi.ir.v2"#]
+                     <#LANG_XIMI_APP_TEACH_TEXT#>
+                  [#endif#]
+                  [#if DEVICE_TYPE="lumi.acpartner.v3"#]
+                     <#LANG_XIMI_APP_TEACH_TEXT_AQARA#>
+                  [#endif#]
+               </p>
+               <br><br>
+               <div>
+                  <button class="btn btn-primary" onclick="startLearnIR();"><#LANG_XIMI_APP_START#></button>&nbsp;&nbsp;&nbsp;<b><i id="ir_learn_timer"></i></b>
+               </div>
+            </div>
+            <div class="row">
+               <br>
+               <div>
+                  <pre class="pre-scrollable" id="ir_learn_log" style="word-wrap: break-word;"></pre>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
 </div>
 
-<script type="text/javascript">
-	
-	function startLearnIR(){
-		
-		var slot=getRandomInt(1,100000);
-		var dopt='{"key":"'+slot+'"}';
-		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_learn&dopt="+dopt;
+   [#if DEVICE_TYPE="chuangmi.ir.v2"#]
+   <script>
+      function startLearnIR() {
 
-		$("#ir_learn_log").html('');
-		
-		Data = new Date();
-		Hour = Data.getHours();
-		Minutes = Data.getMinutes();
-		Seconds = Data.getSeconds();
-		
-		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' ip = '+'[#IP#]'+'<br>');
-		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' token = '+'[#TOKEN#]'+'<br>');
-		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
-		
-		$.ajax({
-			url: url,
-			cache: false,
-			success: function(html){
-				//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+html+'<br>');
-				var resp = tryParseJSON(html);
-				if (resp !== false) {
-					if(typeof resp.error === 'undefined') {
-						if((typeof resp.result !== 'undefined') && (resp.result === 0)) {
-							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING#>.<br>');
-							if($("#ir_learn_timer").html()=='') {
-								$('#ir_learn_timer').html('10');
-								setTimeout('learnTimer('+slot+')', 1000);
-							}
-						} else {
-							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - bad response.<br>');
-						}
-					} else {
-						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
-					}
-				} else {
-					$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
-				}
-			}
-		});
-	}
-	
-	function learnTimer(slot){
-		var obj = document.getElementById('ir_learn_timer');
-		var dopt='{"key":"'+slot+'"}';
-		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_read&dopt="+dopt;
+         var slot=getRandomInt(1,100000);
+         var dopt='{"key":"'+slot+'"}';
+         var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_learn&dopt="+dopt;
 
-		Data = new Date();
-		Hour = Data.getHours();
-		Minutes = Data.getMinutes();
-		Seconds = Data.getSeconds();
+         $("#ir_learn_log").html('');
 
-		obj.innerHTML--;
-		
-		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+obj.innerHTML+'<br>');
-		//$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
-		
-		if (obj.innerHTML == 0){
-			$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#>.<br>');
-			$('#ir_learn_timer').html('');
-			setTimeout(function(){}, 1000);
-		} else {
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function(html){
-					
-					var resp = tryParseJSON(html);
-					
-					if (resp !== false) {
-						if(typeof resp.error === 'undefined') {
-							if((typeof resp.result !== 'undefined') && (resp.result !== '')) {
-								
-								if((typeof resp.result.code !== 'undefined') && (typeof resp.result.key !== 'undefined')) {
-									if((resp.result.code!=='') && (resp.result.code.length > 10) && (resp.result.key == slot)) {
-										$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_SUCCESSFULLY#><br>');
-										$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result.code+'<br>');
-										$('#ir_learn_timer').html('');
-										setTimeout(function(){}, 1000);
-									} else if (resp.result.code==='') {
-										setTimeout('learnTimer('+slot+')', 1000);
-									}  
-								}
-							}
-						} else {
-							$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
-							$('#ir_learn_timer').html('');
-							setTimeout(function(){}, 1000);
-						}
-					} else {
-						$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
-						$('#ir_learn_timer').html('');
-						setTimeout(function(){}, 1000);
-					}
-				}
-			});	
-		}
-	}
-	
-	function tryParseJSON (jsonString){
-		try {
-			var o = JSON.parse(jsonString);
-			if (o && typeof o === "object") return o;
-		}
-		catch (e) { }
-		return false;
-	};
-	
-	function getRandomInt(min, max){
-		return Math.floor(Math.random() * (max - min + 1)) + min;
-	}
-	
-</script>
+         Data = new Date();
+         Hour = ('0' + Data.getHours()).slice(-2);
+         Minutes = ('0' + Data.getMinutes()).slice(-2);
+         Seconds = ('0' + Data.getSeconds()).slice(-2);
+
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' ip = '+'[#IP#]'+'<br>');
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' token = '+'[#TOKEN#]'+'<br>');
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+
+         $.ajax({
+            url: url,
+            cache: false,
+            success: function(html){
+               //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+html+'<br>');
+               var resp = tryParseJSON(html);
+               if (resp !== false) {
+                  if(typeof resp.error === 'undefined') {
+                     if((typeof resp.result !== 'undefined') && (resp.result === 0)) {
+                        $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING#>.<br>');
+                        if($("#ir_learn_timer").html()=='') {
+                           $('#ir_learn_timer').html('10');
+                           setTimeout('learnTimer('+slot+')', 1000);
+                        }
+                     } else {
+                        $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - bad response.<br>');
+                     }
+                  } else {
+                     $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
+                  }
+               } else {
+                  $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
+               }
+            }
+         });
+      }
+
+      function learnTimer(slot) {
+         var obj = document.getElementById('ir_learn_timer');
+         var dopt='{"key":"'+slot+'"}';
+         var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=miIO.ir_read&dopt="+dopt;
+
+         Data = new Date();
+         Hour = ('0' + Data.getHours()).slice(-2);
+         Minutes = ('0' + Data.getMinutes()).slice(-2);
+         Seconds = ('0' + Data.getSeconds()).slice(-2);
+
+         obj.innerHTML--;
+
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+obj.innerHTML+'<br>');
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+
+         if (obj.innerHTML == 0){
+            $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#>.<br>');
+            $('#ir_learn_timer').html('');
+            setTimeout(function(){}, 1000);
+         } else {
+            $.ajax({
+               url: url,
+               cache: false,
+               success: function(html){
+                  var resp = tryParseJSON(html);
+                  if (resp !== false) {
+                     if(typeof resp.error === 'undefined') {
+                        if((typeof resp.result !== 'undefined') && (resp.result !== '')) {
+                           
+                           if((typeof resp.result.code !== 'undefined') && (typeof resp.result.key !== 'undefined')) {
+                              if((resp.result.code!=='') && (resp.result.code.length > 10) && (resp.result.key == slot)) {
+                                 $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_SUCCESSFULLY#><br>');
+                                 $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result.code+'<br>');
+                                 $('#ir_learn_timer').html('');
+                                 setTimeout(function(){}, 1000);
+                                 $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#>.<br>');
+                              } else if (resp.result.code==='') {
+                                 setTimeout('learnTimer('+slot+')', 1000);
+                              }  
+                           }
+                        }
+                     } else {
+                        $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
+                        $('#ir_learn_timer').html('');
+                        setTimeout(function(){}, 1000);
+                     }
+                  } else {
+                     $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
+                     $('#ir_learn_timer').html('');
+                     setTimeout(function(){}, 1000);
+                  }
+               }
+            });
+         }
+      }
+
+      function tryParseJSON (jsonString) {
+         try {
+            var o = JSON.parse(jsonString);
+            if (o && typeof o === "object") return o;
+         }
+         catch (e) { }
+         return false;
+      };
+
+      function getRandomInt(min, max) {
+         return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+   </script>
+   [#endif#]
+
+   [#if DEVICE_TYPE="lumi.acpartner.v3"#]
+   <script>
+      function startLearnIR() {
+
+         var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=start_ir_learn&dopt=[30]";
+
+         $("#ir_learn_log").html('');
+
+         Data = new Date();
+         Hour = ('0' + Data.getHours()).slice(-2);
+         Minutes = ('0' + Data.getMinutes()).slice(-2);
+         Seconds = ('0' + Data.getSeconds()).slice(-2);
+
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' ip = '+'[#IP#]'+'<br>');
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' token = '+'[#TOKEN#]'+'<br>');
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+
+         $.ajax({
+            url: url,
+            cache: false,
+            success: function(html){
+               //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+html+'<br>');
+               var resp = tryParseJSON(html);
+               if (resp !== false) {
+                  if (typeof resp.error === 'undefined') {
+                     //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result+'<br>');
+                     if ((typeof resp.result !== 'undefined') && (resp.result === 0 || resp.result == 'ok')) {
+                        $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING#>.<br>');
+                        if ($("#ir_learn_timer").html()=='') {
+                           $('#ir_learn_timer').html('20');
+                           setTimeout('learnTimer()', 1000);
+                        }
+                     } else {
+                        $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - bad response.<br>');
+                     }
+                  } else {
+                     $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
+                  }
+               } else {
+                  $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
+               }
+            }
+         });
+      }
+
+      function learnTimer() {
+         var timer = document.getElementById('ir_learn_timer');
+         var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=get_ir_learn_result&dopt=[]";
+
+         Data = new Date();
+         Hour = ('0' + Data.getHours()).slice(-2);
+         Minutes = ('0' + Data.getMinutes()).slice(-2);
+         Seconds = ('0' + Data.getSeconds()).slice(-2);
+
+         timer.innerHTML--;
+
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+timer.innerHTML+'<br>');
+         //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+
+         if (timer.innerHTML == 0){
+            $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#>.<br>');
+            $('#ir_learn_timer').html('');
+            setTimeout(function(){}, 1000);
+            setTimeout(function() {
+               $.ajax({
+                  url: "/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=end_ir_learn&dopt=[]",
+                  cache: false,
+                  success: function(html){
+                     //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+timer.innerHTML+' -> '+html+'<br>');
+                  }
+               });
+            }, 1000);
+         } else {
+            $.ajax({
+               url: url,
+               cache: false,
+               success: function(html){
+                  var resp = tryParseJSON(html);
+                  if (resp !== false) {
+                     if (typeof resp.error === 'undefined') {
+                        if (resp.result[0] !== '(null)' && resp.result[0] !== '') {
+                           $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_SUCCESSFULLY#><br>');
+                           $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+resp.result[0]+'<br>');
+                           timer.innerHTML = 0;
+                           $('#ir_learn_timer').html('');
+                           setTimeout(function() {
+                              $.ajax({
+                                 url: "/ajax/xiaomimiio.html?op=test_api_cmd&dip=[#IP#]&dtoken=[#TOKEN#]&dcmd=end_ir_learn&dopt=[]",
+                                 cache: false,
+                                 success: function(html){
+                                    //$('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' '+timer.innerHTML+' -> '+html+'<br>');
+                                    $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING_END#>.<br>');
+                                 }
+                              });
+                           }, 1000);
+                        } else {
+                           setTimeout('learnTimer()', 1000);
+                        }
+                     } else {
+                        $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_STRING_ERROR#> - '+resp.error.message+'<br>');
+                        $('#ir_learn_timer').html('');
+                        setTimeout(function(){}, 1000);
+                     }
+                  } else {
+                     $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_ERROR#>.<br>');
+                     $('#ir_learn_timer').html('');
+                     setTimeout(function(){}, 1000);
+                  }
+               }
+            });
+         }
+      }
+
+      function tryParseJSON (jsonString) {
+         try {
+            var o = JSON.parse(jsonString);
+            if (o && typeof o === "object") return o;
+         }
+         catch (e) { }
+         return false;
+      };
+   </script>
+   [#endif#]
+
 [#endif#]
 
 <script>
