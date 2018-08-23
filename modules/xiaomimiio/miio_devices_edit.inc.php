@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.8.5b
+* @version 1.9b
 */
 
 if ($this->owner->name == 'panel') {
@@ -46,21 +46,24 @@ if ($this->mode == 'update') {
 			$rec['NEXT_UPDATE'] = date('Y-m-d H:i:s');
 		}
 
-		$commands = array('online', 'command', 'message');
-		if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
-			$commands[] = 'add_program';
-			$commands[] = 'del_program';
-		}
-		if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-			$commands[] = 'ir_play';
-		}
-		if ($rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
-			$commands[] = 'vol_up';
-			$commands[] = 'vol_down';
-		}
-      if ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+      // Базовые метрики устройств
+      $commands = array('online', 'command', 'message');
+
+      // Специфичные метрики для некоторых устройств
+      if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
+         $commands[] = 'add_program';
+         $commands[] = 'del_program';
+      } else if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+         $commands[] = 'ir_play';
+      } else if ($rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
+         $commands[] = 'vol_up';
+         $commands[] = 'vol_down';
+      } else if ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
          $commands[] = 'power';
          $commands[] = 'load_power';
+      } else if ($rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+         $commands[] = 'goto_target';
+         $commands[] = 'zoned_clean';
       }
 	}
 

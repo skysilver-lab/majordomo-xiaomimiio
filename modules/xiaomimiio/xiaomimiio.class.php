@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.8b
+* @version 1.9b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
@@ -33,24 +33,26 @@ define ('MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS', 'power,aqi,average_aqi,humidity,temp
 define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
-														'1' => 	'Initiating',
-														'2' => 	'Sleeping',
-														'3' => 	'Waiting',
-														'4' => 	'Remote control active',
-														'5' => 	'Cleaning',
-														'6' => 	'Back to home',
-														'7' => 	'Manual mode',
-														'8' => 	'Charging',
-														'9' => 	'Charging Error',
-														'10' => 'Pause',
-														'11' => 'Spot Cleaning',
-														'12' => 'In Error',
-														'13' => 'Shutting down',
-														'14' => 'Updating',
-														'15' => 'Docking',
-														'16' => 'Going to target',
-														'17' => 'Zoned cleaning',
-														'100' => 'Full')));
+                                          '1' =>   'Initiating',
+                                          '2' =>   'Sleeping',
+                                          '3' =>   'Waiting',
+                                          '4' =>   'Remote control active',
+                                          '5' =>   'Cleaning',
+                                          '6' =>   'Back to home',
+                                          '7' =>   'Manual mode',
+                                          '8' =>   'Charging',
+                                          '9' =>   'Charging Error',
+                                          '10' => 'Pause',
+                                          '11' => 'Spot Cleaning',
+                                          '12' => 'In Error',
+                                          '13' => 'Shutting down',
+                                          '14' => 'Updating',
+                                          '15' => 'Docking',
+                                          '16' => 'Going to target',
+                                          '17' => 'Zoned cleaning',
+                                          '100' => 'Full',
+                                          '101' => 'Wet cleaning',
+                                          '105' => 'Turbo')));
 
 define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>	'No error',
 														'1' => 	'Laser distance sensor error',
@@ -358,7 +360,7 @@ class xiaomimiio extends module {
 							continue;
 						}
 
-						//TO-DO: новые сравниваются по sid и devcode, но если устройство было добавлено вручную, то эти параметры будут отсутствовать,
+						//TODO: новые сравниваются по sid и devcode, но если устройство было добавлено вручную, то эти параметры будут отсутствовать,
 						//соотвественно устройство добавится как новое, а не перезапишет (обновит) добавленно вручную.
 						$dev_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE DEVICE_TYPE_CODE='$device_type_code' AND SERIAL='$device_serial'");
 
@@ -406,31 +408,32 @@ class xiaomimiio extends module {
 								}
 							}
 
-							$dev_rec['ID'] = SQLInsert('miio_devices', $dev_rec);
+                     $dev_rec['ID'] = SQLInsert('miio_devices', $dev_rec);
 
                      // Базовые метрики устройств
                      $this->processCommand($dev_rec['ID'], 'online', 1);
                      $this->processCommand($dev_rec['ID'], 'command', '');
                      $this->processCommand($dev_rec['ID'], 'message', '');
 
+                     // Специфичные метрики для некоторых устройств
                      if ($dev_rec['DEVICE_TYPE'] != '') {
-								$this->requestStatus($dev_rec['ID']);
-								if (($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
-									$this->processCommand($dev_rec['ID'], 'add_program', '');
-									$this->processCommand($dev_rec['ID'], 'del_program', '');
-								}
-								if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-									$this->processCommand($dev_rec['ID'], 'ir_play', '');
-								}
-								if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
-									$this->processCommand($dev_rec['ID'], 'vol_up', '');
-									$this->processCommand($dev_rec['ID'], 'vol_down', '');
-								}
-                        if ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                        $this->requestStatus($dev_rec['ID']);
+                        if (($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
+                           $this->processCommand($dev_rec['ID'], 'add_program', '');
+                           $this->processCommand($dev_rec['ID'], 'del_program', '');
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                           $this->processCommand($dev_rec['ID'], 'ir_play', '');
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
+                           $this->processCommand($dev_rec['ID'], 'vol_up', '');
+                           $this->processCommand($dev_rec['ID'], 'vol_down', '');
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                            $this->processCommand($dev_rec['ID'], 'power', '');
                            $this->processCommand($dev_rec['ID'], 'load_power', '');
+                        }  else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                           $this->processCommand($dev_rec['ID'], 'goto_target', '');
+                           $this->processCommand($dev_rec['ID'], 'zoned_clean', '');
                         }
-							}
+                     }
 						}
 					}
 				}
@@ -520,10 +523,12 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
-			//
-			$this->addToQueue($device_id, 'get_status');
-			sleep(1);
-			$this->addToQueue($device_id, 'get_consumable');
+         //
+         $this->addToQueue($device_id, 'get_status');
+         sleep(1);
+         $this->addToQueue($device_id, 'get_consumable');
+         sleep(1);
+         $this->addToQueue($device_id, 'get_custom_mode');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.m1') {
 			//
 			$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
@@ -813,7 +818,7 @@ class xiaomimiio extends module {
 							// Например, miIO.info, toggle, app_start и др.
 							$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
 						}
-						//TO-DO: после отправки команды желательно обновить сведения об устройстве,
+						//TODO: после отправки команды желательно обновить сведения об устройстве,
 						//но при этом перезапишется поле message (удалится результат выполнения команды),
 						//что может быть неприемлемо.
 						//$this->requestStatus($properties[$i]['DEVICE_ID']);
@@ -993,7 +998,20 @@ class xiaomimiio extends module {
 								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
 							}
 						}
-					} elseif ($properties[$i]['TITLE'] == 'flow') {
+               } elseif ($properties[$i]['TITLE'] == 'custom_mode') {
+                  // Изменение режима работы (мощности) пылесоса (от 1 до 100%, 101 - влажная уборка, 105 - турбо)
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_custom_mode', '[' . $value . ']');
+               } elseif ($properties[$i]['TITLE'] == 'zoned_clean') {
+                  // Уборка указанных зон (параметры - либо одна зона [[zone1]], либо список зон [[zone1],[zone2]])
+                  // [x1 Integer, y1 Integer, x2 Integer, y2 Integer, times Integer]
+                  // {"id":8338,"method":"app_zoned_clean","params":[[26234,26042,27284,26642,5]]}
+                  // {"id":8338,"method":"app_zoned_clean","params":[[26234,26042,27284,26642,1],[26232,25304,27282,25804,2],[26246,24189,27296,25139,3]]}
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'app_zoned_clean', '[' . $value . ']');
+               } elseif ($properties[$i]['TITLE'] == 'goto_target') {
+                  // Движение в заданную точку (параметры [x Integer, y Integer])
+                  // {"id": 25736111,"method": "app_goto_target","params": [24200,20200]}
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'app_goto_target', '[' . $value . ']');
+               } elseif ($properties[$i]['TITLE'] == 'flow') {
 						// 
 						if ($value != '') {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'start_cf', "[$value]");
@@ -1242,7 +1260,10 @@ class xiaomimiio extends module {
 							if (array_key_exists($value, $error_codes)) $res_commands[] = array('command' => 'error_text', 'value' => $error_codes[$value]);
 						}
 					}
-				}
+				} else if ($command == 'get_custom_mode' && is_array($data['result'])) {
+               //get_custom_mode    {"result":[60],"id":1535013272}
+               $res_commands[] = array('command' => 'custom_mode', 'value' => $data['result'][0]);
+            }
 			} elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.m1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
 				$i = 0;
