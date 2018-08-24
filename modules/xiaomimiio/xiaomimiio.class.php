@@ -421,6 +421,7 @@ class xiaomimiio extends module {
                         if (($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
                            $this->processCommand($dev_rec['ID'], 'add_program', '');
                            $this->processCommand($dev_rec['ID'], 'del_program', '');
+                           $this->processCommand($dev_rec['ID'], 'get_arming', '');
                         } else if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                            $this->processCommand($dev_rec['ID'], 'ir_play', '');
                         } else if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
@@ -559,6 +560,7 @@ class xiaomimiio extends module {
 				$this->addToQueue($device_id, 'get_lumi_dpf_aes_key', '[]');
 				$this->addToQueue($device_id, 'get_zigbee_channel', '[]');
 			}
+			$this->addToQueue($device_id, 'get_arming', '[]');
 			$this->addToQueue($device_id, 'get_channels', '{"start":0}');
          //TODO: $this->addToQueue($device_id, 'get_channels', '{"start":10}');
          //      Если станций больше 10, 20.
@@ -1041,7 +1043,11 @@ class xiaomimiio extends module {
 						} else if ($properties[$i]['TITLE'] == 'current_status') {
 							// Команды управления проигрыванием (on, off, toggle, next, prev)
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'play_fm', '["' . $value . '"]');
-						} else if ($properties[$i]['TITLE'] == 'add_program') {
+						} else if ($properties[$i]['TITLE'] == 'arming_mode') {
+							// Команды включения охраны (on, off)
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_arming', '["' . $value . '"]');
+						} 
+						else if ($properties[$i]['TITLE'] == 'add_program') {
 							// Добавление новой радиостанции (по URL)
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'add_channels', '{"chs":[{"id":' . time() . ',"url":"' . $value . '","type":0}]}');
 						} else if ($properties[$i]['TITLE'] == 'current_program') {
@@ -1188,6 +1194,9 @@ class xiaomimiio extends module {
 				}
 				if ($command == 'get_channels' && is_array($data['result'])) {
 					$res_commands[] = array('command' => 'all_program', 'value' => $data['result']);
+				}
+				if ($command == 'get_arming' && is_array($data['result'])) {
+					$res_commands[] = array('command' => 'get_arming', 'value' => $data['result'][0]);
 				}
 				if ($command == 'get_lumi_dpf_aes_key' && is_array($data['result'])) {
 					$res_commands[] = array('command' => 'lumi_dpf_aes_key', 'value' => $data['result'][0]);

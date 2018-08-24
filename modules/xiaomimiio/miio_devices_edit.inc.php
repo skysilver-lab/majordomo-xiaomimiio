@@ -53,6 +53,7 @@ if ($this->mode == 'update') {
       if (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
          $commands[] = 'add_program';
          $commands[] = 'del_program';
+         $commands[] = 'get_arming';
       } else if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
          $commands[] = 'ir_play';
       } else if ($rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
@@ -153,7 +154,7 @@ if ($this->tab == 'data') {
 
    if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
       // Для шлюза на вкладку data выводим только определенные свойства, т.к. для свойств радио есть отдельная вкладка
-      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel') ORDER BY ID");
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel', 'arming_mode', 'get_arming') ORDER BY ID");
    } else if ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
       $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel', 'ir_play', 'power', 'load_power') ORDER BY ID");
    } else {
