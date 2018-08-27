@@ -31,8 +31,9 @@
 					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
 				</thead>
 				<tbody>
+               <tr><td><b>arming_mode</b></td><td>Текущий статус и управление встроенным режимом охраны шлюза.</td><td>1 и 0</td><td>Чтение и запись</td></tr>
                <tr><td><b>lumi_dpf_aes_key</b></td><td>Ключ (пароль) режима разработчика.<br>Пустое значение, если режим разработчика выключен.</td><td>16-ти значный ключ</td><td>Чтение</td></tr>
-               <tr><td><b>zigbee_channel</b></td><td>Номер zigbee канала</td><td>№ канала.</td><td>Чтение</td></tr>
+               <tr><td><b>zigbee_channel</b></td><td>Номер zigbee канала.</td><td>№ канала.</td><td>Чтение</td></tr>
                <tr><td><b>add_program</b></td><td>Добавление радиостанции в плейлист по ее URL. Например, http://ximiraga.ru/527782019.m3u8</td><td>URL потока</td><td>Запись</td></tr>
                <tr><td><b>del_program</b></td><td>Удаление радиостанции из плейлиста по ее ID.</td><td>ID станции</td><td>Запись</td></tr>
                <tr><td><b>current_program</b></td><td>ID текущей радиостанции. Если записать ID, то запускается воспроизведение станции с этим ID и текущей громкостью.</td><td>ID станции</td><td nowrap>Чтение и запись</td></tr>

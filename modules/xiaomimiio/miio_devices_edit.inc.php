@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9b
+* @version 1.9.1b
 */
 
 if ($this->owner->name == 'panel') {
@@ -153,9 +153,9 @@ if ($this->tab == 'data') {
 
    if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
       // Для шлюза на вкладку data выводим только определенные свойства, т.к. для свойств радио есть отдельная вкладка
-      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel') ORDER BY ID");
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel','arming_mode') ORDER BY ID");
    } else if ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel', 'ir_play', 'power', 'load_power') ORDER BY ID");
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel', 'ir_play', 'power', 'load_power','arming_mode') ORDER BY ID");
    } else {
       $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY ID");
    }

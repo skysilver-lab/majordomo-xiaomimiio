@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9b
+* @version 1.9.1b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
@@ -554,6 +554,7 @@ class xiaomimiio extends module {
          if ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
             $this->addToQueue($device_id, 'get_device_prop', '["lumi.0","ac_power"]');
          }
+         $this->addToQueue($device_id, 'get_arming', '[]');
          $this->addToQueue($device_id, 'get_prop_fm', '[]');
 			if ($this->view_mode == 'propupd_miio_devices') {
 				$this->addToQueue($device_id, 'get_lumi_dpf_aes_key', '[]');
@@ -1059,7 +1060,14 @@ class xiaomimiio extends module {
 								}
 							}
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'remove_channels', '{"chs":[{"id":' . $value . ',"url":"' . $ch_url . '","type":0}]}');
-						}
+						} else if ($properties[$i]['TITLE'] == 'arming_mode') {
+                     // Управление режимом охраны
+                     if ($value) {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_arming', '["on"]');
+                     } else {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_arming', '["off"]');
+                     }
+                  }
 					}
 					SQLExec("UPDATE miio_commands SET VALUE='" . DBSafe($value) . "', UPDATED='" . date('Y-m-d H:i:s') . "' WHERE ID=" . $properties[$i]['ID']);
 				}
@@ -1195,6 +1203,9 @@ class xiaomimiio extends module {
 				if ($command == 'get_zigbee_channel' && is_array($data['result'])) {
 					$res_commands[] = array('command' => 'zigbee_channel', 'value' => $data['result'][0]);
 				}
+            if ($command == 'get_arming' && is_array($data['result'])) {
+               $res_commands[] = array('command' => 'arming_mode', 'value' => $data['result'][0]);
+            }
             if ($device['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                if ($command == 'get_device_prop' && is_array($data['result'])) {
                   $res_commands[] = array('command' => 'load_power', 'value' => $data['result'][0]);
@@ -1419,7 +1430,7 @@ class xiaomimiio extends module {
       foreach ($res_commands as $c) {
          $cmd = $c['command'];
          $val = $c['value'];
-         if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock'|| $cmd == 'dry') {
+         if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock'|| $cmd == 'dry' || $cmd == 'arming_mode') {
             if ($val == 'on') $val = 1;
              else if ($val == 'off') $val = 0;
          }

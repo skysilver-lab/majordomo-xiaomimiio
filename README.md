@@ -15,7 +15,7 @@
 ![miio](https://kb.smartliving.ru/wp-content/uploads/2018/07/module_miio.gif)
 
 ### Поддерживаемые устройства
-> По состоянию на июль 2018 года.
+> По состоянию на август 2018 года.
 
 1. Шлюз ZigBee ***Mi Smart Home Gateway 2***
 2. Шлюз ZigBee ***Aqara AC Companion Gateway***
@@ -28,7 +28,7 @@
 9. Лампочка белая Е27 ***Philips Light Bulb***
 10. Лампочка белая Е27 ***Yeelight White Bulb***
 11. Лампочка цветная Е27 ***Yeelight Color Bulb***
-12. Лампочки ***Philips Rui Chi Candle Light Bulb
+12. Лампочки ***Philips Rui Chi Candle Light Bulb***
 13. Настольная лампа ***Mi LED Desk Lamp***
 14. Потолочный светильник ***Yeelight Ceiling Light***
 15. Потолочный светильник ***Philips EyeCare Smart Ceiling Lamp***
