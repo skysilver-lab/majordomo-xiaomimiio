@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.1b
+* @version 1.9.2b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
@@ -418,18 +418,21 @@ class xiaomimiio extends module {
                      // Специфичные метрики для некоторых устройств
                      if ($dev_rec['DEVICE_TYPE'] != '') {
                         $this->requestStatus($dev_rec['ID']);
-                        if (($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
+                        if ($dev_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
                            $this->processCommand($dev_rec['ID'], 'add_program', '');
                            $this->processCommand($dev_rec['ID'], 'del_program', '');
-                        } else if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2' || $dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                           $this->processCommand($dev_rec['ID'], 'add_program', '');
+                           $this->processCommand($dev_rec['ID'], 'del_program', '');
+                           $this->processCommand($dev_rec['ID'], 'ir_play', '');
+                           $this->processCommand($dev_rec['ID'], 'power', '');
+                           $this->processCommand($dev_rec['ID'], 'load_power', '');
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
                            $this->processCommand($dev_rec['ID'], 'ir_play', '');
                         } else if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
                            $this->processCommand($dev_rec['ID'], 'vol_up', '');
                            $this->processCommand($dev_rec['ID'], 'vol_down', '');
-                        } else if ($dev_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-                           $this->processCommand($dev_rec['ID'], 'power', '');
-                           $this->processCommand($dev_rec['ID'], 'load_power', '');
-                        }  else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
                            $this->processCommand($dev_rec['ID'], 'goto_target', '');
                            $this->processCommand($dev_rec['ID'], 'zoned_clean', '');
                         }
