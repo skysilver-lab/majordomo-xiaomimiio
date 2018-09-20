@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.4b
+* @version 1.9.5b
 */
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
@@ -219,7 +219,7 @@ class xiaomimiio extends module {
 		$out['API_LOG_CYCLE'] = $this->config['API_LOG_CYCLE'];
 		$out['API_LOG_MIIO'] = $this->config['API_LOG_MIIO'];
 		
-		if ((time() - gg('cycle_xiaomimiioRun')) < 15 ) {
+		if ((time() - (int)gg('cycle_xiaomimiioRun')) < 15 ) {
 			$out['CYCLERUN'] = 1;
 		} else {
 			$out['CYCLERUN'] = 0;
@@ -1322,6 +1322,7 @@ class xiaomimiio extends module {
 					if ($key == 'flow_params') $key = 'flow';
 					if ($key == 'nl_br' && $value != 0) {
 						$res_commands[3]['value'] = $value;	// свойство bright
+						$res_commands[] = array('command' => $key, 'value' => 1);
 					} else {
 						$res_commands[] = array('command' => $key, 'value' => $value);
 					}
