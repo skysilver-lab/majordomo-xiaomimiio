@@ -4,8 +4,10 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.5b
+* @version 1.9.6b
 */
+
+define('EXTENDED_LOGGING', 0);
 
 define ('MIIO_YEELIGHT_WHITE_BULB_PROPS', 'power,bright,flow_params,flowing');
 define ('MIIO_YEELIGHT_COLOR_BULB_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flow_params,flowing');
@@ -31,6 +33,8 @@ define ('MIIO_ZHIMI_HUMIDIFIER_2_PROPS', 'power,humidity,temp_dec,mode,depth,spe
 define ('MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS', 'power,aqi,average_aqi,humidity,temp_dec,bright,mode,favorite_level,filter1_life,use_time,purify_volume,led,buzzer,child_lock');
 
 define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
+
+define ('MIIO_ZHIMI_FAN_SA1_PROPS', 'power,angle,speed,speed_level,natural_level,poweroff_time,ac_power,use_time,led_b,buzzer,child_lock');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
                                           '1' =>   'Initiating',
@@ -74,7 +78,7 @@ define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>	'No error',
 														'17' => 'Side brushes problem, reboot me',
 														'18' => 'Suction fan problem',
 														'19' => 'Unpowered charging station')));
-					
+
 class xiaomimiio extends module {
 
 	/**
@@ -91,7 +95,7 @@ class xiaomimiio extends module {
 		$this->module_category = '<#LANG_SECTION_DEVICES#>';
 		$this->checkInstalled();
 	}
-	
+
 	/**
 	* saveParams
 	*
@@ -99,7 +103,7 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
-	
+
 	function saveParams($data = 0) {
 		
 		$p = array();
@@ -123,7 +127,7 @@ class xiaomimiio extends module {
 		return parent::saveParams($p);
 		
 	}
-	
+
 	/**
 	* getParams
 	*
@@ -131,8 +135,9 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
+
 	function getParams() {
-  
+
 		global $id;
 		global $mode;
 		global $view_mode;
@@ -167,7 +172,7 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
-	
+
 	function run() {
 		
 		global $session;
@@ -208,48 +213,57 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
-	
+
 	function admin(&$out) {
- 
-		$this->getConfig();
+
+      $this->getConfig();
  
 		$out['API_IP'] = $this->config['API_IP'];
 		$out['API_DISC_PERIOD'] = $this->config['API_DISC_PERIOD'];
+		$out['API_SOCKET_TIMEOUT'] = $this->config['API_SOCKET_TIMEOUT'];
 		$out['API_LOG_DEBMES'] = $this->config['API_LOG_DEBMES'];
 		$out['API_LOG_CYCLE'] = $this->config['API_LOG_CYCLE'];
 		$out['API_LOG_MIIO'] = $this->config['API_LOG_MIIO'];
-		
+
 		if ((time() - (int)gg('cycle_xiaomimiioRun')) < 15 ) {
 			$out['CYCLERUN'] = 1;
 		} else {
 			$out['CYCLERUN'] = 0;
 		}
-		
+
 		if ($this->view_mode == 'update_settings') {
-			
+
 			global $api_ip;
 			$this->config['API_IP'] = $api_ip;
-			
-			global $api_disc_period;
-			$this->config['API_DISC_PERIOD'] = (int)$api_disc_period;
+
+         global $api_disc_period;
+         $this->config['API_DISC_PERIOD'] = (int)$api_disc_period;
+
+         global $api_socket_timeout;
+         if ($api_socket_timeout < 1) {
+            $api_socket_timeout = 1;
+         } else if ($api_socket_timeout > 10) {
+            $api_socket_timeout = 10;
+         }
+         $this->config['API_SOCKET_TIMEOUT'] = (int)$api_socket_timeout;
 
 			global $api_log_debmes;
 			$this->config['API_LOG_DEBMES'] = (int)$api_log_debmes;
-		
+
 			global $api_log_cycle;
 			$this->config['API_LOG_CYCLE'] = (int)$api_log_cycle;
-			
+
 			global $api_log_miio;
 			$this->config['API_LOG_MIIO'] = (int)$api_log_miio;
 
 			$this->saveConfig();
-			
+
 			// После изменения настроек модуля перезапускаем цикл
 			setGlobal('cycle_xiaomimiioControl', 'restart');
 
 			$this->redirect("?");
 		}
-	
+
 		if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
 			$out['SET_DATASOURCE'] = 1;
 		}
@@ -292,7 +306,7 @@ class xiaomimiio extends module {
 	*
 	* @access private
 	*/
-	
+
 	function addToQueue($device_id, $method, $data = '[]') {
 	
 		$rec = array();
@@ -440,7 +454,7 @@ class xiaomimiio extends module {
 						}
 					}
 				}
-			
+
 				// Для имеющихся в БД, но не ответивших, устройств выставим свойство online в 0 (оффлайн)
 				$count_devices = count($all_devices);
 				if ($this->config['API_LOG_DEBMES']) DebMes("Current count of offline devices $count_devices", 'xiaomimiio');
@@ -646,8 +660,15 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		}
-
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
+         //
+         $props = explode(',', MIIO_ZHIMI_FAN_SA1_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+             $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+      }
 	}
 
 	/**
@@ -685,12 +706,16 @@ class xiaomimiio extends module {
 				}
 				$this->getConfig();
 
-				if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+				if ($this->config['API_IP']) $bind_ip = $this->config['API_IP'];
 				 else $bind_ip = '0.0.0.0';
-				if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+				if ($this->config['API_LOG_MIIO']) $miio_debug = true;
 				 else $miio_debug = false;
 
 				$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
+
+            if ($this->config['API_SOCKET_TIMEOUT'] !== null) {
+               $dev->send_timeout = (int)$this->config['API_SOCKET_TIMEOUT'];
+            }
 
 				if ($dev->getInfo(time())) {
 					if ($dev->data == '') $info = 'Сведения miIO.info не получены. Вероятно, указан неверный токен.';
@@ -714,12 +739,16 @@ class xiaomimiio extends module {
 				}
 				$this->getConfig();
 
-				if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+				if ($this->config['API_IP']) $bind_ip = $this->config['API_IP'];
 				 else $bind_ip = '0.0.0.0';
-				if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+				if ($this->config['API_LOG_MIIO']) $miio_debug = true;
 				 else $miio_debug = false;
 
 				$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
+
+            if ($this->config['API_SOCKET_TIMEOUT'] !== null) {
+               $dev->send_timeout = (int)$this->config['API_SOCKET_TIMEOUT'];
+            }
 
 				if ($dev->msgSendRcv($cmd, $opt, time())) {
 					if ($dev->data == '') $info = 'Результат выполнения команды не получен. Вероятно, указан неверный токен.';
@@ -774,16 +803,16 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
-	
-	function delete_miio_devices($id) {
 
-		$rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID='$id'");
+   function delete_miio_devices($id) {
 
-		SQLExec("DELETE FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "'");
-		SQLExec("DELETE FROM miio_devices WHERE ID='" . $rec['ID'] . "'");
+      $this->DeleteLinkedProperties($id);
 
-	}
-	
+      SQLExec("DELETE FROM miio_commands WHERE ID='{$id}'");
+      SQLExec("DELETE FROM miio_devices WHERE DEVICE_ID='{$id}'");
+
+   }
+
 	/**
 	* propertySetHandle
 	*
@@ -839,13 +868,14 @@ class xiaomimiio extends module {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], $method, '["off"]');
                   }
                   // TO-DO: Если у-во yeelight, то используем дополнительные опции команды (effect, duration, mode).
-					} elseif ($properties[$i]['TITLE'] == 'buzzer') {
-						// Команда на включение и выключение пищалки
-						if ($value) {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_buzzer', '["on"]');
-						} else {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_buzzer', '["off"]');
-						}
+               } elseif ($properties[$i]['TITLE'] == 'buzzer') {
+                  // Команда на включение и выключение пищалки
+                  if($properties[$i]['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
+                     $value = $value ? '[2]' : '[0]';
+                  } else {
+                     $value = $value ? '["on"]' : '["off"]';
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_buzzer', $value);
 					} elseif ($properties[$i]['TITLE'] == 'bright') {
 						// Команда на изменение яркости (в % от 1 до 100)
 						$value = (int)$value;
@@ -1033,7 +1063,40 @@ class xiaomimiio extends module {
 						if (($value >= 30) && ($value <= 80) && (($value%10) == 0)) {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_limit_hum', "[$value]");
 						}
-					}
+					} elseif ($properties[$i]['TITLE'] == 'speed_level') {
+                  // Уровень скорости вращения в обычном режиме (от 1 до 100)
+                  if ($value) {
+                     $value = (int)$value;
+                     if ($value < 0) $value = 0;
+                     if ($value > 100) $value = 100;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_speed_level', '['.$value.']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'angle') {
+                  // Команда на включение выключение автоматического поворота вентилятора
+                  if ($value) {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_angle', '['.$value.']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'natural_level') {
+                  // Уровень скорости вращения в режиме "натуральный ветер" (от 1 до 100)
+                  if ($value) {
+                     $value = (int)$value;
+                     if ($value < 0) $value = 0;
+                     if ($value > 100) $value = 100;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_natural_level', '['.$value.']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'poweroff_time') {
+                  // Команда на изменения таймера выключения 
+                  if ($value) {
+                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_poweroff_time', '['.$value.']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'angle_enable') {
+                  // Команда на включение и выключение автоматического поворота вентилятора
+                  if ($value) {
+                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_angle_enable', '["on"]');
+                  }else{
+                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_angle_enable', '["off"]');
+                  }
+               }
 
 					if(($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 						if ($properties[$i]['TITLE'] == 'current_volume') {
@@ -1428,7 +1491,15 @@ class xiaomimiio extends module {
 				}
 				$res_commands[] = array('command' => 'volume', 'value' => $data['result'][1]);
 				$res_commands[] = array('command' => 'rel_time', 'value' => $data['result'][2]);
-			}
+			} elseif ($device['DEVICE_TYPE'] == 'zhimi.fan.sa1' && $command == 'get_prop' && is_array($data['result'])) {
+            $props = explode(',', MIIO_ZHIMI_FAN_SA1_PROPS);
+            $i = 0;
+            foreach($props as $key) {
+               $value = $data['result'][$i];
+               $res_commands[] = array('command' =>  $key, 'value' => $value);
+               $i++;
+            }
+         }
 		}
 
       foreach ($res_commands as $c) {
@@ -1442,7 +1513,81 @@ class xiaomimiio extends module {
       }
 
    }
-	
+
+   /**
+   * runInBackground
+   *
+   * Запуск обработки сообщений от устройств в фоновом процессе.
+   *
+   * @access public
+   */
+
+   function runInBackground($url) {
+      try {
+         $ch = curl_init();
+         curl_setopt($ch, CURLOPT_URL, $url);
+         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+         curl_setopt($ch, CURLOPT_TIMEOUT_MS, 50);
+         curl_exec($ch);
+         curl_close($ch);
+      }
+      catch (Exception $e) {
+         DebMes('Exception in RunInBackground(): ' . $url . '. ' . get_class($e) . ', ' . $e->getMessage(), 'xiaomimiio');
+      }
+   }
+
+   /**
+   * DeleteLinkedProperties
+   *
+   * Удаление слинкованных свойств.
+   *
+   * @access public
+   */
+
+   function DeleteLinkedProperties($id)
+   {
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='{$id}' AND LINKED_OBJECT != '' AND LINKED_PROPERTY != ''");
+
+      if (!empty($properties)) {
+         foreach ($properties as $prop) {
+            removeLinkedProperty($prop['LINKED_OBJECT'], $prop['LINKED_PROPERTY'], $this->name);
+         }
+      }
+   }
+
+   /**
+   * DeleteCycleProperties
+   *
+   * Удаление служебных свойств контроля состояния цикла у объекта ThisComputer.
+   *
+   * @access public
+   */
+
+   function DeleteCycleProperties()
+   {
+      $cycle_name = 'cycle_' . $this->name;
+      $cycle_props = array("{$cycle_name}Run", "{$cycle_name}Control", "{$cycle_name}Disabled", "{$cycle_name}AutoRestart");
+
+      $object = getObject('ThisComputer');
+
+      foreach ($cycle_props as $property) {
+         $property_id = $object->getPropertyByName($property, $object->class_id, $object->id);
+         if ($property_id) {
+            $value_id = getValueIdByName($object->object_title, $property);
+            if ($value_id) {
+               SQLExec("DELETE FROM phistory WHERE VALUE_ID={$value_id}");
+               SQLExec("DELETE FROM pvalues WHERE ID={$value_id}");
+            }
+            if ($object->class_id != 0) {
+               SQLExec("DELETE FROM properties WHERE ID={$property_id}");
+            }
+          }
+      }
+
+      SQLExec("DELETE FROM cached_values WHERE KEYWORD LIKE '%{$cycle_name}%'");
+      SQLExec("DELETE FROM cached_ws WHERE PROPERTY LIKE '%{$cycle_name}%'");
+   }
+
 	/**
 	* Install
 	*
@@ -1450,16 +1595,16 @@ class xiaomimiio extends module {
 	*
 	* @access private
 	*/
- 
+
 	function install($data = '') {
-		
+
 		//setGlobal('cycle_xiaomimiioControl', 'start');
 		//setGlobal('cycle_xiaomimiioAutoRestart', '1');
-		
+
 		parent::install();
-		
+
 	}
-	
+
 	/**
 	* Uninstall
 	*
@@ -1467,25 +1612,46 @@ class xiaomimiio extends module {
 	*
 	* @access public
 	*/
-	
+
 	function uninstall() {
-		
-		/*
-			TO-DO:
-			- перед удалением таблиц нужно остановить цикл, если он запущен, чтобы не было ошибок SQL
-			- также нужно удалить сведения о цикле из Xray и свойства из объекта ThisComputer
-			  (ThisComputer.cycle_xiaomimiioRun, ThisComputer.cycle_xiaomimiioControl, 
-			   ThisComputer.cycle_xiaomimiioDisabled, ThisComputer.cycle_xiaomimiioAutoRestart)
-		*/
-		
-		SQLExec('DROP TABLE IF EXISTS miio_devices');
-		SQLExec('DROP TABLE IF EXISTS miio_commands');
-		SQLExec('DROP TABLE IF EXISTS miio_queue');
-  
-		parent::uninstall();
-		
+
+      echo '<br>' . date('H:i:s') . " Uninstall module {$this->name}.<br>";
+
+      // Остановим цикл модуля.
+      echo date('H:i:s') . " Stopping cycle cycle_{$this->name}.php.<br>";
+      setGlobal("cycle_{$this->name}Control", 'stop');
+      // Нужна пауза, чтобы главный цикл обработал запрос.
+      $i = 0;
+      while ($i < 6) {
+         echo '.';
+         $i++; 
+         sleep(1);
+      }
+
+      // Удалим слинкованные свойства объектов у метрик каждого ТВ.
+      echo '<br>' . date('H:i:s') . ' Delete linked properties.<br>';
+      $devices = SQLSelect("SELECT * FROM miio_devices");
+      if (!empty($devices)) {
+         foreach ($devices as $device) {
+            $this->DeleteLinkedProperties($device['ID']);
+         }
+      }
+
+      // Удаляем таблицы модуля из БД.
+      echo date('H:i:s') . ' Delete DB tables.<br>';
+      SQLExec('DROP TABLE IF EXISTS miio_devices');
+      SQLExec('DROP TABLE IF EXISTS miio_commands');
+      SQLExec('DROP TABLE IF EXISTS miio_queue');
+
+      // Удаляем служебные свойства контроля состояния цикла у объекта ThisComputer.
+      echo date('H:i:s') . ' Delete cycles properties.<br>';
+      $this->DeleteCycleProperties();
+
+      // Удаляем модуль с помощью "родительской" функции ядра.
+      echo date('H:i:s') . ' Delete files and remove frome system.<br>';
+      parent::uninstall();
 	}
-	
+
 	/**
 	* dbInstall
 	*
@@ -1493,6 +1659,7 @@ class xiaomimiio extends module {
 	*
 	* @access private
 	*/
+
 	function dbInstall($data = '') {
 
 		$data = <<<EOD
@@ -1531,7 +1698,7 @@ EOD;
 		
 		parent::dbInstall($data);
 	}
-	
+
 // --------------------------------------------------------------------
 }
 /*

@@ -147,13 +147,14 @@ if ($this->mode == 'update') {
 
 if ($this->tab == 'data') {
 
-	$new_id = 0;
-	global $delete_id;
+   global $delete_id;
 
-	if ($delete_id) {
-		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
-	}
-
+   if ($delete_id) {
+      $prop = SQLSelectOne("SELECT LINKED_OBJECT,LINKED_PROPERTY FROM miio_commands WHERE ID='{$delete_id}'");
+      removeLinkedProperty($prop['LINKED_OBJECT'], $prop['LINKED_PROPERTY'], $this->name);
+      SQLExec("DELETE FROM miio_commands WHERE ID='{$delete_id}'");
+   }
+   
    if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
       // Для шлюза на вкладку data выводим только определенные свойства, т.к. для свойств радио есть отдельная вкладка
       $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel','arming_mode') ORDER BY ID");
@@ -163,37 +164,45 @@ if ($this->tab == 'data') {
       $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY ID");
    }
 
-	$total = count($properties);
+   $total = count($properties);
 
-	for($i = 0; $i < $total; $i++) {
-		if ($properties[$i]['ID'] == $new_id) continue;
+   for($i = 0; $i < $total; $i++) {
 
-		if ($this->mode == 'update') {
+      if ($this->mode == 'update') {
 
-			global ${'linked_object'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_OBJECT'] = trim(${'linked_object'.$properties[$i]['ID']});
+         $old_linked_object = $properties[$i]['LINKED_OBJECT'];
+         $old_linked_property = $properties[$i]['LINKED_PROPERTY'];
 
-			global ${'linked_property'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_PROPERTY'] = trim(${'linked_property'.$properties[$i]['ID']});
+         global ${'linked_object'.$properties[$i]['ID']};
+         $properties[$i]['LINKED_OBJECT'] = trim(${'linked_object'.$properties[$i]['ID']});
 
-			global ${'linked_method'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_METHOD'] = trim(${'linked_method'.$properties[$i]['ID']});
+         global ${'linked_property'.$properties[$i]['ID']};
+         $properties[$i]['LINKED_PROPERTY'] = trim(${'linked_property'.$properties[$i]['ID']});
 
-			SQLUpdate('miio_commands', $properties[$i]);
+         global ${'linked_method'.$properties[$i]['ID']};
+         $properties[$i]['LINKED_METHOD'] = trim(${'linked_method'.$properties[$i]['ID']});
 
-			$old_linked_object = $properties[$i]['LINKED_OBJECT'];
-			$old_linked_property = $properties[$i]['LINKED_PROPERTY'];
+         // Если юзер удалил привязанные свойство и метод, но забыл про объект, то очищаем его.
+         if ($properties[$i]['LINKED_OBJECT'] != '' && ($properties[$i]['LINKED_PROPERTY'] == '' && $properties[$i]['LINKED_METHOD'] == '')) {
+             $properties[$i]['LINKED_OBJECT'] = '';
+         }
 
-			if ($old_linked_object && $old_linked_object != $properties[$i]['LINKED_OBJECT'] && $old_linked_property && $old_linked_property != $properties[$i]['LINKED_PROPERTY']) {
-				removeLinkedProperty($old_linked_object, $old_linked_property, $this->name);
-			}
-		}
+         // Если юзер удалил только привязанный объект, то свойство и метод тоже очищаем.
+         if ($properties[$i]['LINKED_OBJECT'] == '' && ($properties[$i]['LINKED_PROPERTY'] != '' || $properties[$i]['LINKED_METHOD'] != '')) {
+             $properties[$i]['LINKED_PROPERTY'] = '';
+             $properties[$i]['LINKED_METHOD'] = '';
+         }
 
-		$properties[$i]['VALUE'] = str_replace('",','", ',$properties[$i]['VALUE']);
+         if ($old_linked_object && $old_linked_property && ($old_linked_property != $properties[$i]['LINKED_PROPERTY'] || $old_linked_object != $properties[$i]['LINKED_OBJECT'])) {
+            removeLinkedProperty($old_linked_object, $old_linked_property, $this->name);
+         }
 
-		if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
-			addLinkedProperty($properties[$i]['LINKED_OBJECT'], $properties[$i]['LINKED_PROPERTY'], $this->name);
-		}
+         if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
+            addLinkedProperty($properties[$i]['LINKED_OBJECT'], $properties[$i]['LINKED_PROPERTY'], $this->name);
+         }
+
+         SQLUpdate('miio_commands', $properties[$i]);
+      }
 
 		if (file_exists(DIR_MODULES . 'devices/devices.class.php')) {
 			if ($properties[$i]['TITLE'] == 'power') $properties[$i]['SDEVICE_TYPE'] = 'relay';

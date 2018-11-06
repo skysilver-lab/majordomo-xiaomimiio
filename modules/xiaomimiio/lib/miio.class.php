@@ -117,15 +117,15 @@ class miIO {
 	*/
 	
 	public function discover($ip = NULL) {
-		
+
 		if ($ip != NULL) {
 
 			if ($this->debug) echo PHP_EOL . "Checking device status by $ip" . PHP_EOL;
-			
+
 			$this->sockSetTimeout($this->send_timeout);
-			
+
 			if ($this->debug) echo " >>>>> Sending hello-packet to $ip with timeout $this->send_timeout" . PHP_EOL;
-			
+
 			$helloPacket = hex2bin(HELLO_MSG);
 			
 			if(!($bytes = socket_sendto($this->sock, $helloPacket, strlen($helloPacket), 0, $ip, MIIO_PORT))) {
@@ -133,8 +133,7 @@ class miIO {
 				$errormsg = socket_strerror($errorcode);
 				if ($this->debug) echo "Cannot send data to socket [$errorcode] $errormsg" . PHP_EOL;
 			} else { if ($this->debug) echo " >>>>> Sent $bytes bytes to socket" . PHP_EOL; }
-						
-		    $buf = '';
+			$buf = '';
 			if (($bytes = @socket_recvfrom($this->sock, $buf, 4096, 0, $remote_ip, $remote_port)) !== false) {
 				if ($buf != '') {
 					if ($this->debug) {
@@ -162,9 +161,9 @@ class miIO {
 			if ($this->debug) echo PHP_EOL . 'Looking available devices in the network (handshake discovery)' . PHP_EOL;
 
 			$this->sockSetTimeout($this->disc_timeout);
-			
+
 			$this->sockSetBroadcast();
-			
+
  			if( !@socket_bind($this->sock, $this->bind_ip , 0) ) {
 				$errorcode = socket_last_error();
 				$errormsg = socket_strerror($errorcode);
@@ -249,19 +248,22 @@ class miIO {
 		} else { if ($this->debug) echo " --> $bytes bytes sent to socket" . PHP_EOL . PHP_EOL; }
 		
 	}
-	
+
 	/*
 		Сокеты. Запись и чтение.
 	*/
 
 	public function socketWriteRead($msg) {
-		
+
 		if ($this->discover($this->ip)) {
+      // TODO: подумать над вариантом убрать отправку hello-packet при каждом сообщении.
+      //       Слать hello только при больших перерывах в обмене сообщениями,
+      //       либо вообще никогда, если включен периодический поиск устройств в сети.
 
 			if ($this->debug) echo PHP_EOL . "Device $this->ip available" . PHP_EOL;
 
 			$this->sockSetTimeout($this->send_timeout);
-			
+
 			if ($this->token != NULL) {
 				if(!$this->miPacket->setToken($this->token)) {
 					if ($this->debug) echo 'Incorrect tokent format!' . PHP_EOL;
@@ -272,11 +274,11 @@ class miIO {
 			} else {
 				if ($this->debug) echo 'Using token received automatically - ' . $this->miPacket->getToken() . PHP_EOL;
 			}
-			
+
 			if ($this->debug) echo " >>>>> Sending packet to $this->ip with timeout $this->send_timeout" . PHP_EOL;
-			
+
 			$packet = hex2bin($this->miPacket->msgBuild($msg));
-			
+
 			if ($this->debug) {
 				$this->miPacket->printHead();
 				$timediff = hexdec($this->miPacket->ts) - time();
@@ -285,16 +287,16 @@ class miIO {
 				echo 'ts_server: ' . dechex($ts_server) . ' --> ' . $ts_server . ' seconds' . ' --> ' . date('Y-m-d H:i:s', $ts_server) . PHP_EOL;
 				echo 'timediff: ' . $timediff . PHP_EOL;
 			}
-			
+
 			if(!($bytes = socket_sendto($this->sock, $packet, strlen($packet), 0, $this->ip, MIIO_PORT))) {
 				$errorcode = socket_last_error();
 				$errormsg = socket_strerror($errorcode);
 				if ($this->debug) echo "Cannot send data to socket [$errorcode] $errormsg" . PHP_EOL;
 			} else { if ($this->debug) echo " >>>>> Sent $bytes bytes to socket" . PHP_EOL; }
-			
+
 			$this->miPacket->data = '';
-			
-		    $buf = '';
+
+			$buf = '';
 			if (($bytes = @socket_recvfrom($this->sock, $buf, 4096, 0, $remote_ip, $remote_port)) !== false) {
 				if ($buf != '') {
 					if ($this->debug) {
@@ -337,11 +339,11 @@ class miIO {
 			return false;
 		}
 	}
-	
+
 	/*
 		Отправка сообщения (метод и параметры раздельно) устройству и прием ответа.
 	*/
-	
+
 	public function msgSendRcv($command, $parameters = NULL, $id = 1) {
 	
 		if (isset($id) && ($id > 0) && !$this->useAutoMsgID) $this->msg_id = $id;

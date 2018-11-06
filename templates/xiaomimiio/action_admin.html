@@ -4,71 +4,93 @@
 [#if VIEW_MODE="search_miio_devices" || VIEW_MODE=""#]
 
 <div>
-	<img src="../templates/xiaomimiio/milogo.png"  width="30" height="30">
-	&nbsp;&nbsp;&nbsp;
-	<a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>
-	&nbsp;&nbsp;&nbsp;
-	[#if CYCLERUN==1#]
-		<span class="label label-success" title="<#LANG_XIMI_APP_CYCLE_STATE#>"><#LANG_XIMI_APP_CYCLE_START#></span>
-	[#else#]
-		<span class="label label-danger" title="<#LANG_XIMI_APP_CYCLE_STATE#>"><#LANG_XIMI_APP_CYCLE_STOP#></span>
-	[#endif#]
-	<div class="float-right">&nbsp;&nbsp;&nbsp;&nbsp;</div>
-	<button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#about"><#LANG_XIMI_APP_ABOUT#>&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
-	</button>
+   <img src="../templates/xiaomimiio/milogo.png"  width="30" height="30">
+   &nbsp;&nbsp;&nbsp;
+   <a class="btn btn-default" href="#api_settings" data-toggle="collapse"><i class="glyphicon glyphicon-cog"></i> <#LANG_SETUP#></a>
+   &nbsp;&nbsp;&nbsp;
+   [#if CYCLERUN==1#]
+      <span class="label label-success" title="<#LANG_XIMI_APP_CYCLE_STATE#>"><#LANG_XIMI_APP_CYCLE_START#></span>
+   [#else#]
+      <span class="label label-danger" title="<#LANG_XIMI_APP_CYCLE_STATE#>"><#LANG_XIMI_APP_CYCLE_STOP#></span>
+   [#endif#]
+   <div class="float-right">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+   <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#about"><#LANG_XIMI_APP_ABOUT#>&nbsp;&nbsp;<span class="glyphicon glyphicon-info-sign icon-white"></span>
+   </button>
 </div>
 
 <div class="collapse" id='api_settings'>
-	&nbsp;
-    <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
-        <fieldset>
+   &nbsp;
+   <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+      <fieldset>
+         <div class="form-group">
+            <label class="control-label"><#LANG_XIMI_APP_IP#>
+               <span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_IP_TOOLTIP#>">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </label>
+            <div class="col-lg-4"><input class="form-control" type="text" name="api_ip" value="<#API_IP#>" class="input"></div>
+         </div>
+         <div class="form-group">
+            <label class="control-label"><#LANG_XIMI_APP_PERIOD#>
+               <span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_PERIOD_TOOLTIP#>">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </label>
+            <div class="col-lg-4"><input class="form-control" type="text" name="api_disc_period" value="[#if API_DISC_PERIOD!="" || API_DISC_PERIOD==0#][#API_DISC_PERIOD#][#else#]120[#endif#]" class="input"></div>
+         </div>
+         <div class="form-group">
+            <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
+            <#LANG_XIMI_APP_DEBUG#> DebMes
+               <span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP#>">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </div>
+         </div>
+         <div class="form-group">
+            <div class="controls"><input type="checkbox" name="api_log_miio" value="1"[#if API_LOG_MIIO="1"#] checked[#endif#]> 
+            <#LANG_XIMI_APP_DEBUG#> miIO-Lib
+               <span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP2#>">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </div>
+         </div>
+         <div class="form-group">
+            <div class="controls"><input type="checkbox" name="api_log_cycle" value="1"[#if API_LOG_CYCLE="1"#] checked[#endif#]> 
+               <#LANG_XIMI_APP_DEBUG#> Cycle
+               <span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP3#>">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </div>
+         </div>
+         <script type="text/javascript">
+            $("#advanced_show").click(function () {
+               var text = $('#advanced_show').text();
+               $('#advanced_show').text(text == "<#LANG_XIMI_APP_SHOW#>" ? "<#LANG_XIMI_APP_HIDE#>" : "<#LANG_XIMI_APP_SHOW#>");
+            });
+         </script>
+         <div class="form-group">
+            <label class="control-label"><#LANG_XIMI_APP_ADVANCED_SETUP#></label>
+            <div class="controls">
+               <span class="btn btn-default btn-sm" id="advanced_show" data-toggle="collapse" data-target="#advanced_settings"><#LANG_XIMI_APP_SHOW#></span>
+            </div>
+         </div>
+         <div class='collapse' id='advanced_settings'>
             <div class="form-group">
-                <label class="control-label"><#LANG_XIMI_APP_IP#>
-				<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_IP_TOOLTIP#>">
-					<i class="glyphicon glyphicon-info-sign"></i>
-				</span>
-                </label>
-                <div class="col-lg-4"><input class="form-control" type="text" name="api_ip" value="<#API_IP#>" class="input"></div>
+               <label class="control-label"><#LANG_XIMI_APP_SOCKET_TIMEOUT#>
+                  <span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_SOCKET_TIMEOUT_TOOLTIP#>">
+                     <i class="glyphicon glyphicon-info-sign"></i>
+                  </span>
+               </label>
+               <div class="col-lg-4"><input class="form-control" type="text" name="api_socket_timeout" value="[#if API_SOCKET_TIMEOUT!=""#][#API_SOCKET_TIMEOUT#][#else#]2[#endif#]" class="input"></div>
             </div>
-			<div class="form-group">
-                <label class="control-label"><#LANG_XIMI_APP_PERIOD#>
-				<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_PERIOD_TOOLTIP#>">
-					<i class="glyphicon glyphicon-info-sign"></i>
-				</span>
-                </label>
-                <div class="col-lg-4"><input class="form-control" type="text" name="api_disc_period" value="[#if API_DISC_PERIOD!=""#][#API_DISC_PERIOD#][#else#]120[#endif#]" class="input"></div>
-            </div>
-            <div class="form-group">
-                <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
-					<#LANG_XIMI_APP_DEBUG#> DebMes
-					<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP#>">
-						<i class="glyphicon glyphicon-info-sign"></i>
-					</span>
-				</div>
-            </div>
-			<div class="form-group">
-                <div class="controls"><input type="checkbox" name="api_log_miio" value="1"[#if API_LOG_MIIO="1"#] checked[#endif#]> 
-					<#LANG_XIMI_APP_DEBUG#> miIO-Lib
-					<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP2#>">
-						<i class="glyphicon glyphicon-info-sign"></i>
-					</span>
-				</div>
-            </div>
-			<div class="form-group">
-                <div class="controls"><input type="checkbox" name="api_log_cycle" value="1"[#if API_LOG_CYCLE="1"#] checked[#endif#]> 
-					<#LANG_XIMI_APP_DEBUG#> Cycle
-					<span class='support-hover' tabindex="1" data-title="<#LANG_XIMI_APP_DEBUG_TOOLTIP3#>">
-						<i class="glyphicon glyphicon-info-sign"></i>
-					</span>
-				</div>
-            </div>
-            <div class="form-actions">
-                <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
-                <input type="hidden" name="view_mode" value="update_settings">
-                <input type="hidden" name="mode" value="update">
-            </div>
-        </fieldset>
-    </form>
+         </div>
+         <div class="form-actions">
+            <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
+            <input type="hidden" name="view_mode" value="update_settings">
+            <input type="hidden" name="mode" value="update">
+         </div>
+      </fieldset>
+   </form>
 </div>
  
  [#inc miio_devices_search_admin.html#]
@@ -156,7 +178,7 @@
 			<div class="modal-body">
 				<div class="float-right">
 					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.1.9.5b</b></p>
+					<br><br><p><b>v.1.9.6b</b></p>
 				</div>
             <p class="float-left">
 					<#LANG_XIMI_APP_MODULE#><br><br>

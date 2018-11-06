@@ -3,7 +3,7 @@
 * Xiaomi miIO Cycle
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.8.5b
+* @version 1.9.6b
 */
 
 chdir(dirname(__FILE__) . '/../');
@@ -38,21 +38,29 @@ $miio_debug = false;
 $cycle_debug = false;
 $debmes_debug = false;
 $disc_period = 120;
+$socket_timeout = 2;
 
 if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
 if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
 if ($miio_module->config['API_LOG_CYCLE']) $cycle_debug = true;
 if ($miio_module->config['API_LOG_DEBMES']) $debmes_debug = true;
-if ($miio_module->config['API_DISC_PERIOD']) $disc_period = (int)$miio_module->config['API_DISC_PERIOD'];
- 
+if ($miio_module->config['API_DISC_PERIOD'] !== null) $disc_period = $miio_module->config['API_DISC_PERIOD'];
+if ($miio_module->config['API_SOCKET_TIMEOUT'] !== null) $socket_timeout = $miio_module->config['API_SOCKET_TIMEOUT'];
+
 echo date('H:i:s') . ' Init miIO ' . PHP_EOL;
 echo date('H:i:s') . " Bind IP - $bind_ip" . PHP_EOL;
 echo date('H:i:s') . " Discover period - $disc_period seconds" . PHP_EOL;
+echo date('H:i:s') . " Socket read timeout - $socket_timeout seconds" . PHP_EOL;
 echo date('H:i:s') . ' Cycle debug - ' . ($cycle_debug ? 'yes' : 'no') . PHP_EOL;
 echo date('H:i:s') . ' DebMes debug - ' . ($debmes_debug ? 'yes' : 'no') . PHP_EOL;
 echo date('H:i:s') . ' miIO-Lib debug - ' . ($miio_debug ? 'yes' : 'no') . PHP_EOL;
+echo date('H:i:s') . ' Extended debug - ' . (EXTENDED_LOGGING ? 'yes' : 'no') . PHP_EOL;
 
 $dev = new miIO(null, $bind_ip, null, $miio_debug);
+
+if ($socket_timeout != 2) {
+   $dev->send_timeout = $socket_timeout;
+}
 
 while (1) {
 
@@ -89,17 +97,36 @@ while (1) {
             //это значение уникально для каждого у-ва, поэтому логично его хранить в базе и обновлять при периодическом поиске или пинге.
             //это также избавит от необходимости слать hello-пакет перед каждой командой
             $msg_id = substr(time().$i, 3);
-            if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {
-               $reply = $dev->data;
+            if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
+               $time_start = microtime(true);
+               if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {
+                  $reply = $dev->data;
+               } else {
+                  $reply = '{"error":"Device not answered"}';
+               }
+               $time = microtime(true) - $time_start;
+               if ($cycle_debug) echo date('H:i:s') . " msgSendRcv() runtime: {$time} s." . PHP_EOL;
             } else {
-               $reply = '{"error":"Device not answered"}';
+               if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {
+                  $reply = $dev->data;
+               } else {
+                  $reply = '{"error":"Device not answered"}';
+               }
             }
          }
 
          if ($reply != '') {
             if ($cycle_debug) echo date('H:i:s') . " Reply: $reply" . PHP_EOL;
             $url = BASE_URL.'/ajax/xiaomimiio.html?op=process&command='.urlencode($queue[$i]['METHOD']).'&device_id='.$queue[$i]['DEVICE_ID'].'&message='.urlencode($reply);
-            getURLBackground($url, 0);
+            if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
+               $time_start = microtime(true);
+               //getURLBackground($url, 0);
+               $miio_module->RunInBackground($url);
+               $time = microtime(true) - $time_start;
+               if ($cycle_debug) echo date('H:i:s') . " RunInBackground() runtime: {$time} s." . PHP_EOL;
+            } else {
+               $miio_module->RunInBackground($url);
+            }
             if ($cycle_debug) echo date('H:i:s') . ' Background processing of the response is started' . PHP_EOL;
          }
       }
@@ -114,16 +141,26 @@ while (1) {
          SQLUpdate('miio_devices', $devices[$i]);
          $ip = $devices[$i]['IP'];
          if ($cycle_debug) echo date('H:i:s') . " Request to update the properties of the device $ip" . PHP_EOL;
-            $miio_module->requestStatus($devices[$i]['ID']);
+         $miio_module->requestStatus($devices[$i]['ID']);
       }
+      continue;
    }
 
-   if ((time() - $latest_disc) >= $disc_period) {
+   if (((time() - $latest_disc) >= $disc_period) && ($disc_period != 0)) {
       $latest_disc = time();
       if ($cycle_debug) echo date('H:i:s') . " Starting periodic search for devices in the network (every $disc_period seconds)" . PHP_EOL;
       $url = BASE_URL.'/ajax/xiaomimiio.html?op=broadcast_search';
-      getURLBackground($url, 0);
+      if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
+         $time_start = microtime(true);
+         //getURLBackground($url, 0);
+         $miio_module->RunInBackground($url);
+         $time = microtime(true) - $time_start;
+         if ($cycle_debug) echo date('H:i:s') . " RunInBackground() runtime: {$time} s." . PHP_EOL;
+      } else {
+         $miio_module->RunInBackground($url);
+      }
       if ($cycle_debug) echo date('H:i:s') . ' Background search process is started' . PHP_EOL;
+      continue;
    }
 
    if (file_exists('./reboot') || IsSet($_GET['onetime'])) {

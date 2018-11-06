@@ -56,6 +56,7 @@
 					<option data-content="<img src='../templates/xiaomimiio/img/small/chuangmi.ir.v2.png' width='20' height='20'> Mi IR Remote 360" value="chuangmi.ir.v2" [#if DEVICE_TYPE="chuangmi.ir.v2"#] selected[#endif#]></option>
 					<option data-content="<img src='../templates/xiaomimiio/img/small/xiaomi.wifispeaker.v1.png' width='20' height='20'> Mi Internet Speaker" value="xiaomi.wifispeaker.v1" [#if DEVICE_TYPE="xiaomi.wifispeaker.v1"#] selected[#endif#]></option>
 					<option data-content="<img src='../templates/xiaomimiio/img/small/yeelink.light.lamp1.png' width='20' height='20'> Mi LED Desk Lamp" value="yeelink.light.lamp1" [#if DEVICE_TYPE="yeelink.light.lamp1"#] selected[#endif#]></option>
+					<option data-content="<img src='../templates/xiaomimiio/img/small/zhimi.fan.sa1.png' width='20' height='20'> Mi Smart Fan SA1" value="zhimi.fan.sa1" [#if DEVICE_TYPE="zhimi.fan.sa1"#] selected[#endif#]></option>
 					<option data-content="<img src='../templates/xiaomimiio/img/small/lumi.gateway.v3.png' width='20' height='20'> Mi Smart Home Gateway 2" value="lumi.gateway.v3" [#if DEVICE_TYPE="lumi.gateway.v3"#] selected[#endif#]></option>
 					<option data-content="<img src='../templates/xiaomimiio/img/small/zimi.powerstrip.v2.png' width='20' height='20'> Mi Smart Power Strip 6 Plugs" value="zimi.powerstrip.v2" [#if DEVICE_TYPE="zimi.powerstrip.v2"#] selected[#endif#]></option>
 					<option data-content="<img src='../templates/xiaomimiio/img/small/chuangmi.plug.v1.png' width='20' height='20'> Mi Smart Socket Plug with USB" value="chuangmi.plug.v1" [#if DEVICE_TYPE="chuangmi.plug.v1"#] selected[#endif#]></option>
@@ -97,7 +98,7 @@
 			<label class="col-lg-3 control-label">
 				<#LANG_SERIAL#>:
 			</label>
-			<div class="col-lg-4">[#SERIAL#]</div>
+			<div class="col-lg-4" style="padding: 5px 10px 0px 15px;">[#SERIAL#]</div>
 		</div>
 		[#endif#]
 
@@ -106,7 +107,7 @@
 			<label class="col-lg-3 control-label">
 				<#LANG_CODE#>:
 			</label>
-			<div class="col-lg-4">[#DEVICE_TYPE_CODE#]</div>
+			<div class="col-lg-4" style="padding: 5px 10px 0px 15px;">[#DEVICE_TYPE_CODE#]</div>
 		</div>
 		[#endif#]
 
@@ -134,7 +135,7 @@
 			<label class="col-lg-3 control-label"[#if ERR_MAC#] style="color:red;font-weight:bold"[#endif#]>
 				MAC:
 			</label>
-			<div class="col-lg-4">[#MAC#]</div>
+			<div class="col-lg-4" style="padding: 5px 10px 0px 15px;">[#MAC#]</div>
 		</div>
 		[#endif#]
 		
@@ -143,7 +144,7 @@
 			<label class="col-lg-3 control-label"[#if ERR_MODEL#] style="color:red;font-weight:bold"[#endif#]>
 				MODEL:
 			</label>
-			<div class="col-lg-4">[#MODEL#]</div>
+			<div class="col-lg-4" style="padding: 5px 10px 0px 15px;">[#MODEL#]</div>
 		</div>
 		[#endif#]
 		
@@ -152,7 +153,7 @@
 			<label class="col-lg-3 control-label"[#if ERR_HW_VER#] style="color:red;font-weight:bold"[#endif#]>
 				HW_VER:
 			</label>
-			<div class="col-lg-4">[#HW_VER#]</div>
+			<div class="col-lg-4" style="padding: 5px 10px 0px 15px;">[#HW_VER#]</div>
 		</div>
 		[#endif#]
 		
