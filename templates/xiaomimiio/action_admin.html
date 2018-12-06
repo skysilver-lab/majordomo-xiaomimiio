@@ -36,7 +36,7 @@
                   <i class="glyphicon glyphicon-info-sign"></i>
                </span>
             </label>
-            <div class="col-lg-4"><input class="form-control" type="text" name="api_disc_period" value="[#if API_DISC_PERIOD!="" || API_DISC_PERIOD==0#][#API_DISC_PERIOD#][#else#]120[#endif#]" class="input"></div>
+            <div class="col-lg-4"><input class="form-control" type="text" name="api_disc_period" value="[#if API_DISC_PERIOD!="" || API_DISC_PERIOD=='0'#][#API_DISC_PERIOD#][#else#]120[#endif#]" class="input"></div>
          </div>
          <div class="form-group">
             <div class="controls"><input type="checkbox" name="api_log_debmes" value="1"[#if API_LOG_DEBMES="1"#] checked[#endif#]> 
@@ -178,7 +178,7 @@
 			<div class="modal-body">
 				<div class="float-right">
 					<img src="../templates/xiaomimiio/milogo.png"  width="48" height="48">
-					<br><br><p><b>v.1.9.6b</b></p>
+					<br><br><p><b>v.1.9.7b</b></p>
 				</div>
             <p class="float-left">
 					<#LANG_XIMI_APP_MODULE#><br><br>

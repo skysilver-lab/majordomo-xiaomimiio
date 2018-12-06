@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.2b
+* @version 1.9.7b
 */
 
 if ($this->owner->name == 'panel') {
@@ -184,13 +184,13 @@ if ($this->tab == 'data') {
 
          // Если юзер удалил привязанные свойство и метод, но забыл про объект, то очищаем его.
          if ($properties[$i]['LINKED_OBJECT'] != '' && ($properties[$i]['LINKED_PROPERTY'] == '' && $properties[$i]['LINKED_METHOD'] == '')) {
-             $properties[$i]['LINKED_OBJECT'] = '';
+            $properties[$i]['LINKED_OBJECT'] = '';
          }
 
          // Если юзер удалил только привязанный объект, то свойство и метод тоже очищаем.
          if ($properties[$i]['LINKED_OBJECT'] == '' && ($properties[$i]['LINKED_PROPERTY'] != '' || $properties[$i]['LINKED_METHOD'] != '')) {
-             $properties[$i]['LINKED_PROPERTY'] = '';
-             $properties[$i]['LINKED_METHOD'] = '';
+            $properties[$i]['LINKED_PROPERTY'] = '';
+            $properties[$i]['LINKED_METHOD'] = '';
          }
 
          if ($old_linked_object && $old_linked_property && ($old_linked_property != $properties[$i]['LINKED_PROPERTY'] || $old_linked_object != $properties[$i]['LINKED_OBJECT'])) {
@@ -244,6 +244,7 @@ if ($this->tab == 'data') {
 			elseif ($properties[$i]['TITLE'] == 'bl') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'ac') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'limit_hum') $properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
+			else    $properties[$i]['SDEVICE_TYPE'] = 'sensor_general';
 		}
 	}
 	$out['PROPERTIES'] = $properties;
@@ -264,23 +265,23 @@ if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($
 	
 	for($i = 0; $i < $total; $i++) {
 		if ($properties[$i]['ID'] == $new_id) continue;
-					
+
 		if ($this->mode == 'update') {
-			
-			global ${'linked_object'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_OBJECT'] = trim(${'linked_object'.$properties[$i]['ID']});
-			
-			global ${'linked_property'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_PROPERTY'] = trim(${'linked_property'.$properties[$i]['ID']});
-			
-			global ${'linked_method'.$properties[$i]['ID']};
-			$properties[$i]['LINKED_METHOD'] = trim(${'linked_method'.$properties[$i]['ID']});
-			
-			SQLUpdate('miio_commands', $properties[$i]);
-			
+
 			$old_linked_object = $properties[$i]['LINKED_OBJECT'];
 			$old_linked_property = $properties[$i]['LINKED_PROPERTY'];
-			
+
+			global ${'linked_object'.$properties[$i]['ID']};
+			$properties[$i]['LINKED_OBJECT'] = trim(${'linked_object'.$properties[$i]['ID']});
+
+			global ${'linked_property'.$properties[$i]['ID']};
+			$properties[$i]['LINKED_PROPERTY'] = trim(${'linked_property'.$properties[$i]['ID']});
+
+			global ${'linked_method'.$properties[$i]['ID']};
+			$properties[$i]['LINKED_METHOD'] = trim(${'linked_method'.$properties[$i]['ID']});
+
+			SQLUpdate('miio_commands', $properties[$i]);
+
 			if ($old_linked_object && $old_linked_object != $properties[$i]['LINKED_OBJECT'] && $old_linked_property && $old_linked_property != $properties[$i]['LINKED_PROPERTY']) {
 				removeLinkedProperty($old_linked_object, $old_linked_property, $this->name);
 			}

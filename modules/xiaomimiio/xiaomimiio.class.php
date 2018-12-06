@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.6b
+* @version 1.9.7b
 */
 
 define('EXTENDED_LOGGING', 0);
@@ -569,7 +569,7 @@ class xiaomimiio extends module {
 		} elseif (($device_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 			//
          if ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-            $this->addToQueue($device_id, 'get_device_prop', '["lumi.0","ac_power"]');
+            $this->addToQueue($device_id, 'get_device_prop', '["lumi.0","plug_state","ac_power"]');
          }
          $this->addToQueue($device_id, 'get_arming', '[]');
          $this->addToQueue($device_id, 'get_prop_fm', '[]');
@@ -808,8 +808,8 @@ class xiaomimiio extends module {
 
       $this->DeleteLinkedProperties($id);
 
-      SQLExec("DELETE FROM miio_commands WHERE ID='{$id}'");
-      SQLExec("DELETE FROM miio_devices WHERE DEVICE_ID='{$id}'");
+      SQLExec("DELETE FROM miio_commands WHERE DEVICE_ID='{$id}'");
+      SQLExec("DELETE FROM miio_devices WHERE ID='{$id}'");
 
    }
 
@@ -1179,6 +1179,7 @@ class xiaomimiio extends module {
          if (!is_array($params)) {
             $params = array();
          }
+         $params['PROPERTY'] = $command;
          $params['VALUE'] = $value;
          $params['OLD_VALUE'] = $old_value;
          $params['NEW_VALUE'] = $value;
@@ -1274,7 +1275,8 @@ class xiaomimiio extends module {
             }
             if ($device['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                if ($command == 'get_device_prop' && is_array($data['result'])) {
-                  $res_commands[] = array('command' => 'load_power', 'value' => $data['result'][0]);
+                  $res_commands[] = array('command' => 'power', 'value' => $data['result'][0]);
+                  $res_commands[] = array('command' => 'load_power', 'value' => $data['result'][1]);
                }
             }
 			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.mono1' && $command == 'get_prop' && is_array($data['result'])) {
