@@ -1,0 +1,48 @@
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Mi (Chingmi) Smart Power Strip 5 Plugs</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div class="panel-group" id="accordion" style="width:98%">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#metrics_help">Описание метрик устройства</a>
+		</div>
+		<div class="panel-body collapse" id="metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>power</b></td><td>Включение и выключение питания</td><td>1 и 0</td><td nowrap>Чтение и запись</td></tr>
+					<tr><td><b>current</b></td><td>Сила тока</td><td>А</td><td>Чтение</td></tr>
+					<tr><td><b>voltage</b></td><td>Напряжение</td><td>В</td><td>Чтение</td></tr>
+					<tr><td><b>power_consume_rate</b></td><td>Текущая потребляемая мощность</td><td>Вт</td><td>Чтение</td></tr>
+					<tr><td><b>temperature</b></td><td>Температура</td><td>С</td><td>Чтение</td></tr>
+				</tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>

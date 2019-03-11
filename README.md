@@ -8,14 +8,14 @@
 
 В основе модуля лежит библиотека **[php-miio](https://github.com/skysilver-lab/php-miio)**.
 
-Обсуждение модуля на **[Форуме](https://majordomo.smartliving.ru/forum/viewtopic.php?f=5&t=4863)**.
+Обсуждение модуля на **[Форуме](https://mjdm.ru/forum/viewtopic.php?f=5&t=4863)**.
 
 Модуль в **[Connect](https://connect.smartliving.ru/tasks/51.html)**.
 
-![miio](https://kb.smartliving.ru/wp-content/uploads/2018/07/module_miio.gif)
+![miio](https://kb.mjdm.ru/wp-content/uploads/2018/07/module_miio.gif)
 
 ### Поддерживаемые устройства
-> По состоянию на август 2018 года.
+> По состоянию на март 2019 года.
 
 1. Шлюз ZigBee ***Mi Smart Home Gateway 2***
 2. Шлюз ZigBee ***Aqara AC Companion Gateway***
@@ -31,22 +31,27 @@
 12. Лампочки ***Philips Rui Chi Candle Light Bulb***
 13. Настольная лампа ***Mi LED Desk Lamp***
 14. Потолочный светильник ***Yeelight Ceiling Light***
-15. Потолочный светильник ***Philips EyeCare Smart Ceiling Lamp***
-16. Светодиодная лента ***Yeelight LED Lightstrip***
-17. Удлинитель (6 розеток) ***Mi Smart Power Strip 6 Plugs***
-18. Увлажнитель воздуха ***Mi Air Humidifier***
-19. Увлажнитель воздуха ***Mi Air Humidifier 2***
-20. Очиститель воздуха ***Mi Air Purifier 2S***
-21. IR-контроллер ***Mi IR Remote 360***
-22. WiFi-колонка ***Mi Internet Speaker***
-23. Ночник ***Yeelight Bedside Lamp***
-24. Светильник (спот) ***Philips Zhirui Downlight***
+15. Потолочный светильник ***Yeelight Square Ceiling Light***
+16. Потолочный светильник ***Philips EyeCare Smart Ceiling Lamp***
+17. Светодиодная лента ***Yeelight LED Lightstrip***
+18. Удлинитель (5 розеток) ***Mi (Chingmi) Smart Power Strip 5 Plugs***
+19. Удлинитель (6 розеток) ***Mi Smart Power Strip 6 Plugs***
+20. Увлажнитель воздуха ***Mi Air Humidifier***
+21. Увлажнитель воздуха ***Mi Air Humidifier 2***
+22. Очиститель воздуха ***Mi Air Purifier 2S***
+23. IR-контроллер ***Mi IR Remote 360***
+24. WiFi-колонка ***Mi Internet Speaker***
+25. Ночник ***Yeelight Bedside Lamp***
+26. Светильник (спот) ***Philips Zhirui Downlight***
+27. Напольный вентилятор ***Mi Smart Fan SA1***
 
-![devices](https://connect.smartliving.ru/cms/data_images/152_image.png)
+![devices](https://connect.smartliving.ru/cms/data_images/659_image.png)
 ### Документация по модулю
-* [Общие сведения](https://kb.smartliving.ru/xiaomimiio_help/)
-* [Установка, обновление, удаление модуля](https://kb.smartliving.ru/xiaomimiio-ustanovka-obnovlenie/)
-* [Интерфейс модуля](https://kb.smartliving.ru/xiaomimiio-gui/)
-* [Настройка модуля](https://kb.smartliving.ru/xiaomimiio-settings/)
-* [Протокол miIO](https://kb.smartliving.ru/xiaomimiio-protocol/)
-* [Токены устройств](https://kb.smartliving.ru/xiaomimiio-tokens/)
+* [Общие сведения](https://kb.mjdm.ru/xiaomimiio_help/)
+* [Установка, обновление, удаление модуля](https://kb.mjdm.ru/xiaomimiio-ustanovka-obnovlenie/)
+* [Интерфейс модуля](https://kb.mjdm.ru/xiaomimiio-gui/)
+* [Настройка модуля](https://kb.mjdm.ru/xiaomimiio-settings/)
+* [Протокол miIO](https://kb.mjdm.ru/xiaomimiio-protocol/)
+* [Токены устройств](https://kb.mjdm.ru/xiaomimiio-tokens/)
+* [Управление техникой по ИК-каналу](https://kb.mjdm.ru/xiaomi-miio-ir-control/)
+* [Управление роботом-пылесосом](https://kb.mjdm.ru/miio-vacuums-control/)

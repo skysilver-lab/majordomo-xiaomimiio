@@ -267,7 +267,6 @@ class miIO {
 			if ($this->token != NULL) {
 				if(!$this->miPacket->setToken($this->token)) {
 					if ($this->debug) echo 'Incorrect tokent format!' . PHP_EOL;
-					die('Incorrect tokent format!\n');
 				} else {
 					if ($this->debug) echo 'Using manually set token - ' . $this->token . PHP_EOL;
 				}

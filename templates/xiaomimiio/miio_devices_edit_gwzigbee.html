@@ -17,7 +17,7 @@
 <fieldset>
 	<div id="gw_upd_zigbee_alert"></div>
 	<div style="width:700px">
-		<table class="table table-striped table-hover table-bordered" id="gw_upd_zigbee_table" align="left"></table>
+		<div id="gw_upd_zigbee_table"></div>
 	</div>
 </fieldset>
 <div>
@@ -25,10 +25,10 @@
 </div>
 
 <script type="text/javascript">
-	
+
 	//Получим список суб-девайсов при открытии вкладки "Zigbee"
 	getZigbeeDevices('[#IP#]','[#TOKEN#]');
-	
+
 	const types = {
 		1: 'switch',
 		2: 'motion',
@@ -55,6 +55,7 @@
 		64: 'ctrl_ln2.aq1',
 		65: '86plug',
 		68: 'sensor_cube.aqgl01',
+		135: 'remote.b286acn01',
 		1003: 'natgas'
 	};
 
@@ -73,6 +74,7 @@
 					var zdev_count = zdev.result.length;
 					if (zdev_count > 0) {
 						let indx = 1;
+						var rows_html = '';
 						for(let i=0; i<zdev_count; i+=5) {
 							var id = zdev.result[i];
 							if(id.indexOf('lumi.') === 0) id = id.substring(5);
@@ -81,10 +83,10 @@
 							if(id === '0') continue;
 							if(online == 1) {
 								online = '<span class="label label-success" title="<#LANG_XIMI_APP_ONLINE#>">Online</span>';
-								unpair = '<i id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-trash"></i></i>';
+								unpair = '<span id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-trash"></i></span>';
 							} else {
 								online = '<span class="label label-warning" title="<#LANG_XIMI_APP_OFFLINE#>">Offline</span>';
-								unpair = '<i id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-trash"></i></i>';
+								unpair = '<span id="'+id+'" onclick="unpairZigbee($(this).attr(\'id\'));" class="btn btn-default" title="<#LANG_XIMI_APP_UNBIND#>"><i class="glyphicon glyphicon-trash"></i></span>';
 							}
 							if (types[type]) {
 								model = types[type];
@@ -92,10 +94,12 @@
 							} else {
 								model = 'unknown';
 								img_td = '<td style="vertical-align:middle;width:60px" class="text-center"><img src="../templates/xiaomimiio/img/small/zigbee_unknown.png" height="40px"></td>';
-							}					
-							$('#gw_upd_zigbee_table').append('<tr><td style="vertical-align:middle;width:50px" class="text-center">'+(indx)+'</td>'+img_td+'<td style="vertical-align:middle;min-width:170px" class="text-center">'+id+'</td><td style="vertical-align:middle;width:50px" class="text-center">'+type+'</td><td style="vertical-align:middle" class="text-center">'+model+'</td><td style="vertical-align:middle;width:90px" class="text-center">'+online+'</td><td style="vertical-align:middle;width:70px" class="text-center">'+unpair+'</td></tr>');
+							}
+							rows_html = rows_html + ('<tr><td style="vertical-align:middle;width:50px" class="text-center">'+(indx)+'</td>'+img_td+'<td style="vertical-align:middle;min-width:170px" class="text-center">'+id+'</td><td style="vertical-align:middle;width:50px" class="text-center">'+type+'</td><td style="vertical-align:middle" class="text-center">'+model+'</td><td style="vertical-align:middle;width:90px" class="text-center">'+online+'</td><td style="vertical-align:middle;width:70px" class="text-center">'+unpair+'</td></tr>');
 							indx+=1;
 						}
+						var table_html = '<table class="table table-hover table-bordered" align="left">' + rows_html + '</table>';
+						$("#gw_upd_zigbee_table").html(table_html);
 					} else {
 						$("#gw_upd_zigbee_alert").html('<div class="alert alert-warning" role="alert" id="gw_upd_zigbee_alert">Zigbee-<#LANG_DEVICE#> <#LANG_STRING_NOT_FOUND#>.</div>');
 					}
@@ -129,7 +133,7 @@
 						$("#gw_upd_zigbee_alert").html('<div class="alert alert-warning" role="alert" id="gw_upd_zigbee_alert"><#LANG_XIMI_APP_ERROR#>.</div>');
 					}
 				}
-			});			
+			});
 		} else {
 			$("#gw_upd_zigbee_alert").html('<div class="alert alert-warning" role="alert" id="gw_upd_zigbee_alert"><#LANG_XIMI_APP_ERROR#>.</div>');
 		}
@@ -147,7 +151,7 @@
 					$("#gw_upd_zigbee_alert").html('<div class="alert alert-success" role="alert" id="gw_upd_zigbee_alert"><#LANG_XIMI_APP_DELETE#>.</div>');
 					setTimeout(getZigbeeDevices('[#IP#]','[#TOKEN#]'), 1000);
 				}
-			});	
+			});
 		}
 	}
 

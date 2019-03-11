@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.7b
+* @version 1.9.8b
 */
 
 if ($this->owner->name == 'panel') {
@@ -244,6 +244,8 @@ if ($this->tab == 'data') {
 			elseif ($properties[$i]['TITLE'] == 'bl') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'ac') $properties[$i]['SDEVICE_TYPE'] = 'sensor_state';
 			elseif ($properties[$i]['TITLE'] == 'limit_hum') $properties[$i]['SDEVICE_TYPE'] = 'sensor_humidity';
+			elseif ($properties[$i]['TITLE'] == 'voltage') $properties[$i]['SDEVICE_TYPE'] = 'sensor_voltage';
+			elseif ($properties[$i]['TITLE'] == 'eyecare') $properties[$i]['SDEVICE_TYPE'] = 'relay';
 			else    $properties[$i]['SDEVICE_TYPE'] = 'sensor_general';
 		}
 	}
