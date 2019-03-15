@@ -1,8 +1,8 @@
 <?php
 /*
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.8b
+* @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 1.9.9b
 */
 
 if ($this->owner->name == 'panel') {

@@ -1,5 +1,5 @@
 <?php
-/* 
+/**
 *	Класс для работы с wifi-устройствами из экосистемы xiaomi по протоколу miIO.
 *
 *	+ прием udp-пакетов из сокета
@@ -8,126 +8,126 @@
 *	+ отправка сообщений устройству
 *	+ прием ответов от устройства
 *	+ поиск устройств (handshake-discovery)
-*	
+*
 *	https://github.com/aholstenson/miio
 *	https://github.com/rytilahti/python-miio
 *	https://github.com/marcelrv/XiaomiRobotVacuumProtocol
 *
-*	Copyright (C) 2017 Agaphonov Dmitri aka skysilver [mailto:skysilver.da@gmail.com]
+*	Copyright (C) 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com>
 */
 
 require('mipacket.class.php');
 
-const 	MIIO_PORT = '54321';
+const	MIIO_PORT = '54321';
 
-const 	HELLO_MSG = '21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+const	HELLO_MSG = '21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
 class miIO {
-	
-	public 	$ip = '';
-	public 	$token = '';
-	public 	$debug = '';
-	public 	$send_timeout = 2;
-	public 	$disc_timeout = 10;
 
-    public 	$msg_id = '1';
+	public	$ip = '';
+	public	$token = '';
+	public	$debug = '';
+	public	$send_timeout = 2;
+	public	$disc_timeout = 10;
+
+	public	$msg_id = '1';
 	public	$useAutoMsgID = false;
 
-	public 	$data = '';
-	public 	$sock = NULL;
-	
+	public	$data = '';
+	public	$sock = NULL;
+
 	private $miPacket = NULL;
 
-	
+
 	public function __construct($ip = NULL, $bind_ip = NULL, $token = NULL, $debug = false) {
-		
+
 		$this->debug = $debug;
-		
+
 		$this->miPacket = new miPacket();
-		
+
 		if ($ip != NULL) $this->ip = $ip;
-		
+
 		if ($bind_ip != NULL) $this->bind_ip = $bind_ip;
 		 else $this->bind_ip = '0.0.0.0';
-		
+
 		if ($token != NULL) $this->token = $token;
-		
+
 		if ($this->debug) {
 			if ($this->ip == NULL) echo "Broadband discovery mode" . PHP_EOL;
 			 else echo "Connection to device by IP $this->ip" . PHP_EOL;
 			echo "Debug status [$this->debug]" . PHP_EOL;
 		}
-		
+
 		$this->sockCreate();
-		
+
 	}
-	
+
 	public function __destruct() {
-		
+
 		@socket_shutdown($this->sock, 2);
 		@socket_close($this->sock);
-		
+
 	}
 
 	/*
 		Создание udp4 сокета.
 	*/
-	
+
 	public function sockCreate() {
-	
+
 		if (!($this->sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP))) {
 			$errorcode = socket_last_error();
 			$errormsg = socket_strerror($errorcode);
 			if ($this->debug) echo "Error socket create - [socket_create()] [$errorcode] $errormsg" . PHP_EOL;
 			die("Error socket create - [socket_create()] [$errorcode] $errormsg \n");
 		} else { if ($this->debug) echo 'Socked created' . PHP_EOL; }
-	
+
 	}
-	
+
 	/*
 		Установка параметров сокета - таймаут.
 	*/
-	
+
 	public function sockSetTimeout($timeout = 2) {
-	
+
 		if (!socket_set_option($this->sock, SOL_SOCKET, SO_RCVTIMEO, array("sec" => $timeout, "usec" => 0))) {
 			$errorcode = socket_last_error();
 			$errormsg = socket_strerror($errorcode);
 			if ($this->debug) echo "Error setting timeout SO_RCVTIMEO - [socket_create()] [$errorcode] $errormsg" . PHP_EOL;
 		} else { if ($this->debug) echo 'Timeout SO_RCVTIMEO successfully set' . PHP_EOL; }
-	
+
 	}
-	
+
 	/*
 		Установка параметров сокета - броадкаст.
 	*/
-	
+
 	public function sockSetBroadcast() {
-	
+
 		if (!socket_set_option($this->sock, SOL_SOCKET, SO_BROADCAST, 1)) {
 			$errorcode = socket_last_error();
 			$errormsg = socket_strerror($errorcode);
 			if ($this->debug) echo "Error setting broadcast SO_BROADCAST - [socket_create()] [$errorcode] $errormsg" . PHP_EOL;
 		} else { if ($this->debug) echo 'Broadcast SO_BROADCAST successfully set' . PHP_EOL; }
-	
+
 	}
-	
+
 	/*
 		Поиск устройства и начало сессии с ним.
 	*/
-	
+
 	public function discover($ip = NULL) {
 
 		if ($ip != NULL) {
 
-			if ($this->debug) echo PHP_EOL . "Checking device status by $ip" . PHP_EOL;
+			if ($this->debug) echo "Checking device status by $ip" . PHP_EOL;
 
 			$this->sockSetTimeout($this->send_timeout);
 
 			if ($this->debug) echo " >>>>> Sending hello-packet to $ip with timeout $this->send_timeout" . PHP_EOL;
 
 			$helloPacket = hex2bin(HELLO_MSG);
-			
+
 			if(!($bytes = socket_sendto($this->sock, $helloPacket, strlen($helloPacket), 0, $ip, MIIO_PORT))) {
 				$errorcode = socket_last_error();
 				$errormsg = socket_strerror($errorcode);
@@ -143,10 +143,8 @@ class miIO {
 					$this->miPacket->msgParse(bin2hex($buf));
 					if ($this->debug) {
 						$this->miPacket->printHead();
-						$timediff = hexdec($this->miPacket->ts) - time();
 						$ts_server = time();
 						echo 'ts_server: ' . dechex($ts_server) . ' --> ' . $ts_server . ' seconds' . ' --> ' . date('Y-m-d H:i:s', $ts_server) . PHP_EOL;
-						echo 'timediff: ' . $timediff . PHP_EOL;
 					}
 					return true;
 				}
@@ -169,24 +167,24 @@ class miIO {
 				$errormsg = socket_strerror($errorcode);
 				if ($this->debug) echo "IP bind failed $this->bind_ip [$errorcode] $errormsg" . PHP_EOL;
 			} else { if ($this->debug) echo "Socket binded to IP $this->bind_ip" . PHP_EOL; }
-			
+
 			$ip = '255.255.255.255';
 
 			if ($this->debug) echo " >>>>> Sending hello-packet to $ip with timeout $this->disc_timeout" . PHP_EOL;
-			
+
 			$helloPacket = hex2bin(HELLO_MSG);
-			
+
 			if(!($bytes = socket_sendto($this->sock, $helloPacket, strlen($helloPacket), 0, $ip, MIIO_PORT))) {
 				$errorcode = socket_last_error();
 				$errormsg = socket_strerror($errorcode);
 				if ($this->debug) echo "Error sending to socket [$errorcode] $errormsg" . PHP_EOL;
 			} else { if ($this->debug) echo " >>>>> $bytes bytes sent" . PHP_EOL; }
-			
+
 			$buf = '';
-		    $count = 0;
+			$count = 0;
 			$devinfo = array();
 			$devices = array();
-			
+
 			while ($bytes = @socket_recvfrom($this->sock, $buf, 4096, 0, $remote_ip, $remote_port)) {
 				if ($buf != '') {
 					if ($this->debug) {
@@ -197,12 +195,10 @@ class miIO {
 
 					if ($this->debug) {
 						$this->miPacket->printHead();
-						$timediff = hexdec($this->miPacket->ts) - time();
 						$ts_server = time();
 						echo 'ts_server: ' . dechex($ts_server) . ' --> ' . $ts_server . ' seconds' . ' --> ' . date('Y-m-d H:i:s', $ts_server) . PHP_EOL;
-						echo 'timediff: ' . $timediff . PHP_EOL;
 					}
-					
+
 					$devinfo = $this->miPacket->info;
 					$devinfo += ["ip" => $remote_ip];
 					$devices[] = json_encode($devinfo);
@@ -214,39 +210,39 @@ class miIO {
 					if ($this->debug) echo "Error reading socket [$errorcode] $errormsg" . PHP_EOL;
 				}
 			}
-			
+
 			if(!empty($devices)) $this->data = '{"devices":'. json_encode($devices) .'}';
-		
+
 			if ($count != 0 || !empty($this->data)) return true;
 			 else return false;
 		}
 	}
-	
+
 	public function fastDiscover() {
-		
+
 		$timeout = 2;
-		
+
 		$this->sockSetTimeout($timeout);
 		$this->sockSetBroadcast();
-			
+
 		if( !@socket_bind($this->sock, $this->bind_ip , 0) ) {
 			$errorcode = socket_last_error();
 			$errormsg = socket_strerror($errorcode);
 			if ($this->debug) echo " --> Could not bind ip to socket $this->bind_ip [$errorcode] $errormsg" . PHP_EOL;
 		} else { if ($this->debug) echo " --> Socket ip binded $this->bind_ip" . PHP_EOL; }
-			
+
 		$ip = '255.255.255.255';
 
 		if ($this->debug) echo " --> Sending hello-packet to $ip with timeout $timeout" . PHP_EOL;
-			
+
 		$helloPacket = hex2bin(HELLO_MSG);
-			
+
 		if(!($bytes = socket_sendto($this->sock, $helloPacket, strlen($helloPacket), 0, $ip, MIIO_PORT))) {
 			$errorcode = socket_last_error();
 			$errormsg = socket_strerror($errorcode);
 			if ($this->debug) echo " --> Error sending data to socket [$errorcode] $errormsg" . PHP_EOL . PHP_EOL;
 		} else { if ($this->debug) echo " --> $bytes bytes sent to socket" . PHP_EOL . PHP_EOL; }
-		
+
 	}
 
 	/*
@@ -256,11 +252,8 @@ class miIO {
 	public function socketWriteRead($msg) {
 
 		if ($this->discover($this->ip)) {
-      // TODO: подумать над вариантом убрать отправку hello-packet при каждом сообщении.
-      //       Слать hello только при больших перерывах в обмене сообщениями,
-      //       либо вообще никогда, если включен периодический поиск устройств в сети.
 
-			if ($this->debug) echo PHP_EOL . "Device $this->ip available" . PHP_EOL;
+			if ($this->debug) echo "Device $this->ip available" . PHP_EOL;
 
 			$this->sockSetTimeout($this->send_timeout);
 
@@ -280,11 +273,9 @@ class miIO {
 
 			if ($this->debug) {
 				$this->miPacket->printHead();
-				$timediff = hexdec($this->miPacket->ts) - time();
-				echo 'data: ' . $this->miPacket->data . PHP_EOL;
 				$ts_server = time();
 				echo 'ts_server: ' . dechex($ts_server) . ' --> ' . $ts_server . ' seconds' . ' --> ' . date('Y-m-d H:i:s', $ts_server) . PHP_EOL;
-				echo 'timediff: ' . $timediff . PHP_EOL;
+				echo 'data: ' . $this->miPacket->data . PHP_EOL;
 			}
 
 			if(!($bytes = socket_sendto($this->sock, $packet, strlen($packet), 0, $this->ip, MIIO_PORT))) {
@@ -304,7 +295,7 @@ class miIO {
 					}
 					$this->miPacket->msgParse(bin2hex($buf));
 					if ($this->debug) $this->miPacket->printPacket();
-					$data_dec = $this->miPacket->decryptData($this->miPacket->data);	
+					$data_dec = $this->miPacket->decryptData($this->miPacket->data);
 					if ($this->debug) echo "Data decrypted: $data_dec" . PHP_EOL;
 					//проверить json на валидность
 					json_decode($data_dec);
@@ -344,42 +335,42 @@ class miIO {
 	*/
 
 	public function msgSendRcv($command, $parameters = NULL, $id = 1) {
-	
+
 		if (isset($id) && ($id > 0) && !$this->useAutoMsgID) $this->msg_id = $id;
 		 else if ($this->useAutoMsgID) $this->msg_id = $this->getMsgID($this->ip);
-		
+
 		$msg = '{"id":' . $this->msg_id . ',"method":"'. $command . '"}';
-			
+
 		if ($parameters != NULL) {
 			$msg = '{"id":' . $this->msg_id . ',"method":"'. $command . '","params":' . $parameters . '}';
 		}
-			
+
 		if ($this->debug) echo "Command to send - $msg" . PHP_EOL;
-			
+
 		return $this->socketWriteRead($msg);
 
 	}
-	
+
 	/*
 		Отправка сообщения (как есть) устройству и прием ответа.
 	*/
-	
+
 	public function msgSendRcvRaw($msg) {
-	
+
 		if (substr_count($msg, "'") > 0 ) $msg = str_replace("'", '"', $msg);
-		
+
 		if ($this->debug) echo "Command to send - $msg" . PHP_EOL;
-		
+
 		return $this->socketWriteRead($msg);
- 
+
 	}
-	
+
 	/*
 		Получить новый идентификатор для команды.
 	*/
-	
+
 	public function getMsgID($ip) {
-	
+
 		if (file_exists ('id.json')) {
 			$file = file_get_contents('id.json');
 			$ids = json_decode($file, TRUE);
@@ -400,21 +391,21 @@ class miIO {
 		}
 
 		file_put_contents('id.json', json_encode($ids));
-	
+
 		return $ids[$ip];
 	}
-	
+
 	/*
 		Получить описание ошибки JSON.
 		(определяем функцию, если старая версия PHP)
 	*/
-	
+
 	public function jsonLastErrorMsg() {
-	
+
 		if (!function_exists('json_last_error_msg')) {
-		
+
 			function json_last_error_msg() {
-			
+
 				static $ERRORS = array(JSON_ERROR_NONE => 'No error has occurred',
 										JSON_ERROR_DEPTH => 'The maximum stack depth has been exceeded',
 										JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON',
@@ -426,19 +417,19 @@ class miIO {
 				return isset($ERRORS[$error]) ? $ERRORS[$error] : 'Unknown error';
 			}
 		}
-						
+
 		return json_last_error_msg();
-		
+
 	}
-	
+
 	/*
 		Получить miIO-сведения об устройстве.
 	*/
-	
+
 	public function getInfo($msg_id = 1) {
-	
+
 		return $this->msgSendRcv('miIO.info', '[]', $msg_id);
-	 
+
 	}
-	
+
 }

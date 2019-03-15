@@ -2,8 +2,8 @@
 /**
 * Xiaomi miIO Cycle
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.6b
+* @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 1.9.9b
 */
 
 chdir(dirname(__FILE__) . '/../');
@@ -93,9 +93,6 @@ while (1) {
             } else {
                $dev->token = null;
             }
-            //TO-DO: перед отправкой команды у-ву нужно задать разницу времени между сервером и локальным временем у-ва.
-            //это значение уникально для каждого у-ва, поэтому логично его хранить в базе и обновлять при периодическом поиске или пинге.
-            //это также избавит от необходимости слать hello-пакет перед каждой командой
             $msg_id = substr(time().$i, 3);
             if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
                $time_start = microtime(true);
@@ -120,7 +117,6 @@ while (1) {
             $url = BASE_URL.'/ajax/xiaomimiio.html?op=process&command='.urlencode($queue[$i]['METHOD']).'&device_id='.$queue[$i]['DEVICE_ID'].'&message='.urlencode($reply);
             if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
                $time_start = microtime(true);
-               //getURLBackground($url, 0);
                $miio_module->RunInBackground($url);
                $time = microtime(true) - $time_start;
                if ($cycle_debug) echo date('H:i:s') . " RunInBackground() runtime: {$time} s." . PHP_EOL;
@@ -152,7 +148,6 @@ while (1) {
       $url = BASE_URL.'/ajax/xiaomimiio.html?op=broadcast_search';
       if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
          $time_start = microtime(true);
-         //getURLBackground($url, 0);
          $miio_module->RunInBackground($url);
          $time = microtime(true) - $time_start;
          if ($cycle_debug) echo date('H:i:s') . " RunInBackground() runtime: {$time} s." . PHP_EOL;

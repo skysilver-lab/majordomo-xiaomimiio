@@ -3,8 +3,8 @@
 * Xiaomi miIO
 * @package project
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 1.9.8b
+* @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 1.9.9b
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -32,6 +32,7 @@ define ('MIIO_ZHIMI_HUMIDIFIER_PROPS', 'power,humidity,temp_dec,mode,led_b,buzze
 define ('MIIO_ZHIMI_HUMIDIFIER_2_PROPS', 'power,humidity,temp_dec,mode,depth,speed,dry,use_time,led_b,buzzer,child_lock,limit_hum');
 
 define ('MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS', 'power,aqi,average_aqi,humidity,temp_dec,bright,mode,favorite_level,filter1_life,use_time,purify_volume,led,buzzer,child_lock');
+define ('MIIO_ZHIMI_AIRPURIFIER_V3_PROPS', 'power,aqi,bright,mode,filter1_life,led,buzzer,child_lock');
 
 define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 
@@ -308,13 +309,17 @@ class xiaomimiio extends module {
 	* @access private
 	*/
 
-	function addToQueue($device_id, $method, $data = '[]') {
+	function addToQueue($device_id, $method, $data = '[]', $timeshift = 0) {
 	
 		$rec = array();
 		$rec['DEVICE_ID'] = (int)$device_id;
 		$rec['METHOD'] = $method;
 		$rec['DATA'] = $data;
-		$rec['ADDED'] = date('Y-m-d H:i:s');
+      if ($timeshift > 0) {
+         $rec['ADDED'] = date('Y-m-d H:i:s', time() + $timeshift);
+      } else {
+         $rec['ADDED'] = date('Y-m-d H:i:s');
+      }
 		
 		SQLInsert('miio_queue', $rec);
 	
@@ -497,7 +502,7 @@ class xiaomimiio extends module {
 	*/
 
 	function requestStatus($device_id) {
-		
+
 		$device_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=" . (int)$device_id);
 
 		if (($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') || ($device_rec['DEVICE_TYPE'] == 'philips.light.downlight')) {
@@ -541,12 +546,10 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
-         //
-         $this->addToQueue($device_id, 'get_status');
-         sleep(1);
-         $this->addToQueue($device_id, 'get_consumable');
-         sleep(1);
-         $this->addToQueue($device_id, 'get_custom_mode');
+			//
+			$this->addToQueue($device_id, 'get_status');
+			$this->addToQueue($device_id, 'get_consumable');
+			$this->addToQueue($device_id, 'get_custom_mode');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.m1') {
 			//
 			$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
@@ -569,18 +572,18 @@ class xiaomimiio extends module {
 			}
 		} elseif (($device_rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 			//
-         if ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-            $this->addToQueue($device_id, 'get_device_prop', '["lumi.0","plug_state","ac_power"]');
-         }
-         $this->addToQueue($device_id, 'get_arming', '[]');
-         $this->addToQueue($device_id, 'get_prop_fm', '[]');
+			if ($device_rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+				$this->addToQueue($device_id, 'get_device_prop', '["lumi.0","plug_state","ac_power"]');
+			}
+			$this->addToQueue($device_id, 'get_arming', '[]');
+			$this->addToQueue($device_id, 'get_prop_fm', '[]');
 			if ($this->view_mode == 'propupd_miio_devices') {
 				$this->addToQueue($device_id, 'get_lumi_dpf_aes_key', '[]');
 				$this->addToQueue($device_id, 'get_zigbee_channel', '[]');
 			}
-			$this->addToQueue($device_id, 'get_channels', '{"start":0}');
-         //TODO: $this->addToQueue($device_id, 'get_channels', '{"start":10}');
-         //      Если станций больше 10, 20.
+			$this->addToQueue($device_id, 'get_channels', '{"start":0}', 4);
+			//TODO: $this->addToQueue($device_id, 'get_channels', '{"start":10}');
+			//      Если станций больше 10, 20.
 		} elseif ($device_rec['DEVICE_TYPE'] == 'philips.light.ceiling') {
 			//
 			$props = explode(',', MIIO_PHILIPS_LIGHT_CEILING_PROPS);
@@ -653,6 +656,14 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.v3') {
+			//
+			$props = explode(',', MIIO_ZHIMI_AIRPURIFIER_V3_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.bslamp1') {
 			//
 			$props = explode(',', MIIO_YEELIGHT_BSLAMP1_PROPS);
@@ -670,14 +681,14 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
-         //
-         $props = explode(',', MIIO_ZHIMI_FAN_SA1_PROPS);
-         $total = count($props);
-         for ($i = 0; $i < $total; $i++) {
-             $props[$i] = '"' . $props[$i] . '"';
-         }
-         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-      }
+			//
+			$props = explode(',', MIIO_ZHIMI_FAN_SA1_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		}
 	}
 
 	/**
@@ -1038,6 +1049,12 @@ class xiaomimiio extends module {
 						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2') {
 							// Изменение режима (silent, auto, favorite)
 							if ($value == 'silent' || $value == 'auto' || $value == 'favorite') {
+								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
+							}
+						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.v3') {
+							// Изменение режима (auto, silent, strong, low, medium, high, idle)
+							if ($value == 'auto' || $value == 'silent' || $value == 'strong' || $value == 'low' ||
+								 $value == 'medium' || $value == 'high' || $value == 'idle') {
 								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
 							}
 						}
@@ -1515,6 +1532,15 @@ class xiaomimiio extends module {
 						$value = $value / 10;
 						$key = 'temperature';
 					}
+					if ($key == 'bright') $key = 'illumination';
+					$res_commands[] = array('command' => $key, 'value' => $value);
+					$i++;
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'zhimi.airpurifier.v3' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_ZHIMI_AIRPURIFIER_V3_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
 					if ($key == 'bright') $key = 'illumination';
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
