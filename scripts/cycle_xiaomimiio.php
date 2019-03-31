@@ -93,7 +93,7 @@ while (1) {
             } else {
                $dev->token = null;
             }
-            $msg_id = substr(time().$i, 3);
+            $msg_id = substr(microtime(true)*10000, 3);
             if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
                $time_start = microtime(true);
                if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {

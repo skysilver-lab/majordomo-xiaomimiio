@@ -366,7 +366,7 @@
                var resp = tryParseJSON(html);
                if (resp !== false) {
                   if(typeof resp.error === 'undefined') {
-                     if((typeof resp.result !== 'undefined') && (resp.result === 0)) {
+                     if ((typeof resp.result !== 'undefined') && (resp.result === 0 || resp.result == 'ok')) {
                         $('#ir_learn_log').append(Hour+":"+Minutes+":"+Seconds+' <#LANG_XIMI_APP_TRAINING#>.<br>');
                         if($("#ir_learn_timer").html()=='') {
                            $('#ir_learn_timer').html('10');

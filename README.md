@@ -38,14 +38,15 @@
 19. Удлинитель (6 розеток) ***Mi Smart Power Strip 6 Plugs***
 20. Увлажнитель воздуха ***Mi Air Humidifier***
 21. Увлажнитель воздуха ***Mi Air Humidifier 2***
-22. Очиститель воздуха ***Mi Air Purifier 2S***
-23. IR-контроллер ***Mi IR Remote 360***
-24. WiFi-колонка ***Mi Internet Speaker***
-25. Ночник ***Yeelight Bedside Lamp***
-26. Светильник (спот) ***Philips Zhirui Downlight***
-27. Напольный вентилятор ***Mi Smart Fan SA1***
+22. Очиститель воздуха ***Mi Air Purifier v3***
+23. Очиститель воздуха ***Mi Air Purifier 2S***
+24. IR-контроллер ***Mi IR Remote 360***
+25. WiFi-колонка ***Mi Internet Speaker***
+26. Ночник ***Yeelight Bedside Lamp***
+27. Светильник (спот) ***Philips Zhirui Downlight***
+28. Напольный вентилятор ***Mi Smart Fan SA1***
 
-![devices](https://connect.smartliving.ru/cms/data_images/659_image.png)
+![devices](https://connect.smartliving.ru/cms/data_images/690_image.png)
 ### Документация по модулю
 * [Общие сведения](https://kb.mjdm.ru/xiaomimiio_help/)
 * [Установка, обновление, удаление модуля](https://kb.mjdm.ru/xiaomimiio-ustanovka-obnovlenie/)

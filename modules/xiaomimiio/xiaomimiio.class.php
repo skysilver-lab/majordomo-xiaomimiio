@@ -1304,7 +1304,9 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => 'zigbee_channel', 'value' => $data['result'][0]);
 				}
             if ($command == 'get_arming' && is_array($data['result'])) {
-               $res_commands[] = array('command' => 'arming_mode', 'value' => $data['result'][0]);
+               if ($data['result'][0] != 'oning') {
+                  $res_commands[] = array('command' => 'arming_mode', 'value' => $data['result'][0]);
+               }
             }
             if ($device['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                if ($command == 'get_device_prop' && is_array($data['result'])) {
