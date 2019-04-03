@@ -62,6 +62,8 @@ if ($socket_timeout != 2) {
    $dev->send_timeout = $socket_timeout;
 }
 
+$msg_id = time();
+
 while (1) {
 
    if ((time() - $latest_check) >= $check_period) {
@@ -93,7 +95,6 @@ while (1) {
             } else {
                $dev->token = null;
             }
-            $msg_id = substr(microtime(true)*10000, 3);
             if (defined('EXTENDED_LOGGING') && EXTENDED_LOGGING == 1) {
                $time_start = microtime(true);
                if($dev->msgSendRcv($queue[$i]['METHOD'], $queue[$i]['DATA'], $msg_id)) {
@@ -110,6 +111,7 @@ while (1) {
                   $reply = '{"error":"Device not answered"}';
                }
             }
+            $msg_id++;
          }
 
          if ($reply != '') {
