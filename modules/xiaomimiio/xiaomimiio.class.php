@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.0
+* @version 2.1
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -945,24 +945,38 @@ class xiaomimiio extends module {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'send_ir_code', '["' . $value . '"]');
                   }
                   //{"id":1,"method":"miIO.ir_play","params":{"freq":38400,"code":"Z6VHABACAABE...QA="}}
-					} elseif ($properties[$i]['TITLE'] == 'snm') {
-						// Установить фиксированные сцены (1-Яркий, 2-ТВ, 3-тёплый, 4-ночь)
-						if ($value < 1) $value = 1;
-						if ($value > 4) $value = 4;
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'apply_fixed_scene', "[$value]");
-					} elseif ($properties[$i]['TITLE'] == 'dv') {
-						// Таймер отключения (в секундах)
-						if ($value < 0) $value = 1;
-						if ($value > 21600) $value = 21600;
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'delay_off', "[$value]");
-					} elseif ($properties[$i]['TITLE'] == 'bl') {
-						// Интеллектуальный ночник
-						if ($value) {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_bl', '[1]');
-						} else {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_bl', '[0]');
-						}
-					} elseif ($properties[$i]['TITLE'] == 'ac') {
+               } elseif ($properties[$i]['TITLE'] == 'snm') {
+                  // Установить фиксированные сцены
+                  // 1-Яркий, 2-ТВ, 3-тёплый, 4-ночь
+                  // 1-Учеба, 2-Чтение, 3-Компьютер
+                  if ($value < 1) $value = 1;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'philips.light.sread1') {
+                     if ($value > 3) $value = 3;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_user_scene', "[$value]");
+                  } else {
+                     if ($value > 4) $value = 4;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'apply_fixed_scene', "[$value]");
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'dv') {
+                  // Таймер отключения (в секундах/минутах)
+                  if ($value < 0) $value = 1;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'philips.light.sread1') {
+                     // минуты
+                     if ($value > 60) $value = 60;
+                  } else {
+                     // секунды
+                     if ($value > 21600) $value = 21600;
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'delay_off', "[$value]");
+               } elseif ($properties[$i]['TITLE'] == 'bl') {
+                  // Интеллектуальный ночник
+                  if($properties[$i]['DEVICE_TYPE'] == 'philips.light.sread1') {
+                     $value = $value ? '["on"]' : '["off"]';
+                  } else {
+                     $value = $value ? '[1]' : '[0]';
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_bl', $value);
+               } elseif ($properties[$i]['TITLE'] == 'ac') {
 						// Автонастройка цветовой температуры
 						if ($value) {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_ac', '[1]');
@@ -1128,6 +1142,26 @@ class xiaomimiio extends module {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_eyecare', '["on"]');
                   } else {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_eyecare', '["off"]');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'ambstatus') {
+                  // Команда на включение и выключение дополнительной подсветки
+                  if ($value) {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_amb', '["on"]');
+                  } else {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'enable_amb', '["off"]');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'ambvalue') {
+                  // Команда на изменение яркости дополнительной подсветки (в % от 1 до 100)
+                  $value = (int)$value;
+                  if ($value < 1) $value = 1;
+                  if ($value > 100) $value = 100;
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_amb_bright', "[$value]");
+               } elseif ($properties[$i]['TITLE'] == 'notifystatus') {
+                  // Команда на включение и выключение напоминания об усталости глаз
+                  if ($value) {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_notifyuser', '["on"]');
+                  } else {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_notifyuser', '["off"]');
                   }
                }
 
@@ -1341,15 +1375,18 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif ($device['DEVICE_TYPE'] == 'philips.light.sread1' && $command == 'get_prop' && is_array($data['result'])) {
-				$props = explode(',', MIIO_PHILIPS_EYECARE_LAMP_2_PROPS);
-				$i = 0;
-				foreach($props as $key) {
-					$value = $data['result'][$i];
-					$res_commands[] = array('command' => $key, 'value' => $value);
-					$i++;
-				}
-			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.color1' && $command == 'get_prop' && is_array($data['result'])) {
+         } elseif ($device['DEVICE_TYPE'] == 'philips.light.sread1' && $command == 'get_prop' && is_array($data['result'])) {
+            $props = explode(',', MIIO_PHILIPS_EYECARE_LAMP_2_PROPS);
+            $i = 0;
+            foreach($props as $key) {
+               $value = $data['result'][$i];
+               if ($key == 'scene_num') $key = 'snm';
+                else if ($key == 'dvalue') $key = 'dv';
+                 else if ($key == 'bls') $key = 'bl';
+               $res_commands[] = array('command' => $key, 'value' => $value);
+               $i++;
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'yeelink.light.color1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_YEELIGHT_COLOR_BULB_PROPS);
 				$i = 0;
 				foreach($props as $key) {
@@ -1574,14 +1611,15 @@ class xiaomimiio extends module {
                $i++;
             }
          }
-		}
+      }
 
       foreach ($res_commands as $c) {
          $cmd = $c['command'];
          $val = $c['value'];
-         if ($cmd == 'power' || $cmd == 'wifi_led' || $cmd == 'buzzer' || $cmd == 'led' || $cmd == 'child_lock'|| $cmd == 'dry' || $cmd == 'arming_mode') {
-            if ($val == 'on') $val = 1;
-             else if ($val == 'off') $val = 0;
+         if ($val === 'on') {
+            $val = 1;
+         } else if ($val === 'off') {
+            $val = 0;
          }
          $this->processCommand($device['ID'], $cmd, $val);
       }
