@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.1
+* @version 2.2
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -15,6 +15,7 @@ define ('MIIO_YEELIGHT_STRIP_PROPS', 'power,bright,ct,rgb,hue,sat,color_mode,flo
 define ('MIIO_YEELIGHT_CEILING_LIGHT_PROPS', 'power,bright,ct,nl_br,color_mode,flow_params,flowing');
 define ('MIIO_YEELIGHT_LAMP_LIGHT_PROPS', 'power,bright,ct,flow_params,flowing');
 define ('MIIO_YEELIGHT_BSLAMP1_PROPS', 'power,bright,ct,rgb,hue,sat,nl_br,color_mode,flow_params,flowing,pdo_status,save_state,nighttime,miband_sleep');
+define ('MIIO_YEELIGHT_CEILING_LIGHT_650_PROPS', 'power,bright,ct,nl_br,color_mode,flow_params,flowing,bg_power,bg_bright,bg_rgb,bg_ct,bg_flow_params,bg_flowing');
 
 define ('MIIO_PHILIPS_LIGHT_BULB_PROPS', 'power,bright,cct,snm,dv');
 define ('MIIO_PHILIPS_LIGHT_CANDLE_PROPS', 'power,bright,cct');
@@ -600,6 +601,14 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling4') {
+			//
+			$props = explode(',', MIIO_YEELIGHT_CEILING_LIGHT_650_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'yeelink.light.lamp1') {
 			//
 			$props = explode(',', MIIO_YEELIGHT_LAMP_LIGHT_PROPS);
@@ -888,6 +897,13 @@ class xiaomimiio extends module {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], $method, '["off"]');
                   }
                   // TO-DO: Если у-во yeelight, то используем дополнительные опции команды (effect, duration, mode).
+               } elseif ($properties[$i]['TITLE'] == 'bg_power') {
+                  // Команда на включение и выключение дополнительной подсветки
+                  if ($value) {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_set_power', '["on"]');
+                  } else {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_set_power', '["off"]');
+                  }
                } elseif ($properties[$i]['TITLE'] == 'buzzer') {
                   // Команда на включение и выключение пищалки
                   if($properties[$i]['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
@@ -902,6 +918,12 @@ class xiaomimiio extends module {
 						if ($value < 1) $value = 1;
 						if ($value > 100) $value = 100;
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_bright', "[$value]");
+					} elseif ($properties[$i]['TITLE'] == 'bg_bright') {
+						// Команда на изменение яркости дополнительной подсветки (в % от 1 до 100)
+						$value = (int)$value;
+						if ($value < 1) $value = 1;
+						if ($value > 100) $value = 100;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_set_bright', "[$value]");
 					} elseif ($properties[$i]['TITLE'] == 'cct') {
 						// Команда на изменение цветовой температуры (в % от 1 до 100)
 						$value = (int)$value;
@@ -914,6 +936,12 @@ class xiaomimiio extends module {
 						if ($value < 1700) $value = 1700;
 						if ($value > 6500) $value = 6500;
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_ct_abx', '[' . $value . ',"sudden",200]');
+					} elseif ($properties[$i]['TITLE'] == 'bg_ct') {
+						// Команда на изменение цветовой температуры дополнительной подсветки (в кельвинах от 1700 до 6500)
+						$value = (int)$value;
+						if ($value < 1700) $value = 1700;
+						if ($value > 6500) $value = 6500;
+						$this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_set_ct_abx', '[' . $value . ',"sudden",200]');
 					} elseif ($properties[$i]['TITLE'] == 'rgb') {
 						// Команда на изменение цвета RGB (от 0 до 16777215)
 						// RGB = (R*65536)+(G*256)+B, где R, G и B десятичные значения от 0 до 255.
@@ -921,6 +949,13 @@ class xiaomimiio extends module {
 						$val = hexdec($value);
 						if ($val != 0 && $val < 16777216) {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_rgb', '[' . $val . ',"smooth",100]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'bg_rgb') {
+						// Команда на изменение цвета RGB дополнительной подсветки (от 0 до 16777215)
+						$value = preg_replace('/^#/', '', $value);
+						$val = hexdec($value);
+						if ($val != 0 && $val < 16777216) {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_set_rgb', '[' . $val . ',"smooth",100]');
 						}
 					} elseif ($properties[$i]['TITLE'] == 'wifi_led') {
 						// Команда на включение и выключение индикатора wifi
@@ -1091,6 +1126,13 @@ class xiaomimiio extends module {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'start_cf', "[$value]");
 						} else {
 							$this->addToQueue($properties[$i]['DEVICE_ID'], 'stop_cf', '[]');
+						}
+					} elseif ($properties[$i]['TITLE'] == 'bg_flow') {
+						// 
+						if ($value != '') {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_start_cf', "[$value]");
+						} else {
+							$this->addToQueue($properties[$i]['DEVICE_ID'], 'bg_stop_cf', '[]');
 						}
 					} elseif ($properties[$i]['TITLE'] == 'filter1_life') {
 						// Сброс ресурса фильтра
@@ -1477,6 +1519,21 @@ class xiaomimiio extends module {
 						}
 						$i++;
 					}
+				}
+			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.ceiling4' && $command == 'get_prop' && is_array($data['result'])) {
+				$props = explode(',', MIIO_YEELIGHT_CEILING_LIGHT_650_PROPS);
+				$i = 0;
+				foreach($props as $key) {
+					$value = $data['result'][$i];
+					if ($key == 'flow_params') $key = 'flow';
+					if ($key == 'bg_flow_params') $key = 'bg_flow';
+					if ($key == 'nl_br' && $value != 0) {
+						$res_commands[3]['value'] = $value;	// свойство bright
+						$res_commands[] = array('command' => $key, 'value' => 1);
+					} else {
+						$res_commands[] = array('command' => $key, 'value' => $value);
+					}
+					$i++;
 				}
 			} elseif ($device['DEVICE_TYPE'] == 'yeelink.light.lamp1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_YEELIGHT_LAMP_LIGHT_PROPS);

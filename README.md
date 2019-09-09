@@ -15,7 +15,7 @@
 ![miio](https://kb.mjdm.ru/wp-content/uploads/2018/07/module_miio.gif)
 
 ### Поддерживаемые устройства
-> По состоянию на март 2019 года.
+> По состоянию на сентябрь 2019 года.
 
 1. Шлюз ZigBee ***Mi Smart Home Gateway 2***
 2. Шлюз ZigBee ***Aqara AC Companion Gateway***
@@ -32,21 +32,22 @@
 13. Настольная лампа ***Mi LED Desk Lamp***
 14. Потолочный светильник ***Yeelight Ceiling Light***
 15. Потолочный светильник ***Yeelight Square Ceiling Light***
-16. Потолочный светильник ***Philips EyeCare Smart Ceiling Lamp***
-17. Светодиодная лента ***Yeelight LED Lightstrip***
-18. Удлинитель (5 розеток) ***Mi (Chingmi) Smart Power Strip 5 Plugs***
-19. Удлинитель (6 розеток) ***Mi Smart Power Strip 6 Plugs***
-20. Увлажнитель воздуха ***Mi Air Humidifier***
-21. Увлажнитель воздуха ***Mi Air Humidifier 2***
-22. Очиститель воздуха ***Mi Air Purifier v3***
-23. Очиститель воздуха ***Mi Air Purifier 2S***
-24. IR-контроллер ***Mi IR Remote 360***
-25. WiFi-колонка ***Mi Internet Speaker***
-26. Ночник ***Yeelight Bedside Lamp***
-27. Светильник (спот) ***Philips Zhirui Downlight***
-28. Напольный вентилятор ***Mi Smart Fan SA1***
+16. Потолочный светильник ***Yeelight Jiaoyue 650 Ceiling Light***
+17. Потолочный светильник ***Philips EyeCare Smart Ceiling Lamp***
+18. Светодиодная лента ***Yeelight LED Lightstrip***
+19. Удлинитель (5 розеток) ***Mi (Chingmi) Smart Power Strip 5 Plugs***
+20. Удлинитель (6 розеток) ***Mi Smart Power Strip 6 Plugs***
+21. Увлажнитель воздуха ***Mi Air Humidifier***
+22. Увлажнитель воздуха ***Mi Air Humidifier 2***
+23. Очиститель воздуха ***Mi Air Purifier v3***
+24. Очиститель воздуха ***Mi Air Purifier 2S***
+25. IR-контроллер ***Mi IR Remote 360***
+26. WiFi-колонка ***Mi Internet Speaker***
+27. Ночник ***Yeelight Bedside Lamp***
+28. Светильник (спот) ***Philips Zhirui Downlight***
+29. Напольный вентилятор ***Mi Smart Fan SA1***
 
-![devices](https://connect.smartliving.ru/cms/data_images/690_image.png)
+![devices](https://connect.smartliving.ru/cms/data_images/862_image.png)
 ### Документация по модулю
 * [Общие сведения](https://kb.mjdm.ru/xiaomimiio_help/)
 * [Установка, обновление, удаление модуля](https://kb.mjdm.ru/xiaomimiio-ustanovka-obnovlenie/)
