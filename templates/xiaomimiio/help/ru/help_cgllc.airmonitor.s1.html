@@ -1,0 +1,50 @@
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Mi ClearGrass Air Monitor S1</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div class="panel-group" id="accordion" style="width:98%">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#metrics_help">Описание метрик устройства</a>
+		</div>
+		<div class="panel-body collapse" id="metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>battery</b></td><td>Уровень заряда встроенного аккумулятора</td><td>От 0 до 100%</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>battery_state</b></td><td>Состояние зарядки устройства</td><td>charging / discharge</td><td>Чтение</td></tr>
+               <tr><td><b>co2</b></td><td>Концентрация углекислого газа</td><td>От 400 до 9999 ppm</td><td>Чтение</td></tr>
+					<tr><td><b>humidity</b></td><td>Относительная влажность воздуха</td><td>От 0 до 100%</td><td>Чтение</td></tr>
+					<tr><td><b>pm25</b></td><td>Массовая концентрация частиц РМ2.5</td><td>От 0 до 999 мкг/м3</td><td>Чтение</td></tr>
+					<tr><td><b>temperature</b></td><td>Температура воздуха</td><td>°C</td><td>Чтение</td></tr>
+					<tr><td><b>tvoc</b></td><td>Концентрация летучих органических соединений</td><td>ppb</td><td>Чтение</td></tr>
+				</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>

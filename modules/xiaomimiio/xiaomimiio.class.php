@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.2
+* @version 2.3
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -38,6 +38,8 @@ define ('MIIO_ZHIMI_AIRPURIFIER_V3_PROPS', 'power,aqi,bright,mode,filter1_life,l
 define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 
 define ('MIIO_ZHIMI_FAN_SA1_PROPS', 'power,angle,speed,speed_level,natural_level,poweroff_time,ac_power,use_time,led_b,buzzer,child_lock');
+
+define ('MIIO_AIRMONITOR_S1_PROPS', 'battery,battery_state,co2,humidity,pm25,temperature,tvoc');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
                                           '1' =>   'Initiating',
@@ -692,6 +694,14 @@ class xiaomimiio extends module {
 		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
 			//
 			$props = explode(',', MIIO_ZHIMI_FAN_SA1_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'cgllc.airmonitor.s1') {
+			//
+			$props = explode(',', MIIO_AIRMONITOR_S1_PROPS);
 			$total = count($props);
 			for ($i = 0; $i < $total; $i++) {
 				$props[$i] = '"' . $props[$i] . '"';
@@ -1465,9 +1475,9 @@ class xiaomimiio extends module {
 						}
 					}
 				} else if ($command == 'get_custom_mode' && is_array($data['result'])) {
-               //get_custom_mode    {"result":[60],"id":1535013272}
-               $res_commands[] = array('command' => 'custom_mode', 'value' => $data['result'][0]);
-            }
+					//get_custom_mode    {"result":[60],"id":1535013272}
+					$res_commands[] = array('command' => 'custom_mode', 'value' => $data['result'][0]);
+				}
 			} elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.m1' && $command == 'get_prop' && is_array($data['result'])) {
 				$props = explode(',', MIIO_CHUANGMI_PLUG_M1_PROPS);
 				$i = 0;
@@ -1666,6 +1676,10 @@ class xiaomimiio extends module {
                $value = $data['result'][$i];
                $res_commands[] = array('command' =>  $key, 'value' => $value);
                $i++;
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'cgllc.airmonitor.s1' && $command == 'get_prop' && is_array($data['result'])) {
+            foreach($data['result'] as $key => $value) {
+               $res_commands[] = array('command' => $key, 'value' => $value);
             }
          }
       }

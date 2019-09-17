@@ -46,8 +46,9 @@
 27. Ночник ***Yeelight Bedside Lamp***
 28. Светильник (спот) ***Philips Zhirui Downlight***
 29. Напольный вентилятор ***Mi Smart Fan SA1***
+30. Анализатор качества воздуха ***Mi ClearGrass Air Monitor S1***
 
-![devices](https://connect.smartliving.ru/cms/data_images/862_image.png)
+![devices](https://connect.smartliving.ru/cms/data_images/885_image.png)
 ### Документация по модулю
 * [Общие сведения](https://kb.mjdm.ru/xiaomimiio_help/)
 * [Установка, обновление, удаление модуля](https://kb.mjdm.ru/xiaomimiio-ustanovka-obnovlenie/)
