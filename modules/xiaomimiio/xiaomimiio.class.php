@@ -3,8 +3,8 @@
 * Xiaomi miIO
 * @package project
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.3
+* @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 2.4
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -83,6 +83,7 @@ define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>	'No error',
 														'17' => 'Side brushes problem, reboot me',
 														'18' => 'Suction fan problem',
 														'19' => 'Unpowered charging station')));
+
 
 class xiaomimiio extends module {
 
@@ -313,7 +314,7 @@ class xiaomimiio extends module {
 	*/
 
 	function addToQueue($device_id, $method, $data = '[]', $timeshift = 0) {
-	
+
 		$rec = array();
 		$rec['DEVICE_ID'] = (int)$device_id;
 		$rec['METHOD'] = $method;
@@ -323,9 +324,11 @@ class xiaomimiio extends module {
       } else {
          $rec['ADDED'] = date('Y-m-d H:i:s');
       }
-		
+
+      if ($this->config['API_LOG_DEBMES']) DebMes("Outgoing message to $device_id ($method): $data", 'xiaomimiio');
+
 		SQLInsert('miio_queue', $rec);
-	
+
 	}
 
 	/**
@@ -707,7 +710,10 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		}
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+         $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":2},{"did":"fan_level","siid":2,"piid":4},{"did":"mode","siid":2,"piid":5},{"did":"humidity","siid":3,"piid":7},{"did":"temperature","siid":3,"piid":8},{"did":"aqi","siid":3,"piid":6},{"did":"filter_life","siid":4,"piid":3},{"did":"filter_hours_used","siid":4,"piid":5},{"did":"buzzer","siid":5,"piid":1},{"did":"led_b","siid":6,"piid":1},{"did":"led","siid":6,"piid":6},{"did":"child_lock","siid":7,"piid":1},{"did":"favorite_level","siid":10,"piid":10}]');
+         $this->addToQueue($device_id, 'get_properties', '[{"did":"use_time","siid":12,"piid":1},{"did":"purify_volume","siid":13,"piid":1},{"did":"average_aqi","siid":13,"piid":2}]');
+      }
 	}
 
 	/**
@@ -879,7 +885,6 @@ class xiaomimiio extends module {
 			for($i = 0; $i < $total; $i++) {
 				// Если есть токен, то обрабатываем команду и ставим ее в очередь. Без токена ничего не делаем.
 				if ($properties[$i]['TOKEN'] != '') {
-					
 					if ($properties[$i]['TITLE'] == 'command') {
 						if ($value == 'prop_update') {
 							// Обновление сведений об устройстве по запросу
@@ -896,16 +901,17 @@ class xiaomimiio extends module {
 						//$this->requestStatus($properties[$i]['DEVICE_ID']);
 					} elseif ($properties[$i]['TITLE'] == 'power') {
                   // Команда на включение и выключение
-                  if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
+                  $method = 'set_power';
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     $method = 'set_properties';
+                     $params = '[{"did":"power","siid":2,"piid":2,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                      $method = 'toggle_plug';
+                     $params = $value ? '["on"]' : '["off"]';
                   } else {
-                     $method = 'set_power';
+                     $params = $value ? '["on"]' : '["off"]';
                   }
-                  if ($value) {
-                     $this->addToQueue($properties[$i]['DEVICE_ID'], $method, '["on"]');
-                  } else {
-                     $this->addToQueue($properties[$i]['DEVICE_ID'], $method, '["off"]');
-                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
                   // TO-DO: Если у-во yeelight, то используем дополнительные опции команды (effect, duration, mode).
                } elseif ($properties[$i]['TITLE'] == 'bg_power') {
                   // Команда на включение и выключение дополнительной подсветки
@@ -916,12 +922,16 @@ class xiaomimiio extends module {
                   }
                } elseif ($properties[$i]['TITLE'] == 'buzzer') {
                   // Команда на включение и выключение пищалки
+                  $method = 'set_buzzer';
                   if($properties[$i]['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
-                     $value = $value ? '[2]' : '[0]';
+                     $params = $value ? '[2]' : '[0]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     $method = 'set_properties';
+                     $params = '[{"did":"buzzer","siid":5,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else {
-                     $value = $value ? '["on"]' : '["off"]';
+                     $params = $value ? '["on"]' : '["off"]';
                   }
-                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_buzzer', $value);
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
 					} elseif ($properties[$i]['TITLE'] == 'bright') {
 						// Команда на изменение яркости (в % от 1 до 100)
 						$value = (int)$value;
@@ -1050,25 +1060,50 @@ class xiaomimiio extends module {
 						if ($value > 100) $value = 100;
 						$this->addToQueue($properties[$i]['DEVICE_ID'], 'vol_down', "[$value]");
 					} elseif ($properties[$i]['TITLE'] == 'led') {
-						// 
-						if ($value) {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led', '["on"]');
-						} else {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led', '["off"]');
-						}
-					} elseif ($properties[$i]['TITLE'] == 'child_lock') {
-						// 
-						if ($value) {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_child_lock', '["on"]');
-						} else {
-							$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_child_lock', '["off"]');
-						}
-					} elseif ($properties[$i]['TITLE'] == 'favorite_level') {
-						// 
-						$value = (int)$value;
-						if ($value < 0) $value = 0;
-						if ($value > 100) $value = 100;
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_level_favorite', "[$value]");
+                  // 
+                  $method = 'set_led';
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     $method = 'set_properties';
+                     $params = '[{"did":"led","siid":6,"piid":6,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else {
+                     $params = $value ? '["on"]' : '["off"]';
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
+               } elseif ($properties[$i]['TITLE'] == 'child_lock') {
+                  // 
+                  $method = 'set_child_lock';
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     $method = 'set_properties';
+                     $params = '[{"did":"child_lock","siid":7,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else {
+                     $params = $value ? '["on"]' : '["off"]';
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
+               } elseif ($properties[$i]['TITLE'] == 'favorite_level') {
+                  // 
+                  $value = (int)$value;
+                  $method = 'set_level_favorite';
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     $method = 'set_properties';
+                     if ($value < 0) $value = 0;
+                     if ($value > 14) $value = 14;
+                     $params = '[{"did":"favorite_level","siid":10,"piid":10,"value":' . $value . '}]';
+                  } else {
+                     if ($value < 0) $value = 0;
+                     if ($value > 100) $value = 100;
+                     $params = '[' . $value . ']';
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
+               } elseif ($properties[$i]['TITLE'] == 'fan_level') {
+                  // 
+                  $value = (int)$value;
+                  $method = 'set_properties';
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     if ($value < 1) $value = 1;
+                     if ($value > 3) $value = 3;
+                     $params = '[{"did":"fan_level","siid":2,"piid":4,"value":' . $value . '}]';
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
 					} elseif ($properties[$i]['TITLE'] == 'dry') {
 						// 
 						if ($value) {
@@ -1080,19 +1115,23 @@ class xiaomimiio extends module {
 						// Управление светодиодом (подсветкой)
 						switch($value) {
 							case 'bright':
-								$value = 0;
+								$params = 0;
 								break;
 							case 'dim':
-								$value = 1;
+								$params = 1;
 								break;
 							case 'off':
-								$value = 2;
+								$params = 2;
 								break;
 							default:
-								$value = 0;
+								$params = 0;
 							break;
 						}
-						$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led_b', '["' . $value . '"]');	
+						if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_properties', '[{"did":"led_b","siid":6,"piid":1,"value":' . $params . '}]');
+                  } else {
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led_b', '["' . $params . '"]');
+                  }
 					} elseif ($properties[$i]['TITLE'] == 'mode') {
 						// 
 						if($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.v1') {
@@ -1116,7 +1155,16 @@ class xiaomimiio extends module {
 								 $value == 'medium' || $value == 'high' || $value == 'idle') {
 								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
 							}
-						}
+						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                     switch($value) {
+                        case 'auto': $params = 0; break;
+                        case 'silent': $params = 1; break;
+                        case 'favorite': $params = 2; break;
+                        case 'fan': $params = 3; break;
+                        default: $params = 0; break;
+                     }
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_properties', '[{"did":"mode","siid":2,"piid":5,"value":' . $params . '}]');
+                  }
                } elseif ($properties[$i]['TITLE'] == 'custom_mode') {
                   // Изменение режима работы (мощности) пылесоса (от 1 до 100%, 101 - влажная уборка, 105 - турбо)
                   $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_custom_mode', '[' . $value . ']');
@@ -1319,9 +1367,9 @@ class xiaomimiio extends module {
 	function processMessage($message, $command, $device_id) {
 
 		$this->getConfig();
-		
+
 		if ($this->config['API_LOG_DEBMES']) DebMes("Incoming message from $device_id ($command): $message", 'xiaomimiio');
-		
+
 		$res_commands = array();
 
 		if ($device_id) {
@@ -1681,6 +1729,28 @@ class xiaomimiio extends module {
             foreach($data['result'] as $key => $value) {
                $res_commands[] = array('command' => $key, 'value' => $value);
             }
+         } elseif ($device['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' && $command == 'get_properties' && is_array($data['result'])) {
+            foreach($data['result'] as $res) {
+               $value = $res['value'];
+               if ($value === true) $value = 1;
+                else if ($value === false) $value = 0;
+               if ($res['did'] == 'led_b') {
+                  switch($value) {
+                     case 0: $value = 'bright'; break;
+                     case 1: $value = 'dim'; break;
+                     case 2: $value = 'off'; break;
+                     default: $value = 'unknown'; break;
+                  }
+               } else if ($res['did'] == 'mode') {
+                  switch($value) {
+                     case 0: $value = 'auto'; break;
+                     case 1: $value = 'silent'; break;
+                     case 2: $value = 'favorite'; break;
+                     case 3: $value = 'fan'; break;
+                  }
+               }
+               $res_commands[] = array('command' => $res['did'], 'value' => $value);
+            }
          }
       }
 
@@ -1689,7 +1759,7 @@ class xiaomimiio extends module {
          $val = $c['value'];
          if ($val === 'on') {
             $val = 1;
-         } else if ($val === 'off') {
+         } else if ($val === 'off' && $cmd !== 'led_b') {
             $val = 0;
          }
          $this->processCommand($device['ID'], $cmd, $val);
