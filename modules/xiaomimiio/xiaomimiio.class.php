@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.4
+* @version 2.5
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -41,6 +41,8 @@ define ('MIIO_ZHIMI_FAN_SA1_PROPS', 'power,angle,speed,speed_level,natural_level
 
 define ('MIIO_AIRMONITOR_S1_PROPS', 'battery,battery_state,co2,humidity,pm25,temperature,tvoc');
 
+define ('MIIO_VIOMIVACUUM_V7_PROPS', 'run_state,mode,err_state,battary_life,box_type,s_time,s_area,suction_grade,water_grade');
+
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
                                           '1' =>   'Initiating',
                                           '2' =>   'Sleeping',
@@ -51,38 +53,78 @@ define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
                                           '7' =>   'Manual mode',
                                           '8' =>   'Charging',
                                           '9' =>   'Charging Error',
-                                          '10' => 'Pause',
-                                          '11' => 'Spot Cleaning',
-                                          '12' => 'In Error',
-                                          '13' => 'Shutting down',
-                                          '14' => 'Updating',
-                                          '15' => 'Docking',
-                                          '16' => 'Going to target',
-                                          '17' => 'Zoned cleaning',
+                                          '10' =>  'Pause',
+                                          '11' =>  'Spot Cleaning',
+                                          '12' =>  'In Error',
+                                          '13' =>  'Shutting down',
+                                          '14' =>  'Updating',
+                                          '15' =>  'Docking',
+                                          '16' =>  'Going to target',
+                                          '17' =>  'Zoned cleaning',
+                                          '18' =>  'Room cleaning',
                                           '100' => 'Full',
                                           '101' => 'Wet cleaning',
                                           '105' => 'Turbo')));
 
+define ('MIIO_VIOMIVACUUM_V7_STATE_CODES', serialize (array('0' => 'Waiting',
+                                          '1' =>   'Going to target',
+                                          '2' =>   'Waiting',
+                                          '3' =>   'Cleaning',
+                                          '4' =>   'Back to home',
+                                          '5' =>   'Docking',
+                                          '6' =>   'Zoned cleaning')));
+
 define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>	'No error',
-														'1' => 	'Laser distance sensor error',
-														'2' => 	'Collision sensor error',
-														'3' => 	'Wheels on top of void, move robot',
-														'4' => 	'Clean hovering sensors, move robot',
-														'5' => 	'Clean main brush',
-														'6' => 	'Clean side brush',
-														'7' => 	'Main wheel stuck',
-														'8' => 	'Device stuck, clean area',
-														'9' => 	'Dust collector missing',
-														'10' => 'Clean filter',
-														'11' => 'Stuck in magnetic barrier',
-														'12' => 'Low battery',
-														'13' => 'Charging fault',
-														'14' => 'Battery fault',
-														'15' => 'Wall sensors dirty, wipe them',
-														'16' => 'Place me on flat surface',
-														'17' => 'Side brushes problem, reboot me',
-														'18' => 'Suction fan problem',
-														'19' => 'Unpowered charging station')));
+                                          '1' =>   'Laser distance sensor error',
+                                          '2' =>   'Collision sensor error',
+                                          '3' =>   'Wheels on top of void, move robot',
+                                          '4' =>   'Clean hovering sensors, move robot',
+                                          '5' =>   'Clean main brush',
+                                          '6' =>   'Clean side brush',
+                                          '7' =>   'Main wheel stuck',
+                                          '8' =>   'Device stuck, clean area',
+                                          '9' =>   'Dust collector missing',
+                                          '10' =>  'Clean filter',
+                                          '11' =>  'Stuck in magnetic barrier',
+                                          '12' =>  'Low battery',
+                                          '13' =>  'Charging fault',
+                                          '14' =>  'Battery fault',
+                                          '15' =>  'Wall sensors dirty, wipe them',
+                                          '16' =>  'Place me on flat surface',
+                                          '17' =>  'Side brushes problem, reboot me',
+                                          '18' =>  'Suction fan problem',
+                                          '19' =>  'Unpowered charging station',
+                                          '20' =>  'Unknown Error',
+                                          '21' =>  'Laser pressure sensor problem',
+                                          '22' =>  'Charge sensor problem',
+                                          '23' =>  'Dock problem',
+                                          '24' =>  'No-go zone or invisible wall detected',
+                                          '254' => 'Bin full',
+                                          '255' => 'Internal error',
+                                          '-1' =>  'Unknown Error')));
+
+define ('MIIO_VIOMIVACUUM_V7_ERROR_CODES', serialize (array('500' => 'Radar timed out',
+                                          '501' => 'Wheels stuck',
+                                          '502' => 'Low battery',
+                                          '503' => 'Dust bin missing',
+                                          '508' => 'Uneven ground',
+                                          '509' => 'Cliff sensor error',
+                                          '510' => 'Collision sensor error',
+                                          '511' => 'Could not return to dock',
+                                          '512' => 'Could not return to dock',
+                                          '513' => 'Could not navigate',
+                                          '514' => 'Vacuum stuck',
+                                          '515' => 'Charging error',
+                                          '516' => 'Mop temperature error',
+                                          '521' => 'Water tank is not installed',
+                                          '522' => 'Mop is not installed',
+                                          '525' => 'Insufficient water in water tank',
+                                          '527' => 'Remove mop',
+                                          '528' => 'Dust bin missing',
+                                          '529' => 'Mop and water tank missing',
+                                          '530' => 'Mop and water tank missing',
+                                          '531' => 'Water tank is not installed',
+                                          '2101' => 'Unsufficient battery, continuing cleaning after recharge')));
 
 
 class xiaomimiio extends module {
@@ -461,6 +503,9 @@ class xiaomimiio extends module {
                         } else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
                            $this->processCommand($dev_rec['ID'], 'goto_target', '');
                            $this->processCommand($dev_rec['ID'], 'zoned_clean', '');
+                           if ($dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                              $this->processCommand($dev_rec['ID'], 'segment_clean', '');
+                           }
                         }
                      }
 						}
@@ -710,11 +755,22 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+      } elseif ($device_rec['DEVICE_TYPE'] == 'cgllc.airmonitor.b1') {
+         //
+         $this->addToQueue($device_id, 'get_air_data', '[]');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
          $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":2},{"did":"fan_level","siid":2,"piid":4},{"did":"mode","siid":2,"piid":5},{"did":"humidity","siid":3,"piid":7},{"did":"temperature","siid":3,"piid":8},{"did":"aqi","siid":3,"piid":6},{"did":"filter_life","siid":4,"piid":3},{"did":"filter_hours_used","siid":4,"piid":5},{"did":"buzzer","siid":5,"piid":1},{"did":"led_b","siid":6,"piid":1},{"did":"led","siid":6,"piid":6},{"did":"child_lock","siid":7,"piid":1},{"did":"favorite_level","siid":10,"piid":10}]');
          $this->addToQueue($device_id, 'get_properties', '[{"did":"use_time","siid":12,"piid":1},{"did":"purify_volume","siid":13,"piid":1},{"did":"average_aqi","siid":13,"piid":2}]');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'viomi.vacuum.v7') {
+         //
+         $props = explode(',', MIIO_VIOMIVACUUM_V7_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+            $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
       }
-	}
+   }
 
 	/**
 	* FrontEnd
@@ -886,11 +942,23 @@ class xiaomimiio extends module {
 				// Если есть токен, то обрабатываем команду и ставим ее в очередь. Без токена ничего не делаем.
 				if ($properties[$i]['TOKEN'] != '') {
 					if ($properties[$i]['TITLE'] == 'command') {
-						if ($value == 'prop_update') {
-							// Обновление сведений об устройстве по запросу
-							$this->requestStatus($properties[$i]['DEVICE_ID']);
-							if ($this->config['API_LOG_DEBMES']) DebMes('Manual update the properties of the device ' . $properties[$i]['DEVICE_ID'], 'xiaomimiio');
-						} else {
+                  if ($value == 'prop_update') {
+                     // Обновление сведений об устройстве по запросу
+                     $this->requestStatus($properties[$i]['DEVICE_ID']);
+                     if ($this->config['API_LOG_DEBMES']) DebMes('Manual update the properties of the device ' . $properties[$i]['DEVICE_ID'], 'xiaomimiio');
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'viomi.vacuum.v7') {
+                     if ($value == 'app_start') {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode_withroom', '[0,1,0]');
+                     } else if ($value == 'app_stop') {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '[0]');
+                     } else if ($value == 'app_pause') {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode_withroom', '[0,2,0]');
+                     } else if ($value == 'app_charge') {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_charge', '[1]');
+                     } else {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+                     }
+                  } else {
 							// Отправка любой команды (метода) без параметров.
 							// Например, miIO.info, toggle, app_start и др.
 							$this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
@@ -1164,6 +1232,14 @@ class xiaomimiio extends module {
                         default: $params = 0; break;
                      }
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_properties', '[{"did":"mode","siid":2,"piid":5,"value":' . $params . '}]');
+                  } elseif ($properties[$i]['DEVICE_TYPE'] == 'viomi.vacuum.v7') {
+                     switch($value) {
+                        case 'Vacuum': $params = 0; break;
+                        case 'VacuumAndMop': $params = 1; break;
+                        case 'Mop': $params = 2; break;
+                        default: $params = 0; break;
+                     }
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_mop', '[' . $params . ']');
                   }
                } elseif ($properties[$i]['TITLE'] == 'custom_mode') {
                   // Изменение режима работы (мощности) пылесоса (от 1 до 100%, 101 - влажная уборка, 105 - турбо)
@@ -1174,6 +1250,10 @@ class xiaomimiio extends module {
                   // {"id":8338,"method":"app_zoned_clean","params":[[26234,26042,27284,26642,5]]}
                   // {"id":8338,"method":"app_zoned_clean","params":[[26234,26042,27284,26642,1],[26232,25304,27282,25804,2],[26246,24189,27296,25139,3]]}
                   $this->addToQueue($properties[$i]['DEVICE_ID'], 'app_zoned_clean', '[' . $value . ']');
+               } elseif ($properties[$i]['TITLE'] == 'segment_clean') {
+                  // Уборка указанных сегментов (комнат) по их идентификаторам
+                  // {"id":8338,"method":"app_segment_clean","params":[1,2,3,4,10]}
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], 'app_segment_clean', '[' . $value . ']');
                } elseif ($properties[$i]['TITLE'] == 'goto_target') {
                   // Движение в заданную точку (параметры [x Integer, y Integer])
                   // {"id": 25736111,"method": "app_goto_target","params": [24200,20200]}
@@ -1262,6 +1342,18 @@ class xiaomimiio extends module {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_notifyuser', '["on"]');
                   } else {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_notifyuser', '["off"]');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'suction_grade') {
+                  // Команда на изменение мощности всасывания
+                  if ($properties[$i]['DEVICE_TYPE'] == 'viomi.vacuum.v7') {
+                     switch($value) {
+                        case 'Silent': $params = 0; break;
+                        case 'Standard': $params = 1; break;
+                        case 'Medium': $params = 2; break;
+                        case 'Turbo': $params = 3; break;
+                        default: $params = 2; break;
+                     }
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_suction', '[' . $params . ']');
                   }
                }
 
@@ -1750,6 +1842,67 @@ class xiaomimiio extends module {
                   }
                }
                $res_commands[] = array('command' => $res['did'], 'value' => $value);
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'viomi.vacuum.v7' && $command == 'get_prop' && is_array($data['result'])) {
+            $props = explode(',', MIIO_VIOMIVACUUM_V7_PROPS);
+            $i = 0;
+            foreach($props as $key) {
+               $value = $data['result'][$i];
+               if ($key == 'run_state') {
+                  $key = 'state_code';
+                  $state_codes = unserialize (MIIO_VIOMIVACUUM_V7_STATE_CODES);
+                  if (array_key_exists($value, $state_codes)) $res_commands[] = array('command' => 'state_text', 'value' => $state_codes[$value]);
+                   else $res_commands[] = array('command' => 'state_text', 'value' => 'Unknown');
+               } else if ($key == 'err_state') {
+                  $key = 'error_code';
+                  $state_codes = unserialize (MIIO_VIOMIVACUUM_V7_ERROR_CODES);
+                  if (array_key_exists($value, $state_codes)) $res_commands[] = array('command' => 'error_text', 'value' => $state_codes[$value]);
+                   else $res_commands[] = array('command' => 'error_text', 'value' => 'Unknown');
+               } else if ($key == 'mode') {
+                  switch($value) {
+                     case 0: $value = 'Vacuum'; break;
+                     case 1: $value = 'VacuumAndMop'; break;
+                     case 2: $value = 'Mop'; break;
+                  }
+               } else if ($key == 'box_type') {
+                  switch($value) {
+                     case 1: $value = 'Vacuum'; break;
+                     case 2: $value = 'Water'; break;
+                     case 3: $value = 'VacuumAndWater'; break;
+                  }
+               } else if ($key == 'suction_grade') {
+                  switch($value) {
+                     case 0: $value = 'Silent'; break;
+                     case 1: $value = 'Standard'; break;
+                     case 2: $value = 'Medium'; break;
+                     case 3: $value = 'Turbo'; break;
+                  }
+               } else if ($key == 'water_grade') {
+                  switch($value) {
+                     case 11: $value = 'Low'; break;
+                     case 12: $value = 'Medium'; break;
+                     case 13: $value = 'High'; break;
+                  }
+               } else if ($key == 'battary_life') {
+                  $key = 'battery';
+               } else if ($key == 's_time') {
+                  $key = 'clean_time';
+               } else if ($key == 's_area') {
+                  $key = 'clean_area';
+               }
+               $res_commands[] = array('command' => $key, 'value' => $value);
+               $i++;
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'cgllc.airmonitor.b1' && $command == 'get_air_data' && is_array($data['result'])) {
+            foreach($data['result'] as $key => $value) {
+               if ($key !== 'temperature_unit' && $key !== 'tvoc_unit') {
+                  if ($key == 'co2e') {
+                     $key = 'co2';
+                  } else {
+                     $value = round($value, 2);
+                  }
+                  $res_commands[] = array('command' => $key, 'value' => $value);
+               }
             }
          }
       }

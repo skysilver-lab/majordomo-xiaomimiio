@@ -1,0 +1,96 @@
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Mi Robot Vacuum-Mop P</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div class="panel-group" id="accordion" style="width:98%">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#metrics_help">Индивидуальные метрики</a>
+		</div>
+		<div class="panel-body collapse" id="metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+               <tr><td><b>command</b></td><td>Управление пылесосом. Возможные команды: <i><b>app_start</i></b> (начать уборку), <i><b>app_stop</i></b> (остановить уборку), <i><b>app_pause</i></b> (приостановить уборку), <i><b>app_charge</i></b> (отправить на базу)</td><td>команда</td><td>Запись</td></tr>
+               <tr><td><b>state_code</b></td><td>Цифровой код состояния устройства</td><td>код</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>state_text</b></td><td>Текстовое описание состояния устройства</td><td>описание состояния</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>error_code</b></td><td>Цифровой код ошибки</td><td>код ошибки</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>error_text</b></td><td>Текстовое описание ошибки</td><td>описание ошибки</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>mode</b></td><td>Режим уборки (влажная, сухая, смешанная)</td><td>Mop, Vacuum, VacuumAndMop</td><td nowrap>Чтение и запись</td></tr>
+               <tr><td><b>suction_grade</b></td><td>Мощность всасывания (бесшумная, стандартная, средняя, турбо)</td><td>Silent, Standard, Medium, Turbo</td><td nowrap>Чтение и запись</td></tr>
+               <tr><td><b>water_grade</b></td><td>Уровень воды (низкий, средний, высокий)</td><td>Low, Medium, High</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>box_type</b></td><td>Тип корзины (сухая, влажная, сухая+влажная)</td><td>Vacuum, Water, VacuumAndWater</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>clean_time</b></td><td>Время последней уборки</td><td>мин.</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>clean_area</b></td><td>Площадь последней уборки</td><td>кв. м.</td><td nowrap>Чтение</td></tr>
+               <tr><td><b>battery</b></td><td>Уровень заряда аккумулятора</td><td>От 0 до 100%</td><td nowrap>Чтение</td></tr>
+            </tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#base_metrics_help">Базовые метрики</a>
+		</div>
+		<div class="panel-body collapse" id="base_metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>online</b></td><td>Доступность устройства (онлайн/оффлайн).</td><td>1 и 0</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>message</b></td><td>Последнее принятое от устройства сообщение.</td><td>json</td><td>Чтение</td></tr>
+				</tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#states_code_help">Состояния</a>
+		</div>
+		<div class="panel-body collapse" id="states_code_help">
+			<div style="width:400px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Код состояния (state_code)</th><th>Описание состояния (state_text)</th>
+				</thead>
+				<tbody>
+					<tr><td><b>0</b></td><td>Waiting</td></tr>
+					<tr><td><b>1</b></td><td>Going to target</td></tr>
+               <tr><td><b>2</b></td><td>Waiting</td></tr>
+               <tr><td><b>3</b></td><td>Cleaning</td></tr>
+               <tr><td><b>4</b></td><td>Back to home</td></tr>
+               <tr><td><b>5</b></td><td>Docking</td></tr>
+               <tr><td><b>6</b></td><td>Zoned cleaning</td></tr>
+				</tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>

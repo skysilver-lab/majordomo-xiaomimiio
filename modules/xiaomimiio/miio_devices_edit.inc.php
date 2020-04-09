@@ -319,11 +319,13 @@ if ($this->tab == 'help') {
 	}
 	
 	$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
+	//$out['HELP_PATH'] = '/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
 	
 	// Проверим наличие файла-справки для текущего языка МДМ
 	if (!file_exists($out['HELP_PATH'])) {
 		// если файла нет, то выводим файл-справку на русском языке
 		$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/ru/help_' . $devType . '.html';
+		//$out['HELP_PATH'] = '/help/ru/help_' . $devType . '.html';
 	}
 }
 
