@@ -67,6 +67,9 @@ if ($this->mode == 'update') {
       } else if ($rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
          $commands[] = 'goto_target';
          $commands[] = 'zoned_clean';
+         if ($rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+            $commands[] = 'segment_clean';
+         }
       }
 	}
 

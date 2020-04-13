@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.5
+* @version 2.6
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -24,7 +24,7 @@ define ('MIIO_PHILIPS_LIGHT_CEILING_PROPS', 'power,bright,cct,snm,dv,bl,ac');
 define ('MIIO_PHILIPS_EYECARE_LAMP_2_PROPS', 'power,bright,notifystatus,ambstatus,ambvalue,eyecare,scene_num,bls,dvalue');
 
 define ('MIIO_CHUANGMI_PLUG_M1_PROPS', 'power,temperature');
-define ('MIIO_CHUANGMI_PLUG_V1_PROPS', 'power,temperature,usb_on,wifi_led');
+define ('MIIO_CHUANGMI_PLUG_V1_PROPS', 'power,usb_on,temperature,wifi_led');
 
 define ('MIIO_ZIMI_POWERSTRIP_2_PROPS', 'power,temperature,current,power_consume_rate,wifi_led');
 define ('MIIO_QMI_POWERSTRIP_1_PROPS', 'power,temperature,current,power_consume_rate,voltage');
