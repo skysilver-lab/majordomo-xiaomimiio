@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.6
+* @version 2.7
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -1521,7 +1521,7 @@ class xiaomimiio extends module {
 					}
 				}
 				if ($command == 'get_channels' && is_array($data['result'])) {
-					$res_commands[] = array('command' => 'all_program', 'value' => $data['result']);
+					$res_commands[] = array('command' => 'all_program', 'value' => json_encode($data['result']));
 				}
 				if ($command == 'get_lumi_dpf_aes_key' && is_array($data['result'])) {
 					$res_commands[] = array('command' => 'lumi_dpf_aes_key', 'value' => $data['result'][0]);
@@ -1677,6 +1677,9 @@ class xiaomimiio extends module {
 					$value = $data['result'][$i];
 					if ($key == 'flow_params') $key = 'flow';
 					if ($key == 'bg_flow_params') $key = 'bg_flow';
+					if ($key == 'bg_rgb') {
+						$value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
+					}
 					if ($key == 'nl_br' && $value != 0) {
 						$res_commands[3]['value'] = $value;	// свойство bright
 						$res_commands[] = array('command' => $key, 'value' => 1);
