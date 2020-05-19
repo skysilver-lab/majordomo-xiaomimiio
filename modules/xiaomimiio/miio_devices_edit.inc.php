@@ -1,8 +1,8 @@
 <?php
 /*
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2019 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.0
+* @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 2.8
 */
 
 if ($this->owner->name == 'panel') {
@@ -70,6 +70,9 @@ if ($this->mode == 'update') {
          if ($rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
             $commands[] = 'segment_clean';
          }
+      } else if ($rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+         $commands[] = 'auto_feed';
+         $commands[] = 'single_feed';
       }
 	}
 

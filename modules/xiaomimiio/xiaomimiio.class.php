@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.7
+* @version 2.8
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -40,6 +40,12 @@ define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 define ('MIIO_ZHIMI_FAN_SA1_PROPS', 'power,angle,speed,speed_level,natural_level,poweroff_time,ac_power,use_time,led_b,buzzer,child_lock');
 
 define ('MIIO_AIRMONITOR_S1_PROPS', 'battery,battery_state,co2,humidity,pm25,temperature,tvoc');
+
+define ('MIIO_YUNMI_KETTLE_R1_PROPS', 'water_remain_time,flush_time,flush_flag,tds,time,curr_tempe,setup_tempe,custom_tempe1,min_set_tempe,drink_remind,drink_remind_time,run_status,work_mode,drink_time_count');
+
+define ('MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS', 'OnOff_State,TemperatureValue,Humidity_Value,HumiSet_Value,Humidifier_Gear,Led_State,TipSound_State,waterstatus,watertankstatus');
+
+define ('MIIO_HFJH_FISHBOWL_V1_PROPS','Equipment_Status,feed_switch,heater_switch,led_board_brightness,led_board_color,led_board_model,led_board_speed,pump_switch,pump_value,water_tds,water_temp,water_temp_value');
 
 define ('MIIO_VIOMIVACUUM_V7_PROPS', 'run_state,mode,err_state,battary_life,box_type,s_time,s_area,suction_grade,water_grade');
 
@@ -506,6 +512,9 @@ class xiaomimiio extends module {
                            if ($dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
                               $this->processCommand($dev_rec['ID'], 'segment_clean', '');
                            }
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                           $this->processCommand($dev_rec['ID'], 'auto_feed', '');
+                           $this->processCommand($dev_rec['ID'], 'single_feed', '');
                         }
                      }
 						}
@@ -643,7 +652,7 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '['.implode(',',$props).']');
-		} elseif (($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling1') || ($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling8')) {
+		} elseif (($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling1') || ($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling8') || ($device_rec['DEVICE_TYPE'] == 'yeelink.light.ceiling3')) {
 			//
 			$props = explode(',', MIIO_YEELIGHT_CEILING_LIGHT_PROPS);
 			$total = count($props);
@@ -769,6 +778,31 @@ class xiaomimiio extends module {
             $props[$i] = '"' . $props[$i] . '"';
          }
          $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+      } elseif (($device_rec['DEVICE_TYPE'] == 'yunmi.kettle.r1') || ($device_rec['DEVICE_TYPE'] == 'yunmi.kettle.r2') || ($device_rec['DEVICE_TYPE'] == 'yunmi.kettle.r3')) {
+         //
+         $props = explode(',', MIIO_YUNMI_KETTLE_R1_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+            $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+         //
+         $props = explode(',', MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+            $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+         //
+         $props = explode(',', MIIO_HFJH_FISHBOWL_V1_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+            $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+         $this->addToQueue($device_id, 'get_key_switch', '[]');
       }
    }
 
@@ -976,6 +1010,9 @@ class xiaomimiio extends module {
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                      $method = 'toggle_plug';
                      $params = $value ? '["on"]' : '["off"]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                     $method = 'Set_OnOff';
+                     $params = '['. (int)$value .']';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -996,6 +1033,9 @@ class xiaomimiio extends module {
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                      $method = 'set_properties';
                      $params = '[{"did":"buzzer","siid":5,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                     $method = 'SetTipSound_Status';
+                     $params = '['. (int)$value .']';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -1133,6 +1173,9 @@ class xiaomimiio extends module {
                   if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                      $method = 'set_properties';
                      $params = '[{"did":"led","siid":6,"piid":6,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                     $method = 'SetLedState';
+                     $params = '['. (int)$value .']';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -1143,6 +1186,9 @@ class xiaomimiio extends module {
                   if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                      $method = 'set_properties';
                      $params = '[{"did":"child_lock","siid":7,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     $method = 'set_key_switch';
+                     $params = $value ? '[true]' : '[false]';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -1240,6 +1286,15 @@ class xiaomimiio extends module {
                         default: $params = 0; break;
                      }
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_mop', '[' . $params . ']');
+                  } elseif ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                     switch($value) {
+                        case 'low': $params = 1; break;
+                        case 'medium': $params = 2; break;
+                        case 'high': $params = 3; break;
+                        case 'humidity': $params = 4; break;
+                        default: $params = 1; break;
+                     }
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'Set_HumidifierGears', '[' . $params . ']');
                   }
                } elseif ($properties[$i]['TITLE'] == 'custom_mode') {
                   // Изменение режима работы (мощности) пылесоса (от 1 до 100%, 101 - влажная уборка, 105 - турбо)
@@ -1354,6 +1409,105 @@ class xiaomimiio extends module {
                         default: $params = 2; break;
                      }
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_suction', '[' . $params . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'target_humidity') {
+                  // Установка верхнего предела увлажнения (в % от 0 до 99)
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                     if ($value < 0) $value = 0;
+                     if ($value > 99) $value = 99;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'Set_HumiValue', '[' . $value . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'target_temperature') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     // Установка температуры нагрева воды в аквариуме (от 18 до 32 градусов)
+                     if ($value < 18) $value = 18;
+                     if ($value > 32) $value = 32;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_water_temp_value', '[' . $value . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'auto_feed') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     // Управление режимом подачи корма по расписанию
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_feed_switch', '[' . ($value ? 'true' : 'false') . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'single_feed') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1' && $value == 1) {
+                     // Одноразовая подача корма
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_single_feed', '[true]');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'heater') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     // Управление подогревом воды
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_heater_switch', '[' . ($value ? 'true' : 'false') . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'pump') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     // Управление помпой
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_pump_switch', '[' . ($value ? 'true' : 'false') . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'water_flow') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     // Производительность помпы
+                     if ($value < 1) $value = 1;
+                     if ($value > 100) $value = 100;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_pump_value', '[' . $value . ']');
+                  }
+               } elseif ($properties[$i]['TITLE'] == 'status') {
+                  $value = (int)$value;
+                  if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                     // Состояние аквариума (включен/выключен)
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_Equipment_Status', '[' . ($value ? 'true' : 'false') . ']');
+                  }
+               }
+
+               if($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                  if ($properties[$i]['TITLE'] == 'led_brightness' || $properties[$i]['TITLE'] == 'led_color' || $properties[$i]['TITLE'] == 'led_flow_speed' || $properties[$i]['TITLE'] == 'led_flowing') {
+                     $flowing = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_flowing' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+
+                     $bright = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_brightness' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+
+                     $speed = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_flow_speed' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+
+                     $color = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_color' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+                     $color = hexdec(preg_replace('/^#/', '', $color));
+
+                     if ($flowing == 1) $mode = 2;
+                      else $mode = 1;
+
+                     if ($properties[$i]['TITLE'] == 'led_brightness') {
+                        $bright = (int)$value;
+                        if ($bright < 0) $bright = 0;
+                        if ($bright > 100) $bright = 100;
+                     } elseif ($properties[$i]['TITLE'] == 'led_color') {
+                        $value = preg_replace('/^#/', '', $value);
+                        $color = hexdec($value);
+                        if ($color < 0 && $color > 16777215) {
+                           $color = 16777215;
+                        }
+                     } elseif ($properties[$i]['TITLE'] == 'led_flowing') {
+                        $value = (int)$value;
+                        if ($value == 1) $mode = 2;
+                         else $mode = 1;
+                     } elseif ($properties[$i]['TITLE'] == 'led_flow_speed') {
+                        $speed = (int)$value;
+                        if ($speed < 0) $speed = 0;
+                        if ($speed > 100) $speed = 100;
+                        $mode = 2;
+                     }
+
+                     if ($mode == 0 || $mode == 1) {
+                        $params = "[$mode,$color,100,$bright]";
+                     } else if ($mode == 2) {
+                        $params = "[$mode,120,$speed,$bright]";
+                     }
+
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_led_board', $params);
                   }
                }
 
@@ -1654,7 +1808,7 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif (($device['DEVICE_TYPE'] == 'yeelink.light.ceiling1') || ($device['DEVICE_TYPE'] == 'yeelink.light.ceiling8')) {
+			} elseif (($device['DEVICE_TYPE'] == 'yeelink.light.ceiling1') || ($device['DEVICE_TYPE'] == 'yeelink.light.ceiling8') || ($device['DEVICE_TYPE'] == 'yeelink.light.ceiling3')) {
 				if ($command == 'get_prop' && is_array($data['result'])) {
 					$props = explode(',', MIIO_YEELIGHT_CEILING_LIGHT_PROPS);
 					$i = 0;
@@ -1906,6 +2060,78 @@ class xiaomimiio extends module {
                   }
                   $res_commands[] = array('command' => $key, 'value' => $value);
                }
+            }
+         } elseif (($device['DEVICE_TYPE'] == 'yunmi.kettle.r1') || ($device['DEVICE_TYPE'] == 'yunmi.kettle.r2') || ($device['DEVICE_TYPE'] == 'yunmi.kettle.r3')) {
+            if ($command == 'get_prop' && is_array($data['result'])) {
+               $props = explode(',', MIIO_YUNMI_KETTLE_R1_PROPS);
+               $i = 0;
+               foreach($props as $key) {
+                  $value = $data['result'][$i];
+                  $res_commands[] = array('command' => $key, 'value' => $value);
+                  $i++;
+               }
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' && $command == 'get_prop' && is_array($data['result'])) {
+            $props = explode(',', MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS);
+            $i = 0;
+            foreach($props as $key) {
+               $value = $data['result'][$i];
+               switch($key) {
+                  case 'OnOff_State': $key = 'power'; break;
+                  case 'TemperatureValue': $key = 'temperature'; break;
+                  case 'Humidity_Value': $key = 'humidity'; break;
+                  case 'HumiSet_Value': $key = 'target_humidity'; break;
+                  case 'Humidifier_Gear': $key = 'mode'; break;
+                  case 'Led_State': $key = 'led'; break;
+                  case 'TipSound_State': $key = 'buzzer'; break;
+                  case 'waterstatus': $key = 'water_status'; break;
+                  case 'watertankstatus': $key = 'water_tank_status'; break;
+               }
+               if ($key == 'mode') {
+                  switch($value) {
+                     case 1: $value = 'low'; break;
+                     case 2: $value = 'medium'; break;
+                     case 3: $value = 'high'; break;
+                     case 4: $value = 'humidity'; break;
+                  }
+               }
+               $res_commands[] = array('command' => $key, 'value' => $value);
+               $i++;
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+            if ($command == 'get_prop' && is_array($data['result'])) {
+               $props = explode(',', MIIO_HFJH_FISHBOWL_V1_PROPS);
+               $i = 0;
+               foreach($props as $key) {
+                  $value = $data['result'][$i];
+                  $i++;
+                  if ($value === true) $value = 1;
+                   else if ($value === false) $value = 0;
+                  switch($key) {
+                     case 'Equipment_Status': $key = 'status'; break;
+                     case 'water_tds': $key = 'tds'; break;
+                     case 'water_temp': $key = 'temperature'; break;
+                     case 'water_temp_value': $key = 'target_temperature'; break;
+                     case 'heater_switch': $key = 'heater'; break;
+                     case 'pump_switch': $key = 'pump'; break;
+                     case 'pump_value': $key = 'water_flow'; break;
+                     case 'feed_switch': $key = 'auto_feed'; break;
+                     case 'led_board_brightness': $key = 'led_brightness'; break;
+                     case 'led_board_color': $key = 'led_color'; break;
+                     case 'led_board_speed': $key = 'led_flow_speed'; break;
+                  }
+                  if ($key == 'led_color') {
+                     $value = str_pad(dechex($value), 6, '0', STR_PAD_LEFT);
+                  } else if ($key == 'led_board_model') {
+                     if ($value == 2) $res_commands[] = array('command' => 'led_flowing', 'value' => 1);
+                      else $res_commands[] = array('command' => 'led_flowing', 'value' => 0);
+                     continue;
+                  }
+                  $res_commands[] = array('command' => $key, 'value' => $value);
+               }
+            } else if ('get_key_switch' && is_array($data['result'])) {
+               $value = ($data['result'][0]) ? 1 : 0;
+               $res_commands[] = array('command' => 'child_lock', 'value' => $value);
             }
          }
       }

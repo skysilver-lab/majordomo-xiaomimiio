@@ -1,3 +1,49 @@
-<br/>
-<br/>
-<#LANG_XIMI_APP_IN_DEVELOPMENT#>
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Mi Vacuum Cleaner</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div><#LANG_XIMI_APP_IN_DEVELOPMENT#></div>
+<br>
+<div class="panel-group" id="accordion" style="width:98%">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#base_metrics_help">Базовые метрики</a>
+		</div>
+		<div class="panel-body collapse" id="base_metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>online</b></td><td>Доступность устройства (онлайн/оффлайн).</td><td>1 и 0</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>message</b></td><td>Последнее принятое от устройства сообщение.</td><td>json</td><td>Чтение</td></tr>
+					<tr><td><b>command</b></td><td>Отправка простой (без дополнительных параметров) API-команды на устройство.
+					Например, <i>toggle</i>, <i>app_start</i>, <i>prop_update</i> и т.п. Команда <b>prop_update</b> используется для обновления метрик устройства по запросу.</td><td>команда</td><td>Запись</td></tr>
+				</tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>
