@@ -73,8 +73,10 @@ if ($this->mode == 'update') {
       } else if ($rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
          $commands[] = 'auto_feed';
          $commands[] = 'single_feed';
+      } else if ($rec['DEVICE_TYPE'] == '090615.switch.xswitch03') {
+         $commands[] = 'switch_all';
       }
-	}
+   }
 
 	if ($ok) {
 		if ($rec['ID']) {

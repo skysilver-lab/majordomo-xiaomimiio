@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.8
+* @version 2.9
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -515,6 +515,8 @@ class xiaomimiio extends module {
                         } else if ($dev_rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
                            $this->processCommand($dev_rec['ID'], 'auto_feed', '');
                            $this->processCommand($dev_rec['ID'], 'single_feed', '');
+                        } else if ($dev_rec['DEVICE_TYPE'] == '090615.switch.xswitch03') {
+                           $this->processCommand($dev_rec['ID'], 'switch_all', '');
                         }
                      }
 						}
@@ -803,7 +805,12 @@ class xiaomimiio extends module {
          }
          $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
          $this->addToQueue($device_id, 'get_key_switch', '[]');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
+         $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":2},{"did":"state_code","siid":2,"piid":3},{"did":"poweroff_time","siid":2,"piid":6},{"did":"countdown","siid":2,"piid":7},{"did":"child_lock","siid":4,"piid":1}]');
+      } elseif ($device_rec['DEVICE_TYPE'] == '090615.switch.xswitch03') {
+         $this->addToQueue($device_id, 'get_prop', '[]');
       }
+      
    }
 
 	/**
@@ -1004,7 +1011,7 @@ class xiaomimiio extends module {
 					} elseif ($properties[$i]['TITLE'] == 'power') {
                   // Команда на включение и выключение
                   $method = 'set_power';
-                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
                      $method = 'set_properties';
                      $params = '[{"did":"power","siid":2,"piid":2,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
@@ -1186,6 +1193,9 @@ class xiaomimiio extends module {
                   if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                      $method = 'set_properties';
                      $params = '[{"did":"child_lock","siid":7,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
+                     $method = 'set_properties';
+                     $params = '[{"did":"child_lock","siid":4,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
                      $method = 'set_key_switch';
                      $params = $value ? '[true]' : '[false]';
@@ -1361,8 +1371,13 @@ class xiaomimiio extends module {
                   }
                } elseif ($properties[$i]['TITLE'] == 'poweroff_time') {
                   // Команда на изменения таймера выключения 
-                  if ($value) {
-                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_poweroff_time', '['.$value.']');
+                   if ($properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
+                     $value = (int)$value;
+                     $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"poweroff_time","siid":2,"piid":6,"value":' . $value . '}]');
+                  } else {
+                     if ($value) {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_poweroff_time', '['.$value.']');
+                     }
                   }
                } elseif ($properties[$i]['TITLE'] == 'angle_enable') {
                   // Команда на включение и выключение автоматического поворота вентилятора
@@ -1509,6 +1524,68 @@ class xiaomimiio extends module {
 
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_led_board', $params);
                   }
+               }
+
+               if($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
+                  if ($properties[$i]['TITLE'] == 'led_brightness' || $properties[$i]['TITLE'] == 'led_color' || $properties[$i]['TITLE'] == 'led_flow_speed' || $properties[$i]['TITLE'] == 'led_flowing') {
+                     $flowing = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_flowing' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+
+                     $bright = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_brightness' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+
+                     $speed = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_flow_speed' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+
+                     $color = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_color' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
+                     $color = hexdec(preg_replace('/^#/', '', $color));
+
+                     if ($flowing == 1) $mode = 2;
+                      else $mode = 1;
+
+                     if ($properties[$i]['TITLE'] == 'led_brightness') {
+                        $bright = (int)$value;
+                        if ($bright < 0) $bright = 0;
+                        if ($bright > 100) $bright = 100;
+                     } elseif ($properties[$i]['TITLE'] == 'led_color') {
+                        $value = preg_replace('/^#/', '', $value);
+                        $color = hexdec($value);
+                        if ($color < 0 && $color > 16777215) {
+                           $color = 16777215;
+                        }
+                     } elseif ($properties[$i]['TITLE'] == 'led_flowing') {
+                        $value = (int)$value;
+                        if ($value == 1) $mode = 2;
+                         else $mode = 1;
+                     } elseif ($properties[$i]['TITLE'] == 'led_flow_speed') {
+                        $speed = (int)$value;
+                        if ($speed < 0) $speed = 0;
+                        if ($speed > 100) $speed = 100;
+                        $mode = 2;
+                     }
+
+                     if ($mode == 0 || $mode == 1) {
+                        $params = "[$mode,$color,100,$bright]";
+                     } else if ($mode == 2) {
+                        $params = "[$mode,120,$speed,$bright]";
+                     }
+
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_led_board', $params);
+                  }
+               }
+
+               if($properties[$i]['DEVICE_TYPE'] == '090615.switch.xswitch03') {
+                  $value = (int)$value;
+                  switch($properties[$i]['TITLE']) {
+                     case 'channel_1': $method = 'SetSwitch1'; break;
+                     case 'channel_2': $method = 'SetSwitch2'; break;
+                     case 'channel_3': $method = 'SetSwitch3'; break;
+                     case 'switch_all': $method = 'SetSwitchAll'; break;
+                     case 'backlight': $method = 'SetBlacklight'; break;
+                  }
+                  if ($method == 'SetSwitchAll') {
+                     $params = "[$value,$value,$value]";
+                  } else {
+                     $params = "[$value]";
+                  }
+                  $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
                }
 
 					if(($properties[$i]['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
@@ -2133,6 +2210,26 @@ class xiaomimiio extends module {
                $value = ($data['result'][0]) ? 1 : 0;
                $res_commands[] = array('command' => 'child_lock', 'value' => $value);
             }
+         } elseif ($device['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2' && $command == 'get_properties' && is_array($data['result'])) {
+            foreach($data['result'] as $res) {
+               $value = $res['value'];
+               if ($value === true) $value = 1;
+                else if ($value === false) $value = 0;
+               if ($res['did'] == 'state_code') {
+                  switch($value) {
+                     case 1: $state_text = 'off'; break;
+                     case 3: $state_text = 'pause'; break;
+                     case 4: $state_text = 'active'; break;
+                  }
+                  $res_commands[] = array('command' => 'state_text', 'value' => $state_text);
+               }
+               $res_commands[] = array('command' => $res['did'], 'value' => $value);
+            }
+         } elseif ($device['DEVICE_TYPE'] == '090615.switch.xswitch03' && $command == 'get_prop' && is_array($data['result'])) {
+            $res_commands[] = array('command' => 'channel_1', 'value' => $data['result'][0]);
+            $res_commands[] = array('command' => 'channel_2', 'value' => $data['result'][1]);
+            $res_commands[] = array('command' => 'channel_3', 'value' => $data['result'][2]);
+            $res_commands[] = array('command' => 'backlight', 'value' => $data['result'][3]);
          }
       }
 
@@ -2141,8 +2238,10 @@ class xiaomimiio extends module {
          $val = $c['value'];
          if ($val === 'on') {
             $val = 1;
-         } else if ($val === 'off' && $cmd !== 'led_b') {
-            $val = 0;
+         } else if ($val === 'off') {
+            if ($cmd !== 'led_b' && $cmd !== 'state_text') {
+               $val = 0;
+            }
          }
          $this->processCommand($device['ID'], $cmd, $val);
       }
