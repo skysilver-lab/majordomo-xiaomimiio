@@ -63,12 +63,14 @@ if ($socket_timeout != 2) {
 }
 
 $msg_id = time();
+$cycleVarName='ThisComputer.'.str_replace('.php', '', basename(__FILE__)).'Run';
 
 while (1) {
 
    if ((time() - $latest_check) >= $check_period) {
       $latest_check = time();
-      setGlobal((str_replace('.php', '', basename(__FILE__))) . 'Run', time(), 1);
+      //setGlobal((str_replace('.php', '', basename(__FILE__))) . 'Run', time(), 1);
+      saveToCache("MJD:$cycleVarName", $latest_check);
    }
 
    $queue = SQLSelect("SELECT miio_queue.*, miio_devices.TOKEN, miio_devices.DEVICE_TYPE, miio_devices.IP FROM miio_queue LEFT JOIN miio_devices ON miio_queue.DEVICE_ID=miio_devices.ID ORDER BY miio_queue.ID");
