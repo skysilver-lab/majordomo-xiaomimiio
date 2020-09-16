@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 3.0
+* @version 3.1b
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -47,6 +47,8 @@ define ('MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS', 'OnOff_State,TemperatureValue,Humi
 
 define ('MIIO_HFJH_FISHBOWL_V1_PROPS','Equipment_Status,feed_switch,heater_switch,led_board_brightness,led_board_color,led_board_model,led_board_speed,pump_switch,pump_value,water_tds,water_temp,water_temp_value');
 
+define ('MIIO_AIRFRESH_A1_PROPS', 'power,mode,pm25,co2,temperature_outside,favourite_speed,control_speed,filter_rate,filter_day,child_lock,sound,display');
+
 define ('MIIO_VIOMIVACUUM_V7_PROPS', 'run_state,mode,err_state,battary_life,box_type,s_time,s_area,suction_grade,water_grade');
 
 define ('MIIO_MIVACUUM_1_STATE_CODES', serialize (array('0' =>	'Unknown',
@@ -79,6 +81,13 @@ define ('MIIO_VIOMIVACUUM_V7_STATE_CODES', serialize (array('0' => 'Waiting',
                                           '4' =>   'Back to home',
                                           '5' =>   'Docking',
                                           '6' =>   'Zoned cleaning')));
+
+define ('MIIO_DREAMVACUUM_C1_STATE_CODES', serialize (array('1' =>   'Sweeping',
+                                          '2' =>   'Waiting',
+                                          '3' =>   'Pause',
+                                          '4' =>   'Error',
+                                          '5' =>   'Back to home',
+                                          '6' =>   'Docking')));
 
 define ('MIIO_MIVACUUM_1_ERROR_CODES', serialize (array('0' =>	'No error',
                                           '1' =>   'Laser distance sensor error',
@@ -809,6 +818,16 @@ class xiaomimiio extends module {
          $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":2},{"did":"state_code","siid":2,"piid":3},{"did":"poweroff_time","siid":2,"piid":6},{"did":"countdown","siid":2,"piid":7},{"did":"child_lock","siid":4,"piid":1}]');
       } elseif ($device_rec['DEVICE_TYPE'] == '090615.switch.xswitch03') {
          $this->addToQueue($device_id, 'get_prop', '[]');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
+         //
+         $props = explode(',', MIIO_AIRFRESH_A1_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+            $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
+         $this->addToQueue($device_id, 'get_properties', '[{"did":"state_code","siid":3,"piid":2},{"did":"error_code","siid":3,"piid":1},{"did":"battery","siid":2,"piid":1},{"did":"mode","siid":18,"piid":6},{"did":"work_mode","siid":18,"piid":1},{"did":"water_grade","siid":18,"piid":20},{"did":"clean_times","siid":18,"piid":14},{"did":"clean_area","siid":18,"piid":15},{"did":"clean_time","siid":18,"piid":13},{"did":"filter_life_level","siid":27,"piid":1},{"did":"filter_left_time","siid":27,"piid":2},{"did":"brush1_life_level","siid":26,"piid":2},{"did":"brush1_left_time","siid":26,"piid":1},{"did":"brush2_life_level","siid":28,"piid":2},{"did":"brush2_left_time","siid":28,"piid":1}]');
       }
       
    }
@@ -999,6 +1018,23 @@ class xiaomimiio extends module {
                      } else {
                         $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
                      }
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
+                     if ($value == 'app_start') {
+                        $params = '{"did":"app_start","siid":18,"aiid":1,"in":[{"piid":1,"value":2}]}';
+                     } else if ($value == 'app_stop') {
+                        $params = '{"did":"app_stop","siid":18,"aiid":2,"in":[]}';
+                     } else if ($value == 'app_charge') {
+                        $params = '{"did":"app_charge","siid":2,"aiid":1,"in":[]}';
+                     } else if ($value == 'find_me') {
+                        $params = '{"did":"find_me","siid":17,"aiid":1}';
+                     } else if ($value == 'start_sweep') {
+                        $params = '{"did":"start_sweep","siid":3,"aiid":1,"in":[]}';
+                     } else if ($value == 'stop_sweep') {
+                        $params = '{"did":"stop_sweep","siid":3,"aiid":2,"in":[]}';
+                     } else {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+                     }
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'action', $params);
                   } else {
 							// Отправка любой команды (метода) без параметров.
 							// Например, miIO.info, toggle, app_start и др.
@@ -1020,6 +1056,8 @@ class xiaomimiio extends module {
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
                      $method = 'Set_OnOff';
                      $params = '['. (int)$value .']';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
+                     $params = $value ? '[true]' : '[false]';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -1043,6 +1081,9 @@ class xiaomimiio extends module {
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
                      $method = 'SetTipSound_Status';
                      $params = '['. (int)$value .']';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
+                     $method = 'set_sound';
+                     $params = $value ? '[true]' : '[false]';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -1183,6 +1224,9 @@ class xiaomimiio extends module {
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
                      $method = 'SetLedState';
                      $params = '['. (int)$value .']';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
+                     $method = 'set_display';
+                     $params = $value ? '[true]' : '[false]';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
                   }
@@ -1198,6 +1242,8 @@ class xiaomimiio extends module {
                      $params = '[{"did":"child_lock","siid":4,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
                      $method = 'set_key_switch';
+                     $params = $value ? '[true]' : '[false]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
                      $params = $value ? '[true]' : '[false]';
                   } else {
                      $params = $value ? '["on"]' : '["off"]';
@@ -1305,6 +1351,19 @@ class xiaomimiio extends module {
                         default: $params = 1; break;
                      }
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'Set_HumidifierGears', '[' . $params . ']');
+                  } elseif ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
+                     if ($value == 'auto' || $value == 'favourite' || $value == 'sleep') {
+                        $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
+                     }
+                  } elseif ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
+                     switch($value) {
+                        case 'Silent': $params = 0; break;
+                        case 'Standard': $params = 1; break;
+                        case 'Medium': $params = 2; break;
+                        case 'Turbo': $params = 3; break;
+                     }
+                     $params = '[{"did":"mode","siid":18,"piid":6,"value":' . $value . '}]';
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_properties', $params);
                   }
                } elseif ($properties[$i]['TITLE'] == 'custom_mode') {
                   // Изменение режима работы (мощности) пылесоса (от 1 до 100%, 101 - влажная уборка, 105 - турбо)
@@ -1479,50 +1538,17 @@ class xiaomimiio extends module {
                      // Состояние аквариума (включен/выключен)
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_Equipment_Status', '[' . ($value ? 'true' : 'false') . ']');
                   }
-               }
-
-               if($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
-                  if ($properties[$i]['TITLE'] == 'led_brightness' || $properties[$i]['TITLE'] == 'led_color' || $properties[$i]['TITLE'] == 'led_flow_speed' || $properties[$i]['TITLE'] == 'led_flowing') {
-                     $flowing = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_flowing' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
-
-                     $bright = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_brightness' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
-
-                     $speed = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_flow_speed' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
-
-                     $color = SQLSelectOne("SELECT miio_commands.VALUE FROM miio_commands WHERE miio_commands.TITLE LIKE 'led_color' AND DEVICE_ID=" . $properties[$i]['DEVICE_ID'])['VALUE'];
-                     $color = hexdec(preg_replace('/^#/', '', $color));
-
-                     if ($flowing == 1) $mode = 2;
-                      else $mode = 1;
-
-                     if ($properties[$i]['TITLE'] == 'led_brightness') {
-                        $bright = (int)$value;
-                        if ($bright < 0) $bright = 0;
-                        if ($bright > 100) $bright = 100;
-                     } elseif ($properties[$i]['TITLE'] == 'led_color') {
-                        $value = preg_replace('/^#/', '', $value);
-                        $color = hexdec($value);
-                        if ($color < 0 && $color > 16777215) {
-                           $color = 16777215;
-                        }
-                     } elseif ($properties[$i]['TITLE'] == 'led_flowing') {
-                        $value = (int)$value;
-                        if ($value == 1) $mode = 2;
-                         else $mode = 1;
-                     } elseif ($properties[$i]['TITLE'] == 'led_flow_speed') {
-                        $speed = (int)$value;
-                        if ($speed < 0) $speed = 0;
-                        if ($speed > 100) $speed = 100;
-                        $mode = 2;
+               } elseif ($properties[$i]['TITLE'] == 'water_grade') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
+                     // Настройка расхода уровня воды (низкий/средний/высокий)
+                     switch($value) {
+                        case 'Low': $params = 1; break;
+                        case 'Medium': $params = 2; break;
+                        case 'High': $params = 3; break;
+                        default: $params = 1; break;
                      }
-
-                     if ($mode == 0 || $mode == 1) {
-                        $params = "[$mode,$color,100,$bright]";
-                     } else if ($mode == 2) {
-                        $params = "[$mode,120,$speed,$bright]";
-                     }
-
-                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_led_board', $params);
+                     $params = '[{"did":"water_grade","siid":18,"piid":20,"value":' . $value . '}]';
+                     $this->addToQueue($properties[$i]['DEVICE_ID'],'set_properties', $params);
                   }
                }
 
@@ -2230,6 +2256,48 @@ class xiaomimiio extends module {
             $res_commands[] = array('command' => 'channel_2', 'value' => $data['result'][1]);
             $res_commands[] = array('command' => 'channel_3', 'value' => $data['result'][2]);
             $res_commands[] = array('command' => 'backlight', 'value' => $data['result'][3]);
+         } elseif ($device['DEVICE_TYPE'] == 'dmaker.airfresh.a1' && $command == 'get_prop' && is_array($data['result'])) {
+            $props = explode(',', MIIO_AIRFRESH_A1_PROPS);
+            $i = 0;
+            foreach($props as $key) {
+               $value = $data['result'][$i];
+               $i++;
+               if ($value === true) $value = 1;
+                else if ($value === false) $value = 0;
+               switch($key) {
+                  case 'temperature_outside': $key = 'temperature'; break;
+                  case 'sound': $key = 'buzzer'; break;
+                  case 'display': $key = 'led'; break;
+               }
+               $res_commands[] = array('command' => $key, 'value' => $value);
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'dreame.vacuum.mc1808' && $command == 'get_properties' && is_array($data['result'])) {
+            foreach($data['result'] as $res) {
+               $value = $res['value'];
+               if ($value === true) $value = 1;
+                else if ($value === false) $value = 0;
+               if ($res['did'] == 'state_code') {
+                  $state_codes = unserialize (MIIO_DREAMVACUUM_C1_STATE_CODES);
+                  if (array_key_exists($value, $state_codes)) $res_commands[] = array('command' => 'state_text', 'value' => $state_codes[$value]);
+                   else $res_commands[] = array('command' => 'state_text', 'value' => 'Unknown');
+               }
+               if ($res['did'] == 'mode') {
+                  switch($value) {
+                     case 0: $value = 'Silent'; break;
+                     case 1: $value = 'Standard'; break;
+                     case 2: $value = 'Medium'; break;
+                     case 2: $value = 'Turbo'; break;
+                  }
+               }
+               if ($res['did'] == 'water_grade') {
+                  switch($value) {
+                     case 1: $value = 'Low'; break;
+                     case 2: $value = 'Medium'; break;
+                     case 3: $value = 'High'; break;
+                  }
+               }
+               $res_commands[] = array('command' => $res['did'], 'value' => $value);
+            }
          }
       }
 
@@ -2239,7 +2307,7 @@ class xiaomimiio extends module {
          if ($val === 'on') {
             $val = 1;
          } else if ($val === 'off') {
-            if ($cmd !== 'led_b' && $cmd !== 'state_text') {
+            if ($cmd !== 'led_b' && $cmd !== 'state_text' && $cmd !== 'mode') {
                $val = 0;
             }
          }

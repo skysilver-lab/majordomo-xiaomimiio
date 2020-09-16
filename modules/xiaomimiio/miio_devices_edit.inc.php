@@ -86,7 +86,7 @@ if ($this->mode == 'update') {
 			if ($this->config['API_LOG_DEBMES']) DebMes('Manual add new device with IP ' . $rec['IP'], 'xiaomimiio');
 			$rec['ID'] = SQLInsert($table_name, $rec);
 		}
-		
+
 		$out['OK'] = 1;
 
 		if ($this->tab == '') {
@@ -99,14 +99,14 @@ if ($this->mode == 'update') {
 					SQLInsert('miio_commands', $cmd_rec);
 				}
 			}
-			
+
 			// При сохранении настроек устройства выставим статус оффлайн
 			$this->processCommand($rec['ID'], 'online', 0);
 			
 			if ($rec['DEVICE_TYPE'] == 'chuangmi.ir.v2') {
 				//$this->processCommand($rec['ID'], 'freq', 38400);
 			}
-			
+
 			// Если есть токен и IP, запросим сведения miIO.info, 
 			if ($rec['TOKEN'] != '' && $rec['IP'] != '') {
 				$this->requestInfo($rec['ID']);
@@ -261,18 +261,18 @@ if ($this->tab == 'data') {
 }
 
 if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3'))) {
-	
+
 	$new_id = 0;
 	global $delete_id;
-	
+
 	if ($delete_id) {
 		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
 	}
-	
+
 	$properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('add_program','del_program','current_program','current_progress','current_volume','current_status','all_program') ORDER BY ID");
-	
+
 	$total = count($properties);
-	
+
 	for($i = 0; $i < $total; $i++) {
 		if ($properties[$i]['ID'] == $new_id) continue;
 
@@ -296,7 +296,7 @@ if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($
 				removeLinkedProperty($old_linked_object, $old_linked_property, $this->name);
 			}
 		}
-		
+
 		$properties[$i]['VALUE'] = str_replace('",','", ',$properties[$i]['VALUE']);
 
 		if ($properties[$i]['LINKED_OBJECT'] && $properties[$i]['LINKED_PROPERTY']) {
@@ -325,15 +325,15 @@ if ($this->tab == 'help') {
 	} else {
 		$devType = 'unknown';
 	}
-	
-	$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
-	//$out['HELP_PATH'] = '/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
-	
+
+	//$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
+	$out['HELP_PATH'] = '/help/' . SETTINGS_SITE_LANGUAGE . '/help_' . $devType . '.html';
+
 	// Проверим наличие файла-справки для текущего языка МДМ
 	if (!file_exists($out['HELP_PATH'])) {
 		// если файла нет, то выводим файл-справку на русском языке
-		$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/ru/help_' . $devType . '.html';
-		//$out['HELP_PATH'] = '/help/ru/help_' . $devType . '.html';
+		//$out['HELP_PATH'] = DIR_TEMPLATES . 'xiaomimiio/help/ru/help_' . $devType . '.html';
+		$out['HELP_PATH'] = '/help/ru/help_' . $devType . '.html';
 	}
 }
 
@@ -344,15 +344,5 @@ if (is_array($rec)) {
 		}
 	}
 }
-
-//DebMes(serialize($out), 'xiaomimiio');
-/*
-	{s:6:"API_IP";s:0:""; s:15:"API_DISC_PERIOD";i:120; s:14:"API_LOG_DEBMES";i:1; s:13:"API_LOG_CYCLE";i:1; s:12:"API_LOG_MIIO";i:0; s:8:"CYCLERUN";i:0; s:14:"SET_DATASOURCE";i:1; s:12:"CONTROLPANEL";i:1; s:4:"LANG";s:2:"ru";}
-*/
-
-//DebMes(serialize($rec), 'xiaomimiio');
-/*
-	{s:2:"ID";s:2:"33"; s:5:"TITLE";s:18:"Mi Air Purifier 2S"; s:2:"IP";s:13:"192.168.1.200"; s:5:"TOKEN";s:0:""; s:3:"MAC"; s:0:""; s:11:"DEVICE_TYPE";s:21:"zhimi.airpurifier.ma2"; s:16:"DEVICE_TYPE_CODE";s:0:""; s:9:"TIME_DIFF";s:1:"0"; s:5:"MODEL";s:0:""; s:6:"HW_VER";s:0:""; s:6:"SERIAL";s:0:""; s:8:"SETTINGS";s:0:""; s:13:"UPDATE_PERIOD";s:1:"0"; s:11:"NEXT_UPDATE";s:0:""; s:7:"UPDATED";s:0:"";}
-*/
 
 outHash($rec, $out);
