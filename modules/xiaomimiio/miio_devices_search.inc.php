@@ -1,8 +1,8 @@
 <?php
 /*
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2018 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.0
+* @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 3.0
 */
 
 global $session;

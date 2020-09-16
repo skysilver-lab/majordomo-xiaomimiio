@@ -2,7 +2,7 @@
 /*
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.8
+* @version 3.0
 */
 
 if ($this->owner->name == 'panel') {

@@ -4,7 +4,7 @@
 * @package project
 * @author <skysilver.da@gmail.com>
 * @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 2.9
+* @version 3.0
 */
 
 define ('EXTENDED_LOGGING', 0);
