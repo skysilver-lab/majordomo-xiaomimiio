@@ -3,8 +3,8 @@
 * Xiaomi miIO
 * @package project
 * @author <skysilver.da@gmail.com>
-* @copyright 2017-2020 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
-* @version 3.1b
+* @copyright 2017-2021 Agaphonov Dmitri aka skysilver <skysilver.da@gmail.com> (c)
+* @version 3.2b
 */
 
 define ('EXTENDED_LOGGING', 0);
@@ -44,6 +44,8 @@ define ('MIIO_AIRMONITOR_S1_PROPS', 'battery,battery_state,co2,humidity,pm25,tem
 define ('MIIO_YUNMI_KETTLE_R1_PROPS', 'water_remain_time,flush_time,flush_flag,tds,time,curr_tempe,setup_tempe,custom_tempe1,min_set_tempe,drink_remind,drink_remind_time,run_status,work_mode,drink_time_count');
 
 define ('MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS', 'OnOff_State,TemperatureValue,Humidity_Value,HumiSet_Value,Humidifier_Gear,Led_State,TipSound_State,waterstatus,watertankstatus');
+
+define ('MIIO_DEERMA_HUMIDIFIER_JSQ_PROPS', 'Humidifier_Gear,Humidity_Value,HumiSet_Value,Led_State,OnOff_State,TemperatureValue,TipSound_State,waterstatus,watertankstatus');
 
 define ('MIIO_HFJH_FISHBOWL_V1_PROPS','Equipment_Status,feed_switch,heater_switch,led_board_brightness,led_board_color,led_board_model,led_board_speed,pump_switch,pump_value,water_tds,water_temp,water_temp_value');
 
@@ -805,6 +807,14 @@ class xiaomimiio extends module {
             $props[$i] = '"' . $props[$i] . '"';
          }
          $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+      } elseif (($device_rec['DEVICE_TYPE'] == 'deerma.humidifier.jsq') || ($device_rec['DEVICE_TYPE'] == 'deerma.humidifier.jsq1')) {
+         //
+         $props = explode(',', MIIO_DEERMA_HUMIDIFIER_JSQ_PROPS);
+         $total = count($props);
+         for ($i = 0; $i < $total; $i++) {
+            $props[$i] = '"' . $props[$i] . '"';
+         }
+         $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
       } elseif ($device_rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
          //
          $props = explode(',', MIIO_HFJH_FISHBOWL_V1_PROPS);
@@ -828,6 +838,8 @@ class xiaomimiio extends module {
          $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
       } elseif ($device_rec['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
          $this->addToQueue($device_id, 'get_properties', '[{"did":"state_code","siid":3,"piid":2},{"did":"error_code","siid":3,"piid":1},{"did":"battery","siid":2,"piid":1},{"did":"mode","siid":18,"piid":6},{"did":"work_mode","siid":18,"piid":1},{"did":"water_grade","siid":18,"piid":20},{"did":"clean_times","siid":18,"piid":14},{"did":"clean_area","siid":18,"piid":15},{"did":"clean_time","siid":18,"piid":13},{"did":"filter_life_level","siid":27,"piid":1},{"did":"filter_left_time","siid":27,"piid":2},{"did":"brush1_life_level","siid":26,"piid":2},{"did":"brush1_left_time","siid":26,"piid":1},{"did":"brush2_life_level","siid":28,"piid":2},{"did":"brush2_left_time","siid":28,"piid":1}]');
+      } elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.212a01') {
+         $this->addToQueue($device_id, 'get_properties', '[{"did":"power","piid":1,"siid":2},{"did":"temperature","piid":6,"siid":2},{"did":"power_consumption","piid":1,"siid":5},{"did":"current","piid":2,"siid":5},{"did":"voltage", "piid":3,"siid":5},{"did":"power_load","piid":6,"siid": 5}]');
       }
       
    }
@@ -1050,10 +1062,13 @@ class xiaomimiio extends module {
                   if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
                      $method = 'set_properties';
                      $params = '[{"did":"power","siid":2,"piid":2,"value":' . ($value ? 'true' : 'false') . '}]';
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'chuangmi.plug.212a01') {
+                     $method = 'set_properties';
+                     $params = '[{"did":"power","siid":2,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
                      $method = 'toggle_plug';
                      $params = $value ? '["on"]' : '["off"]';
-                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
                      $method = 'Set_OnOff';
                      $params = '['. (int)$value .']';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
@@ -1078,7 +1093,7 @@ class xiaomimiio extends module {
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                      $method = 'set_properties';
                      $params = '[{"did":"buzzer","siid":5,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
-                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
                      $method = 'SetTipSound_Status';
                      $params = '['. (int)$value .']';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
@@ -1221,7 +1236,7 @@ class xiaomimiio extends module {
                   if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                      $method = 'set_properties';
                      $params = '[{"did":"led","siid":6,"piid":6,"value":' . ($value ? 'true' : 'false') . '}]';
-                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
                      $method = 'SetLedState';
                      $params = '['. (int)$value .']';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
@@ -1342,7 +1357,7 @@ class xiaomimiio extends module {
                         default: $params = 0; break;
                      }
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_mop', '[' . $params . ']');
-                  } elseif ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                  } elseif ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
                      switch($value) {
                         case 'low': $params = 1; break;
                         case 'medium': $params = 2; break;
@@ -1487,7 +1502,7 @@ class xiaomimiio extends module {
                } elseif ($properties[$i]['TITLE'] == 'target_humidity') {
                   // Установка верхнего предела увлажнения (в % от 0 до 99)
                   $value = (int)$value;
-                  if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
                      if ($value < 0) $value = 0;
                      if ($value > 99) $value = 99;
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'Set_HumiValue', '[' . $value . ']');
@@ -1770,6 +1785,12 @@ class xiaomimiio extends module {
 
 			$res_commands[] = array('command' => 'online', 'value' => 1);
 			$res_commands[] = array('command' => 'message', 'value' => $message);
+
+         if (is_array($data['result'])) {
+            $prop_count = count($data['result']);
+         } else {
+            $prop_count = 0;
+         }
 
 			if (($device['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($device['DEVICE_TYPE'] == 'lumi.acpartner.v3')) {
 				if ($command == 'get_prop_fm' && is_array($data['result'])) {
@@ -2174,32 +2195,38 @@ class xiaomimiio extends module {
                   $i++;
                }
             }
-         } elseif ($device['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' && $command == 'get_prop' && is_array($data['result'])) {
-            $props = explode(',', MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS);
-            $i = 0;
-            foreach($props as $key) {
-               $value = $data['result'][$i];
-               switch($key) {
-                  case 'OnOff_State': $key = 'power'; break;
-                  case 'TemperatureValue': $key = 'temperature'; break;
-                  case 'Humidity_Value': $key = 'humidity'; break;
-                  case 'HumiSet_Value': $key = 'target_humidity'; break;
-                  case 'Humidifier_Gear': $key = 'mode'; break;
-                  case 'Led_State': $key = 'led'; break;
-                  case 'TipSound_State': $key = 'buzzer'; break;
-                  case 'waterstatus': $key = 'water_status'; break;
-                  case 'watertankstatus': $key = 'water_tank_status'; break;
+         } elseif (($device['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') || ($device['DEVICE_TYPE'] == 'deerma.humidifier.jsq') || ($device['DEVICE_TYPE'] == 'deerma.humidifier.jsq1')) {
+            if ($command == 'get_prop' && is_array($data['result']) && $prop_count > 1) {
+               if ($device['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq') {
+                  $props = explode(',', MIIO_DEERMA_HUMIDIFIER_MJJSQ_PROPS);
+               } else if (($device['DEVICE_TYPE'] == 'deerma.humidifier.jsq') || ($device['DEVICE_TYPE'] == 'deerma.humidifier.jsq1')) {
+                  $props = explode(',', MIIO_DEERMA_HUMIDIFIER_JSQ_PROPS);
                }
-               if ($key == 'mode') {
-                  switch($value) {
-                     case 1: $value = 'low'; break;
-                     case 2: $value = 'medium'; break;
-                     case 3: $value = 'high'; break;
-                     case 4: $value = 'humidity'; break;
+               $i = 0;
+               foreach($props as $key) {
+                  $value = $data['result'][$i];
+                  switch($key) {
+                     case 'OnOff_State': $key = 'power'; break;
+                     case 'TemperatureValue': $key = 'temperature'; break;
+                     case 'Humidity_Value': $key = 'humidity'; break;
+                     case 'HumiSet_Value': $key = 'target_humidity'; break;
+                     case 'Humidifier_Gear': $key = 'mode'; break;
+                     case 'Led_State': $key = 'led'; break;
+                     case 'TipSound_State': $key = 'buzzer'; break;
+                     case 'waterstatus': $key = 'water_status'; break;
+                     case 'watertankstatus': $key = 'water_tank_status'; break;
                   }
+                  if ($key == 'mode') {
+                     switch($value) {
+                        case 1: $value = 'low'; break;
+                        case 2: $value = 'medium'; break;
+                        case 3: $value = 'high'; break;
+                        case 4: $value = 'humidity'; break;
+                     }
+                  }
+                  $res_commands[] = array('command' => $key, 'value' => $value);
+                  $i++;
                }
-               $res_commands[] = array('command' => $key, 'value' => $value);
-               $i++;
             }
          } elseif ($device['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
             if ($command == 'get_prop' && is_array($data['result'])) {
@@ -2296,6 +2323,13 @@ class xiaomimiio extends module {
                      case 3: $value = 'High'; break;
                   }
                }
+               $res_commands[] = array('command' => $res['did'], 'value' => $value);
+            }
+         } elseif ($device['DEVICE_TYPE'] == 'chuangmi.plug.212a01' && $command == 'get_properties' && is_array($data['result'])) {
+            foreach($data['result'] as $res) {
+               $value = $res['value'];
+               if ($value === true) $value = 1;
+                else if ($value === false) $value = 0;
                $res_commands[] = array('command' => $res['did'], 'value' => $value);
             }
          }
