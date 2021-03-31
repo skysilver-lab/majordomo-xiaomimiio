@@ -517,10 +517,10 @@ class xiaomimiio extends module {
                         } else if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
                            $this->processCommand($dev_rec['ID'], 'vol_up', '');
                            $this->processCommand($dev_rec['ID'], 'vol_down', '');
-                        } else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
                            $this->processCommand($dev_rec['ID'], 'goto_target', '');
                            $this->processCommand($dev_rec['ID'], 'zoned_clean', '');
-                           if ($dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                           if ($dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
                               $this->processCommand($dev_rec['ID'], 'segment_clean', '');
                            }
                         } else if ($dev_rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
@@ -618,7 +618,7 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
+		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')  || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
 			//
 			$this->addToQueue($device_id, 'get_status');
 			$this->addToQueue($device_id, 'get_consumable');
@@ -1868,7 +1868,7 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
+			} elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5')  || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
 				if (($command == 'get_status' || $command == 'get_consumable') && is_array($data['result'])) {
 					foreach($data['result'][0] as $key => $value) {
 						$res_commands[] = array('command' => $key, 'value' => $value);
