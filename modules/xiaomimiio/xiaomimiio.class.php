@@ -844,6 +844,33 @@ class xiaomimiio extends module {
       
    }
 
+	function api($params) {
+		//callAPI('/api/module/xiaomimiio','GET',array('did'=>$id,'dcmd'=>$command,'dopt'=>$options));
+		if ($params['did'] && $params['dcmd']) {
+			$device = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=".(int)$params['did']);
+			if (!$device['ID']) return;
+			$dip = $device['IP'];
+			$dtoken = $device['TOKEN'];
+			$cmd = $params['dcmd'];
+			$opt = $params['opt'];
+			if (!class_exists('miIO', false)) {
+				include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
+			}
+			$this->getConfig();
+			if ($this->config['API_IP']) $bind_ip = $this->config['API_IP'];
+			else $bind_ip = '0.0.0.0';
+			if ($this->config['API_LOG_MIIO']) $miio_debug = true;
+			else $miio_debug = false;
+			$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
+			if ($this->config['API_SOCKET_TIMEOUT'] !== null) {
+				$dev->send_timeout = (int)$this->config['API_SOCKET_TIMEOUT'];
+			}
+			$dev->msgSendRcv($cmd, $opt, time());
+			$info = $dev->data;
+			echo $info;
+		}
+	}
+
 	/**
 	* FrontEnd
 	*
@@ -929,6 +956,9 @@ class xiaomimiio extends module {
 				} else $info = 'Что-то пошло не так...';
 
 				echo $info;
+
+				//echo "<br/>API example: callAPI('/api/module/xiaomimiio','GET',array('did'=>'$did','dcmd'=>'$cmd','dopt'=>'$opt'));";
+
 				exit;
 			} else if ($op == 'prop_update') {
             $did = $_GET['did'];
