@@ -517,10 +517,10 @@ class xiaomimiio extends module {
                         } else if ($dev_rec['DEVICE_TYPE'] == 'xiaomi.wifispeaker.v1') {
                            $this->processCommand($dev_rec['ID'], 'vol_up', '');
                            $this->processCommand($dev_rec['ID'], 'vol_down', '');
-                        } else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                        } else if ($dev_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
                            $this->processCommand($dev_rec['ID'], 'goto_target', '');
                            $this->processCommand($dev_rec['ID'], 'zoned_clean', '');
-                           if ($dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') {
+                           if ($dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5' || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
                               $this->processCommand($dev_rec['ID'], 'segment_clean', '');
                            }
                         } else if ($dev_rec['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
@@ -618,7 +618,7 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
+		} else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5')  || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
 			//
 			$this->addToQueue($device_id, 'get_status');
 			$this->addToQueue($device_id, 'get_consumable');
@@ -844,6 +844,33 @@ class xiaomimiio extends module {
       
    }
 
+	function api($params) {
+		//callAPI('/api/module/xiaomimiio','GET',array('did'=>$id,'dcmd'=>$command,'dopt'=>$options));
+		if ($params['did'] && $params['dcmd']) {
+			$device = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=".(int)$params['did']);
+			if (!$device['ID']) return;
+			$dip = $device['IP'];
+			$dtoken = $device['TOKEN'];
+			$cmd = $params['dcmd'];
+			$opt = $params['opt'];
+			if (!class_exists('miIO', false)) {
+				include_once(DIR_MODULES . 'xiaomimiio/lib/miio.class.php');
+			}
+			$this->getConfig();
+			if ($this->config['API_IP']) $bind_ip = $this->config['API_IP'];
+			else $bind_ip = '0.0.0.0';
+			if ($this->config['API_LOG_MIIO']) $miio_debug = true;
+			else $miio_debug = false;
+			$dev = new miIO($dip, $bind_ip, $dtoken, $miio_debug);
+			if ($this->config['API_SOCKET_TIMEOUT'] !== null) {
+				$dev->send_timeout = (int)$this->config['API_SOCKET_TIMEOUT'];
+			}
+			$dev->msgSendRcv($cmd, $opt, time());
+			$info = $dev->data;
+			echo $info;
+		}
+	}
+
 	/**
 	* FrontEnd
 	*
@@ -929,6 +956,9 @@ class xiaomimiio extends module {
 				} else $info = 'Что-то пошло не так...';
 
 				echo $info;
+
+				//echo "<br/>API example: callAPI('/api/module/xiaomimiio','GET',array('did'=>'$did','dcmd'=>'$cmd','dopt'=>'$opt'));";
+
 				exit;
 			} else if ($op == 'prop_update') {
             $did = $_GET['did'];
@@ -1868,7 +1898,7 @@ class xiaomimiio extends module {
 					$res_commands[] = array('command' => $key, 'value' => $value);
 					$i++;
 				}
-			} elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5')) {
+			} elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5')  || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
 				if (($command == 'get_status' || $command == 'get_consumable') && is_array($data['result'])) {
 					foreach($data['result'][0] as $key => $value) {
 						$res_commands[] = array('command' => $key, 'value' => $value);

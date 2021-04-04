@@ -49,9 +49,11 @@
 				<b><#LANG_XIMI_APP_TESTING#></b>
 			</div>
 			<div class="modal-body">
-				<p>
-					IP:&nbsp&nbsp<b><span id="api_dev_ip"></span></b>&nbsp&nbsp&nbsp
-					<#LANG_XIMI_APP_TOKEN#>:&nbsp&nbsp<b><span id="api_dev_token"></span></b>
+				<p><nowrap>
+					ID: <b><span id="api_dev_did"></span></b> &nbsp;&nbsp;&nbsp;
+					IP:<b><span id="api_dev_ip"></span></b> &nbsp;&nbsp;&nbsp;
+					<#LANG_XIMI_APP_TOKEN#>: <b><span id="api_dev_token"></span></b>
+				</nowrap>
 				</p>		
 				<div class="input-group">
 					<span class="input-group-addon" id="basic-addon1">M</span>
@@ -67,6 +69,7 @@
 					<button class="btn btn-primary" onclick="sendAPIcmd();"><#LANG_SEND#>&nbsp;&nbsp;<span class="glyphicon glyphicon-send icon-white"></span></button>
 				</div>
 				<br>
+				<div id="api_example"></div>
 				<div>
 					<pre class="pre-scrollable" id="api_dev_log" style="word-wrap: break-word;"></pre>
 				</div>
@@ -92,7 +95,8 @@
 			}
 		});
 	}
-	function getIPToken(ip,token){
+	function getIPToken(did,ip,token){
+		$('#api_dev_did').html(did);
 		$("#api_dev_ip").html(ip);
 		$("#api_dev_token").html(token);
 		$("#api_dev_log").html('');
@@ -104,10 +108,22 @@
 		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' Token = '+token+'<br>');
 	}
 	function sendAPIcmd(){
+
+		did = $("#api_dev_did").html();
 		ip = $("#api_dev_ip").html();
 		token = $("#api_dev_token").html();
 		cmd = $("#api_dev_cmd").val();
 		opt = $("#api_dev_opt").val();
+
+
+		var api_example = "API example:<pre>callAPI('/api/module/xiaomimiio','GET',array('did'=>'"+did+"','dcmd'=>'"+cmd+"'";
+		if (opt!='') {
+			api_example+=",'dopt'=>'"+opt+"'";
+		}
+		api_example+="));</pre>";
+		$('#api_example').html(api_example);
+
+
 		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip="+ip+"&dtoken="+token+"&dcmd="+cmd+"&dopt="+opt;
 		
 		Data = new Date();
@@ -118,12 +134,14 @@
 		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' command = '+cmd+'<br>');
 		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' properties = '+opt+'<br>');
 		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
+		$("#api_dev_log").animate({ scrollTop: $('#api_dev_log').prop("scrollHeight")}, 500);
 		
 		$.ajax({
 			url: url,
 			cache: false,
 			success: function(html){
 				$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' '+html);
+				$("#api_dev_log").animate({ scrollTop: $('#api_dev_log').prop("scrollHeight")}, 500);
 			}
 		});
 	}
@@ -151,7 +169,7 @@
 				<i onclick="showInfo('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#miio_info" onMouseOver="this.style.color='blue'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-info-sign" title="<#LANG_XIMI_APP_GET#>" id="[#IP#]"></i>
 			</span>
 			<span class='support'>
-				<i onclick="getIPToken('[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#api_test" onMouseOver="this.style.color='green'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-flash" title="<#LANG_XIMI_APP_TESTING#>" id="[#IP#]"></i>
+				<i onclick="getIPToken('[#ID#]','[#IP#]','[#TOKEN#]');" data-toggle="modal" data-target="#api_test" onMouseOver="this.style.color='green'" onMouseOut="this.style.color='black'" class="glyphicon glyphicon-flash" title="<#LANG_XIMI_APP_TESTING#>" id="[#IP#]"></i>
 			</span>
 		[#endif#]
 	[#else#]
