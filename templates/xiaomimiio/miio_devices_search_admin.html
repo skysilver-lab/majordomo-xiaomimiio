@@ -4,6 +4,7 @@
 <p>
 <a href="?view_mode=edit_miio_devices&data_source=<#DATA_SOURCE#>" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> <#LANG_ADD#></a>
  <a href="?view_mode=discover" class="btn btn-default"><i class="glyphicon glyphicon-search"></i> <#LANG_RESCAN_DEVICES#></a>
+ <a href="?view_mode=get_tokens" class="btn btn-default"><i class="glyphicon glyphicon-lock"></i> Получить токены</a>
 </p>
 <table width=100% border=0><tr>
 <td valign=top>
@@ -81,11 +82,9 @@
 <form action="?" method="post" name="frmList_miio_devices" style="padding:0px" class="form">
 <table  align=center class="table table-striped">
 <tbody>
-[#begin RESULT#]
-
 <script type="text/javascript">
 	function showInfo(ip,token){
-	    var url="/ajax/xiaomimiio.html?op=get_miio_info&dip="+ip+"&dtoken="+token;
+		var url="/ajax/xiaomimiio.html?op=get_miio_info&dip="+ip+"&dtoken="+token;
 		$("#info").html('');
 		$.ajax({
 			url: url,
@@ -125,7 +124,7 @@
 
 
 		var url="/ajax/xiaomimiio.html?op=test_api_cmd&dip="+ip+"&dtoken="+token+"&dcmd="+cmd+"&dopt="+opt;
-		
+
 		Data = new Date();
 		Hour = Data.getHours();
 		Minutes = Data.getMinutes();
@@ -135,7 +134,7 @@
 		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' properties = '+opt+'<br>');
 		$('#api_dev_log').append(Hour+":"+Minutes+":"+Seconds+' '+url+'<br>');
 		$("#api_dev_log").animate({ scrollTop: $('#api_dev_log').prop("scrollHeight")}, 500);
-		
+
 		$.ajax({
 			url: url,
 			cache: false,
@@ -146,6 +145,7 @@
 		});
 	}
 </script>
+[#begin RESULT#]
 
 <tr style="height:52px" class="hover_btn2">
  <td style="vertical-align:middle">
