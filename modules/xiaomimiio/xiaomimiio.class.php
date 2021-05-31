@@ -34,6 +34,7 @@ define ('MIIO_ZHIMI_HUMIDIFIER_2_PROPS', 'power,humidity,temp_dec,mode,depth,spe
 
 define ('MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS', 'power,aqi,average_aqi,humidity,temp_dec,bright,mode,favorite_level,filter1_life,use_time,purify_volume,led,buzzer,child_lock');
 define ('MIIO_ZHIMI_AIRPURIFIER_V3_PROPS', 'power,aqi,bright,mode,filter1_life,led,buzzer,child_lock');
+define ('MIIO_ZHIMI_AIRPURIFIER_MB4_PROPS', 'power,aqi,mode,filter_life_remaining,filter_hours_used,buzzer,led_brightness_level,child_lock,motor_speed,favorite_rpm');
 
 define ('MIIO_MIWIFISPEAKER_V1_PROPS', 'umi,volume,rel_time');
 
@@ -294,6 +295,10 @@ class xiaomimiio extends module {
 			$out['CYCLERUN'] = 1;
 		} else {
 			$out['CYCLERUN'] = 0;
+		}
+		
+		if ($this->view_mode == 'get_tokens') {
+			include_once(DIR_MODULES.$this->name . '/get_tokens.inc.php');
 		}
 
 		if ($this->view_mode == 'update_settings') {
@@ -729,6 +734,13 @@ class xiaomimiio extends module {
 				$props[$i] = '"' . $props[$i] . '"';
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
+			$props = explode(',', MIIO_ZHIMI_AIRPURIFIER_MB4_PROPS);
+			$total = count($props);
+			for ($i = 0; $i < $total; $i++) {
+				$props[$i] = '"' . $props[$i] . '"';
+			}
+			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
 		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2') {
 			//
 			$props = explode(',', MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS);
@@ -778,9 +790,11 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
       } elseif ($device_rec['DEVICE_TYPE'] == 'cgllc.airmonitor.b1') {
-         //
-         $this->addToQueue($device_id, 'get_air_data', '[]');
-      } elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+			//
+			$this->addToQueue($device_id, 'get_air_data', '[]');
+	  } elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
+
+      } elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
          $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":2},{"did":"fan_level","siid":2,"piid":4},{"did":"mode","siid":2,"piid":5},{"did":"humidity","siid":3,"piid":7},{"did":"temperature","siid":3,"piid":8},{"did":"aqi","siid":3,"piid":6},{"did":"filter_life","siid":4,"piid":3},{"did":"filter_hours_used","siid":4,"piid":5},{"did":"buzzer","siid":5,"piid":1},{"did":"led_b","siid":6,"piid":1},{"did":"led","siid":6,"piid":6},{"did":"child_lock","siid":7,"piid":1},{"did":"favorite_level","siid":10,"piid":10}]');
          $this->addToQueue($device_id, 'get_properties', '[{"did":"use_time","siid":12,"piid":1},{"did":"purify_volume","siid":13,"piid":1},{"did":"average_aqi","siid":13,"piid":2}]');
       } elseif ($device_rec['DEVICE_TYPE'] == 'viomi.vacuum.v7') {
@@ -1089,7 +1103,7 @@ class xiaomimiio extends module {
 					} elseif ($properties[$i]['TITLE'] == 'power') {
                   // Команда на включение и выключение
                   $method = 'set_power';
-                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4' || $properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
                      $method = 'set_properties';
                      $params = '[{"did":"power","siid":2,"piid":2,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'chuangmi.plug.212a01') {
@@ -1120,7 +1134,7 @@ class xiaomimiio extends module {
                   $method = 'set_buzzer';
                   if($properties[$i]['DEVICE_TYPE'] == 'zhimi.fan.sa1') {
                      $params = $value ? '[2]' : '[0]';
-                  } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                  } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      $method = 'set_properties';
                      $params = '[{"did":"buzzer","siid":5,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
@@ -1263,7 +1277,7 @@ class xiaomimiio extends module {
 					} elseif ($properties[$i]['TITLE'] == 'led') {
                   // 
                   $method = 'set_led';
-                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      $method = 'set_properties';
                      $params = '[{"did":"led","siid":6,"piid":6,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' ||$properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
@@ -1279,7 +1293,7 @@ class xiaomimiio extends module {
                } elseif ($properties[$i]['TITLE'] == 'child_lock') {
                   // 
                   $method = 'set_child_lock';
-                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      $method = 'set_properties';
                      $params = '[{"did":"child_lock","siid":7,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                   } else if ($properties[$i]['DEVICE_TYPE'] == 'uvfive.s_lamp.slmap2') {
@@ -1298,7 +1312,7 @@ class xiaomimiio extends module {
                   // 
                   $value = (int)$value;
                   $method = 'set_level_favorite';
-                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      $method = 'set_properties';
                      if ($value < 0) $value = 0;
                      if ($value > 14) $value = 14;
@@ -1313,7 +1327,7 @@ class xiaomimiio extends module {
                   // 
                   $value = (int)$value;
                   $method = 'set_properties';
-                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+                  if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      if ($value < 1) $value = 1;
                      if ($value > 3) $value = 3;
                      $params = '[{"did":"fan_level","siid":2,"piid":4,"value":' . $value . '}]';
@@ -1342,7 +1356,7 @@ class xiaomimiio extends module {
 								$params = 0;
 							break;
 						}
-						if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+						if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      $this->addToQueue($properties[$i]['DEVICE_ID'],'set_properties', '[{"did":"led_b","siid":6,"piid":1,"value":' . $params . '}]');
                   } else {
                      $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_led_b', '["' . $params . '"]');
@@ -1370,7 +1384,7 @@ class xiaomimiio extends module {
 								 $value == 'medium' || $value == 'high' || $value == 'idle') {
 								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_mode', '["' . $value . '"]');
 							}
-						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
+						} elseif($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3' || $properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb4') {
                      switch($value) {
                         case 'auto': $params = 0; break;
                         case 'silent': $params = 1; break;
