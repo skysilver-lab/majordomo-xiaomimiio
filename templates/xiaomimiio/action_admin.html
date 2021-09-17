@@ -95,6 +95,11 @@
  
  [#inc miio_devices_search_admin.html#]
  [#endif VIEW_MODE#]
+
+[#if VIEW_MODE="get_tokens"#]
+[#inc get_tokens.html#]
+[#endif VIEW_MODE#]
+
  <!-- / table miio_devices search -->
  <!-- table miio_devices edit -->
  [#if VIEW_MODE="edit_miio_devices"#]

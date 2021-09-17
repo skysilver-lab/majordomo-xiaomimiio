@@ -35,6 +35,10 @@ if ($res[0]['ID']) {
 		$dev_id = $res[$i]['ID'];
 		$online = SQLSelectOne("SELECT VALUE FROM miio_commands WHERE DEVICE_ID='$dev_id' AND TITLE='online'");
 		$res[$i]['ONLINE'] = $online['VALUE'];
+		$commands = SQLSelect("SELECT * FROM miio_commands WHERE LINKED_OBJECT!='' AND DEVICE_ID=".$dev_id);
+		if ($commands[0]['ID']) {
+			$res[$i]['COMMANDS']=$commands;
+		}
 	}
 	$out['RESULT'] = $res;
 }

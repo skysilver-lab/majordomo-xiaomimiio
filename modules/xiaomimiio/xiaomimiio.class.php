@@ -295,6 +295,10 @@ class xiaomimiio extends module {
 		} else {
 			$out['CYCLERUN'] = 0;
 		}
+		
+		if ($this->view_mode == 'get_tokens') {
+			include_once(DIR_MODULES.$this->name . '/get_tokens.inc.php');
+		}
 
 		if ($this->view_mode == 'update_settings') {
 
@@ -778,8 +782,8 @@ class xiaomimiio extends module {
 			}
 			$this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
       } elseif ($device_rec['DEVICE_TYPE'] == 'cgllc.airmonitor.b1') {
-         //
-         $this->addToQueue($device_id, 'get_air_data', '[]');
+			//
+			$this->addToQueue($device_id, 'get_air_data', '[]');
       } elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
          $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":2},{"did":"fan_level","siid":2,"piid":4},{"did":"mode","siid":2,"piid":5},{"did":"humidity","siid":3,"piid":7},{"did":"temperature","siid":3,"piid":8},{"did":"aqi","siid":3,"piid":6},{"did":"filter_life","siid":4,"piid":3},{"did":"filter_hours_used","siid":4,"piid":5},{"did":"buzzer","siid":5,"piid":1},{"did":"led_b","siid":6,"piid":1},{"did":"led","siid":6,"piid":6},{"did":"child_lock","siid":7,"piid":1},{"did":"favorite_level","siid":10,"piid":10}]');
          $this->addToQueue($device_id, 'get_properties', '[{"did":"use_time","siid":12,"piid":1},{"did":"purify_volume","siid":13,"piid":1},{"did":"average_aqi","siid":13,"piid":2}]');

@@ -1,0 +1,61 @@
+<p>
+<a href="?" class="btn btn-default"><#LANG_BACK#></a>
+</p>
+<div class="alert alert-info">
+ Данный функционал позволяет подключиться к облаку Xiaomi, вывести список устройств с их токенами, а также сохранить токены обнаруженных в сети устройств.
+ Информация о логине и пароле не сохраняется в системе MajorDoMo.
+</div>
+<div class="alert alert-info">
+    Для работы функции получения токенов в системе должен быть установлен Python 3 (исполняться команда 'python3').
+</div>
+<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+    <fieldset>
+        <div class="form-group">
+            <label class="control-label">Регион
+               <span class='support-hover' tabindex="1" data-title="Регион регистрации аккаунта">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </label>
+            <div class="col-lg-4">
+                <select name="cloud_region" class="form-control">
+                    <option value="">Авто</option>
+                    <option value="cn"[#if CLOUD_REGION="cn"#] selected[#endif#]>CN</option>
+                    <option value="de"[#if CLOUD_REGION="de"#] selected[#endif#]>DE</option>
+                    <option value="us"[#if CLOUD_REGION="us"#] selected[#endif#]>US</option>
+                    <option value="ru"[#if CLOUD_REGION="ru"#] selected[#endif#]>RU</option>
+                    <option value="tw"[#if CLOUD_REGION="tw"#] selected[#endif#]>TW</option>
+                    <option value="sg"[#if CLOUD_REGION="sg"#] selected[#endif#]>SG</option>
+                    <option value="in"[#if CLOUD_REGION="in"#] selected[#endif#]>IN</option>
+                    <option value="i2"[#if CLOUD_REGION="i2"#] selected[#endif#]>I2</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Логин
+               <span class='support-hover' tabindex="1" data-title="Логин">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </label>
+            <div class="col-lg-4"><input class="form-control" type="text" name="cloud_login" value="[#CLOUD_LOGIN#]" class="input"></div>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Пароль
+               <span class='support-hover' tabindex="1" data-title="Пароль">
+                  <i class="glyphicon glyphicon-info-sign"></i>
+               </span>
+            </label>
+            <div class="col-lg-4"><input class="form-control" type="password" name="cloud_password" value="[#CLOUD_PASSWORD#]" class="input"></div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_CONTINUE#></button>
+            <a href="?" class="btn btn-default"><#LANG_CANCEL#></a>
+            <input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
+            <input type="hidden" name="mode" value="update">
+        </div>
+    </fieldset>
+</form>
+
+[#if OUTPUT!=""#]
+<h2>Результат обработки:</h2>
+<pre>[#OUTPUT#]</pre>
+[#endif#]
