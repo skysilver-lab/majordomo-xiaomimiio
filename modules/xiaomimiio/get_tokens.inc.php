@@ -28,7 +28,7 @@ if ($this->mode == 'update') {
         //$milo=SQLSelect("SELECT * FROM miio_devices");
         //dprint($result,false);
 
-        if ($update_devices) {
+        if (!$read_only) {
             $updated_devices=0;
             foreach($result as $device) {
                 // MODEL NAME TOKEN
@@ -44,7 +44,6 @@ if ($this->mode == 'update') {
                     $updated_devices++;
                 }
             }
-
             if ($updated_devices) {
                 $this->discover();
             }
