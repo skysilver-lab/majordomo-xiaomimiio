@@ -13,6 +13,12 @@ $table_name = 'miio_devices';
 
 $rec = SQLSelectOne("SELECT * FROM $table_name WHERE ID='$id'");
 
+if ($this->mode == 'refresh') {
+    $this->requestStatus($rec['ID']);
+    sleep(2);
+    $this->redirect("?view_mode=".$this->view_mode."&tab=".$this->tab."&id=".$rec['ID']);
+}
+
 if ($this->mode == 'update') {
 
 	$this->getConfig();
@@ -165,11 +171,11 @@ if ($this->tab == 'data') {
    
    if ($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') {
       // Для шлюза на вкладку data выводим только определенные свойства, т.к. для свойств радио есть отдельная вкладка
-      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel','arming_mode') ORDER BY ID");
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel','arming_mode') ORDER BY TITLE");
    } else if ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
-      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel', 'ir_play', 'power', 'load_power','arming_mode') ORDER BY ID");
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' AND TITLE IN ('online','command','message','lumi_dpf_aes_key','zigbee_channel', 'ir_play', 'power', 'load_power','arming_mode') ORDER BY TITLE");
    } else {
-      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY ID");
+      $properties = SQLSelect("SELECT * FROM miio_commands WHERE DEVICE_ID='" . $rec['ID'] . "' ORDER BY TITLE");
    }
 
    $total = count($properties);

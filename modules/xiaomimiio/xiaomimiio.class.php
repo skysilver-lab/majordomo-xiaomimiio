@@ -591,6 +591,7 @@ class xiaomimiio extends module
     {
 
         $device_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE ID=" . (int)$device_id);
+        $this->processCommand($device_rec['ID'], 'command', '');
 
         if (($device_rec['DEVICE_TYPE'] == 'philips.light.bulb') || ($device_rec['DEVICE_TYPE'] == 'philips.light.downlight')) {
             //
@@ -854,6 +855,46 @@ class xiaomimiio extends module
             $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
         } elseif ($device_rec['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
             $this->addToQueue($device_id, 'get_properties', '[{"did":"state_code","siid":3,"piid":2},{"did":"error_code","siid":3,"piid":1},{"did":"battery","siid":2,"piid":1},{"did":"mode","siid":18,"piid":6},{"did":"work_mode","siid":18,"piid":1},{"did":"water_grade","siid":18,"piid":20},{"did":"clean_times","siid":18,"piid":14},{"did":"clean_area","siid":18,"piid":15},{"did":"clean_time","siid":18,"piid":13},{"did":"filter_life_level","siid":27,"piid":1},{"did":"filter_left_time","siid":27,"piid":2},{"did":"brush1_life_level","siid":26,"piid":2},{"did":"brush1_left_time","siid":26,"piid":1},{"did":"brush2_life_level","siid":28,"piid":2},{"did":"brush2_left_time","siid":28,"piid":1}]');
+        } elseif ($device_rec['DEVICE_TYPE'] == 'dreame.vacuum.p2140p') {
+            // https://github.com/rytilahti/python-miio/issues/1412
+            $props=array(
+                array('did'=>'battery_level','siid'=>3,'piid'=>1),
+                array('did'=>'charging_state','siid'=>3,'piid'=>2),
+                array('did'=>'device_mode','siid'=>2,'piid'=>3),
+                array('did'=>'device_fault','siid'=>2,'piid'=>2),
+                array('did'=>'device_status','siid'=>2,'piid'=>1),
+                array('did'=>'brush_left_time','siid'=>9,'piid'=>1),
+                array('did'=>'brush_life_level','siid'=>9,'piid'=>2),
+                array('did'=>'filter_life_level','siid'=>11,'piid'=>1),
+                array('did'=>'filter_left_time','siid'=>11,'piid'=>2),
+                array('did'=>'brush_left_time2','siid'=>10,'piid'=>1),
+                array('did'=>'brush_life_level2','siid'=>10,'piid'=>2),
+                array('did'=>'operating_mode','siid'=>4,'piid'=>1),
+                array('did'=>'cleaning_mode','siid'=>4,'piid'=>4),
+                array('did'=>'timer_enable','siid'=>5,'piid'=>1),
+                array('did'=>'cleaning_time','siid'=>4,'piid'=>2),
+                array('did'=>'cleaning_area','siid'=>4,'piid'=>3),
+                array('did'=>'first_clean_time','siid'=>12,'piid'=>1),
+                array('did'=>'total_clean_time','siid'=>12,'piid'=>2),
+                array('did'=>'total_clean_times','siid'=>12,'piid'=>3),
+                array('did'=>'total_clean_area','siid'=>12,'piid'=>4),
+                /*
+array('did'=>'start_time','siid'=>5,'piid'=>2),
+array('did'=>'stop_time','siid'=>5,'piid'=>3),
+array('did'=>'map_view','siid'=>6,'piid'=>1),
+array('did'=>'frame_info','siid'=>6,'piid'=>2),
+array('did'=>'object_name','siid'=>6,'piid'=>3),
+array('did'=>'map_extend_data','siid'=>6,'piid'=>4),
+array('did'=>'timezone','siid'=>8,'piid'=>1)
+array('did'=>'volume','siid'=>7,'piid'=>1),
+array('did'=>'voice_package','siid'=>7,'piid'=>2),
+array('did'=>'water_flow','siid'=>4,'piid'=>5),
+array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
+*/
+            );
+            //dprint(json_encode($props));
+            $this->addToQueue($device_id, 'get_properties', json_encode($props));
+            //$this->addToQueue($device_id, 'get_properties', '[{"did":"state_code","siid":3,"piid":2},{"did":"error_code","siid":3,"piid":1},{"did":"battery","siid":2,"piid":1},{"did":"mode","siid":18,"piid":6},{"did":"work_mode","siid":18,"piid":1},{"did":"water_grade","siid":18,"piid":20},{"did":"clean_times","siid":18,"piid":14},{"did":"clean_area","siid":18,"piid":15},{"did":"clean_time","siid":18,"piid":13},{"did":"filter_life_level","siid":27,"piid":1},{"did":"filter_left_time","siid":27,"piid":2},{"did":"brush1_life_level","siid":26,"piid":2},{"did":"brush1_left_time","siid":26,"piid":1},{"did":"brush2_life_level","siid":28,"piid":2},{"did":"brush2_left_time","siid":28,"piid":1}]');
         } elseif ($device_rec['DEVICE_TYPE'] == 'chuangmi.plug.212a01') {
             $this->addToQueue($device_id, 'get_properties', '[{"did":"power","piid":1,"siid":2},{"did":"temperature","piid":6,"siid":2},{"did":"power_consumption","piid":1,"siid":5},{"did":"current","piid":2,"siid":5},{"did":"voltage", "piid":3,"siid":5},{"did":"power_load","piid":6,"siid": 5}]');
         }
@@ -1095,6 +1136,24 @@ class xiaomimiio extends module
                                 $params = '{"did":"start_sweep","siid":3,"aiid":1,"in":[]}';
                             } else if ($value == 'stop_sweep') {
                                 $params = '{"did":"stop_sweep","siid":3,"aiid":2,"in":[]}';
+                            } else {
+                                $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+                            }
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'action', $params);
+                        } else if ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.p2140p') {
+                            //todo: fix
+                            if ($value == 'app_start') {
+                                $params = '{"did":"app_start","siid":4,"aiid":1}';
+                            } else if ($value == 'app_stop') {
+                                $params = '{"did":"app_stop","siid":4,"aiid":2}';
+                            } else if ($value == 'app_charge') {
+                                $params = '{"did":"app_charge","siid":3,"aiid":1}';
+                            } else if ($value == 'find_me') {
+                                $params = '{"did":"find_me","siid":7,"aiid":2}';
+                            } else if ($value == 'start_sweep') {
+                                $params = '{"did":"start_sweep","siid":2,"aiid":1}';
+                            } else if ($value == 'stop_sweep') {
+                                $params = '{"did":"stop_sweep","siid":2,"aiid":2}';
                             } else {
                                 $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
                             }
@@ -1466,6 +1525,23 @@ class xiaomimiio extends module
                             }
                             $params = '[{"did":"mode","siid":18,"piid":6,"value":' . $value . '}]';
                             $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        } elseif ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.p2140p') {
+                            switch ($value) {
+                                case 'Silent':
+                                    $params = 0;
+                                    break;
+                                case 'Basic':
+                                    $params = 1;
+                                    break;
+                                case 'Strong':
+                                    $params = 2;
+                                    break;
+                                case 'Full Speed':
+                                    $params = 3;
+                                    break;
+                            }
+                            $params = '[{"did":"mode","siid":2,"piid":3,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
                         }
                     } elseif ($properties[$i]['TITLE'] == 'custom_mode') {
                         // Изменение режима работы (мощности) пылесоса (от 1 до 100%, 101 - влажная уборка, 105 - турбо)
@@ -1652,6 +1728,26 @@ class xiaomimiio extends module
                         }
                     } elseif ($properties[$i]['TITLE'] == 'water_grade') {
                         if ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.mc1808') {
+                            // Настройка расхода уровня воды (низкий/средний/высокий)
+                            switch ($value) {
+                                case 'Low':
+                                    $params = 1;
+                                    break;
+                                case 'Medium':
+                                    $params = 2;
+                                    break;
+                                case 'High':
+                                    $params = 3;
+                                    break;
+                                default:
+                                    $params = 1;
+                                    break;
+                            }
+                            $params = '[{"did":"water_grade","siid":18,"piid":20,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        }
+                        if ($properties[$i]['DEVICE_TYPE'] == 'dreame.vacuum.p2140') {
+                            //todo: fix
                             // Настройка расхода уровня воды (низкий/средний/высокий)
                             switch ($value) {
                                 case 'Low':
@@ -2521,7 +2617,9 @@ class xiaomimiio extends module
                     }
                     $res_commands[] = array('command' => $key, 'value' => $value);
                 }
-            } elseif ($device['DEVICE_TYPE'] == 'dreame.vacuum.mc1808' && $command == 'get_properties' && is_array($data['result'])) {
+            } elseif (($device['DEVICE_TYPE'] == 'dreame.vacuum.mc1808')
+                && $command == 'get_properties'
+                && is_array($data['result'])) {
                 foreach ($data['result'] as $res) {
                     $value = $res['value'];
                     if ($value === true) $value = 1;
@@ -2559,6 +2657,41 @@ class xiaomimiio extends module
                                 $value = 'High';
                                 break;
                         }
+                    }
+                    $res_commands[] = array('command' => $res['did'], 'value' => $value);
+                }
+            } elseif (($device['DEVICE_TYPE'] == 'dreame.vacuum.p2140p')
+                && $command == 'get_properties'
+                && is_array($data['result'])) {
+                foreach ($data['result'] as $res) {
+                    $value = $res['value'];
+                    if ($value === true) $value = 1;
+                    else if ($value === false) $value = 0;
+                    if ($res['did'] == 'charging_state') {
+                        if ($value==1) $value_text = 'Charging';
+                        elseif ($value==2) $value_text = 'Not Charging';
+                        elseif ($value==5) $value_text = 'Go Charging';
+                        else $value_text = 'Unknown';
+                        $res_commands[] = array('command' => 'charging_state_text', 'value' => $value_text);
+                    }
+                    if ($res['did'] == 'device_mode') {
+                        if ($value==0) $value_text = 'Silent';
+                        elseif ($value==1) $value_text = 'Basic';
+                        elseif ($value==2) $value_text = 'Strong';
+                        elseif ($value==3) $value_text = 'Full Speed';
+                        else $value_text = 'Unknown';
+                        $res_commands[] = array('command' => 'mode', 'value' => $value_text);
+                    }
+                    if ($res['did'] == 'device_status') {
+                        if ($value==1) $value_text = 'Sweeping';
+                        elseif ($value==2) $value_text = 'Idle';
+                        elseif ($value==3) $value_text = 'Paused';
+                        elseif ($value==4) $value_text = 'Error';
+                        elseif ($value==5) $value_text = 'Go Charging';
+                        elseif ($value==6) $value_text = 'Charging';
+                        elseif ($value==7) $value_text = 'Mopping';
+                        else $value_text='Unknown';
+                        $res_commands[] = array('command' => 'device_status_text', 'value' => $value_text);
                     }
                     $res_commands[] = array('command' => $res['did'], 'value' => $value);
                 }
