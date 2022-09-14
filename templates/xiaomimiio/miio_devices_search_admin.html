@@ -185,7 +185,7 @@
  </td>
  <td style="vertical-align:middle">
 	[#if DEVICE_TYPE!=""#]
-		[#DEVICE_TYPE#]
+	 [#DEVICE_TYPE#] (<a href="https://home.miot-spec.com/spec/[#DEVICE_TYPE#]" target="blank" title="API">API</a>)
 	[#else#]
 		&nbsp;
 	[#endif#]
@@ -212,6 +212,7 @@
 	<div style="width:130px">
 	[#if "<#ACTION#>"=="admin"#]
 		<a href="?data_source=<#DATA_SOURCE#>&view_mode=propupd_miio_devices&id=[#ID#]" class="btn btn-default [#if TOKEN=="" || ONLINE==0 || DEVICE_TYPE==""#]disabled[#endif#]" title="<#LANG_XIMI_APP_CURRENT#>"><i class="glyphicon glyphicon-refresh"></i></a>
+		<a href="?data_source=<#DATA_SOURCE#>&view_mode=edit_miio_devices&id=[#ID#]&tab=data" class="btn btn-default" title="<#LANG_DATA#>"><#LANG_DATA#></a>
 		<a href="?data_source=<#DATA_SOURCE#>&view_mode=edit_miio_devices&id=[#ID#]" class="btn btn-default" title="<#LANG_EDIT#>"><i class="glyphicon glyphicon-pencil"></i></a>
 		<a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_miio_devices&id=[#ID#]" onClick="return confirm('<#LANG_STRING_DELETE_CONFIRM#>')" class="btn btn-default" title="<#LANG_DELETE#>"><i class="glyphicon glyphicon-remove"></i></a>
 	[#endif ACTION#]

@@ -1,4 +1,6 @@
-
+<div class="panel-body">
+<a href="?data_source=<#DATA_SOURCE#>&view_mode=<#VIEW_MODE#>&tab=<#TAB#>&id=[#ID#]&mode=refresh" class="btn btn-default"><i class="glyphicon glyphicon-refresh"></i> <#LANG_REFRESH#></a>
+</div>
 <!-- Table 'miio_devices' edit -->
 <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
 [#if OK#]
@@ -15,14 +17,16 @@
 <div>
 <table class="table table-stripped">
  <tr>
-  <td><#LANG_TITLE#></td>
-  <td><#LANG_VALUE#></td>
-  <td><#LANG_DEVICE#></td>
-  <td><#LANG_LINKED_OBJECT#></td>
-  <td><#LANG_LINKED_PROPERTY#></td>
-  <td><#LANG_METHOD#></td>
-  <td valign="top"><#LANG_UPDATED#></td>
-  <td>&nbsp;</td>
+  <thead>
+  <th><#LANG_TITLE#></th>
+  <th><#LANG_VALUE#></th>
+  <th><#LANG_DEVICE#></th>
+  <th><#LANG_LINKED_OBJECT#></th>
+  <th><#LANG_LINKED_PROPERTY#></th>
+  <th><#LANG_METHOD#></th>
+  <th><#LANG_UPDATED#></th>
+  <th>&nbsp;</th>
+  </thead>
  </tr>
  [#begin PROPERTIES#]
  <tr>
@@ -41,7 +45,7 @@
   <td valign="top"><input type="text" name="linked_method[#ID#]" id="linked_method[#ID#]" value="[#LINKED_METHOD#]"></td>
   [#module name="linkedobject" object_field="linked_object<#PROPERTIES.ID#>" property_field="linked_property<#PROPERTIES.ID#>" method_field="linked_method<#PROPERTIES.ID#>" width="200"#]
   <td valign="top">[#UPDATED#]</td>
-  <td><a href="?id=<#ID#>&tab=<#TAB#>&view_mode=<#VIEW_MODE#>&delete_id=[#ID#]" onClick="return confirm('<#LANG_ARE_YOU_SURE#>');" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i></td>
+  <td><a href="?id=<#ID#>&tab=<#TAB#>&view_mode=<#VIEW_MODE#>&delete_id=[#ID#]" onClick="return confirm('<#LANG_ARE_YOU_SURE#>');" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-remove"></i></td>
  </tr>
  [#end PROPERTIES#]
 </table> 
