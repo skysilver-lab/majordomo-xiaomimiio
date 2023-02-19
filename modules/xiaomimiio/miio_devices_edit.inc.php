@@ -26,28 +26,25 @@ if ($this->mode == 'update') {
 
 	if ($this->tab == '') {
 
-		global $title;
-		$rec['TITLE'] = $title;
+		$rec['TITLE'] = gr('title');
 		if ($rec['TITLE'] == '') {
 			$out['ERR_TITLE'] = 1;
 			$ok = 0;
 		}
 
-		global $ip;
-		$rec['IP'] = $ip;
+		$rec['IP'] = gr('ip');
 		if ($rec['IP'] == '') {
 			$out['ERR_IP'] = 1;
 			$ok = 0;
 		}
 
-		global $token;
-		$rec['TOKEN'] = $token;
+		$rec['TOKEN'] = gr('token');
+		$device_type = gr('device_type');
+		if ($device_type!='') {
+            $rec['DEVICE_TYPE'] = $device_type;
+        }
 
-		global $device_type;
-		$rec['DEVICE_TYPE'] = $device_type;
-
-		global $update_period;
-		$rec['UPDATE_PERIOD'] = (int)$update_period;
+		$rec['UPDATE_PERIOD'] = gr('update_period','int');
 		if ($rec['UPDATE_PERIOD'] > 0) {
 			$rec['NEXT_UPDATE'] = date('Y-m-d H:i:s');
 		}
@@ -161,8 +158,7 @@ if ($this->mode == 'update') {
 
 if ($this->tab == 'data') {
 
-   global $delete_id;
-
+   $delete_id = gr('delete_id','int');
    if ($delete_id) {
       $prop = SQLSelectOne("SELECT LINKED_OBJECT,LINKED_PROPERTY FROM miio_commands WHERE ID='{$delete_id}'");
       removeLinkedProperty($prop['LINKED_OBJECT'], $prop['LINKED_PROPERTY'], $this->name);
@@ -269,8 +265,7 @@ if ($this->tab == 'data') {
 if ($this->tab == 'gwradio' && (($rec['DEVICE_TYPE'] == 'lumi.gateway.v3') || ($rec['DEVICE_TYPE'] == 'lumi.acpartner.v3'))) {
 
 	$new_id = 0;
-	global $delete_id;
-
+	$delete_id = gr('delete_id','int');
 	if ($delete_id) {
 		SQLExec("DELETE FROM miio_commands WHERE ID='" . (int)$delete_id . "'");
 	}

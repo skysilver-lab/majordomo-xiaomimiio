@@ -5,6 +5,15 @@
 * @version 3.0
 */
 
+$go_linked_object=gr('go_linked_object');
+$go_linked_property=gr('go_linked_property');
+if ($go_linked_object && $go_linked_property) {
+    $tmp = SQLSelectOne("SELECT ID, DEVICE_ID FROM miio_commands WHERE LINKED_OBJECT = '".DBSafe($go_linked_object)."' AND LINKED_PROPERTY='".DBSafe($go_linked_property)."'");
+    if ($tmp['ID']) {
+        $this->redirect("?id=".$tmp['DEVICE_ID']."&view_mode=edit_miio_devices&tab=data");
+    }
+}
+
 global $session;
 
 if ($this->owner->name == 'panel') {
