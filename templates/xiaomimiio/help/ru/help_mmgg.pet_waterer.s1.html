@@ -1,0 +1,78 @@
+<br>
+<div>
+	<table border="0" cellpadding="8">
+		<tr>
+        <td rowspan="2" style="width:65px">
+			[#if DEVICE_TYPE!=""#]
+				<img src="../templates/xiaomimiio/img/small/[#DEVICE_TYPE#].png" height="60px" onError="this.src='../templates/xiaomimiio/img/small/unknown.png'">
+			[#else#]
+				<img src="../templates/xiaomimiio/img/small/unknown.png" height="60px">
+			[#endif#]
+		</td>
+        <td style="height:33px;vertical-align:middle"><b>Mijia Smart Pet Water Dispenser</b></td>
+        <td style="height:33px;vertical-align:middle">IP: <b>[#IP#]</b></td>
+		</tr>
+		<tr>
+        <td style="height:33px;vertical-align:middle">Модель: <b>[#DEVICE_TYPE#]</b></td>
+        <td style="height:33px;vertical-align:middle">Системный ID: <span class="badge">[#ID#]</span></td>
+		</tr>
+	</table>
+</div>
+<br>
+<div class="panel-group" id="accordion" style="width:98%">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion" href="#base_metrics_help">Описание метрик устройства</a>
+		</div>
+		<div class="panel-body collapse" id="base_metrics_help">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>on</b></td><td>Включение и выключение устройства</td><td>1 и 0</td><td nowrap>Чтение и запись</td></tr>
+					<tr><td><b>mode</b></td><td>Режим работы (1-Common, 2-Smart)</td><td>1 и 2</td><td nowrap>Чтение и запись</td></tr>
+					<tr><td><b>led</b></td><td>Включение и выключение индикации</td><td>1 и 0</td><td nowrap>Чтение и запись</td></tr>
+					<tr><td><b>filter-left-time</b></td><td>Счетчик дней до замены фильтра</td><td>0-30</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>cotton-left-time</b></td><td>Счетчик дней до замены фильтра</td><td>0-30</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>remain-clean-time</b></td><td>Счетчик дней до уборки</td><td>0-7</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>water</b></td><td>Наличие воды</td><td>1 и 0</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>no-water-time</b></td><td>Количество минут без воды</td><td>0-10080</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>pump-block-flag</b></td><td>Флаг блокировки помпы</td><td>1 и 0</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>fault</b></td><td>Ошибка (0 - No faults)</td><td></td><td nowrap>Чтение</td></tr>
+				</tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+<div class="panel-group" id="accordion2" style="width:98%">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<a data-toggle="collapse" data-parent="#accordion2" href="#base_metrics_help2">Базовые метрики</a>
+		</div>
+		<div class="panel-body collapse" id="base_metrics_help2">
+			<div style="width:800px">
+				<table class="table table-hover" align="left">
+				<thead>
+					<th>Метрика</th><th>Описание</th><th>Значения</th><th nowrap>Чтение/запись</th>
+				</thead>
+				<tbody>
+					<tr><td><b>online</b></td><td>Доступность устройства (онлайн/оффлайн).</td><td>1 и 0</td><td nowrap>Чтение</td></tr>
+					<tr><td><b>message</b></td><td>Последнее принятое от устройства сообщение.</td><td>json</td><td>Чтение</td></tr>
+					<tr><td><b>command</b></td><td>Отправка простой (без дополнительных параметров) API-команды на устройство. Например команды сброса счетчиков: <b>reset-filter-life, reset-cotton-life, reset-clean-time</b>.
+					Команда <b>prop_update</b> используется для обновления метрик устройства по запросу.
+					
+					</td><td>команда</td><td>Запись</td></tr>
+				</tbody>
+				</table> 
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+<div>
+	<a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default"><#LANG_STRING_BACK#></a>
+</div>

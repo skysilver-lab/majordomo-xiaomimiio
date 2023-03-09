@@ -1194,6 +1194,19 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                                 $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
                             }
                             $this->addToQueue($properties[$i]['DEVICE_ID'], 'action', $params);
+                        } else if ($properties[$i]['DEVICE_TYPE'] == 'mmgg.pet_waterer.s1') {
+                            if ($value == 'reset-filter-life') {
+                                $params = '{"did":"reset-filter-life","siid":3,"aiid":1}';
+                            } else if ($value == 'reset-cotton-life') {
+                                $params = '{"did":"reset-cotton-life","siid":5,"aiid":1}';
+                            } else if ($value == 'reset-clean-time') {
+                                $params = '{"did":"reset-clean-time","siid":6,"aiid":1}';
+                            } else if ($value == 'reset-device') {
+                                $params = '{"did":"reset-device","siid":8,"aiid":1}';
+                            } else {
+                                $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+                            }
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'action', $params);
                         } else {
                             // Отправка любой команды (метода) без параметров.
                             // Например, miIO.info, toggle, app_start и др.
