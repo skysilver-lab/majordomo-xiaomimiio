@@ -917,6 +917,22 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                 array('did' => 'on', 'siid' => 2, 'piid' => 1)
             );
             $this->addToQueue($device_id, 'get_properties', json_encode($props));
+        } elseif ($device_rec['DEVICE_TYPE'] == 'mmgg.pet_waterer.s1') {
+            $props = array(
+                array('did' => 'fault', 'siid' => 2, 'piid' => 1),
+                array('did' => 'on', 'siid' => 2, 'piid' => 2),
+                array('did' => 'mode', 'siid' => 2, 'piid' => 3),
+                array('did' => 'filter-left-time', 'siid' => 3, 'piid' => 1),
+                array('did' => 'led', 'siid' => 4, 'piid' => 1),
+                array('did' => 'cotton-left-time', 'siid' => 5, 'piid' => 1),
+                array('did' => 'remain-clean-time', 'siid' => 6, 'piid' => 1),
+                array('did' => 'water', 'siid' => 7, 'piid' => 1),
+                array('did' => 'no-water-time', 'siid' => 7, 'piid' => 2),
+                array('did' => 'pump-block-flag', 'siid' => 7, 'piid' => 3),
+                array('did' => 'lid-up-flag', 'siid' => 7, 'piid' => 4),
+
+            );
+            $this->addToQueue($device_id, 'get_properties', json_encode($props));
         }
 
     }
@@ -1174,6 +1190,19 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                                 $params = '{"did":"start_sweep","siid":2,"aiid":1}';
                             } else if ($value == 'stop_sweep') {
                                 $params = '{"did":"stop_sweep","siid":2,"aiid":2}';
+                            } else {
+                                $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
+                            }
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'action', $params);
+                        } else if ($properties[$i]['DEVICE_TYPE'] == 'mmgg.pet_waterer.s1') {
+                            if ($value == 'reset-filter-life') {
+                                $params = '{"did":"reset-filter-life","siid":3,"aiid":1}';
+                            } else if ($value == 'reset-cotton-life') {
+                                $params = '{"did":"reset-cotton-life","siid":5,"aiid":1}';
+                            } else if ($value == 'reset-clean-time') {
+                                $params = '{"did":"reset-clean-time","siid":6,"aiid":1}';
+                            } else if ($value == 'reset-device') {
+                                $params = '{"did":"reset-device","siid":8,"aiid":1}';
                             } else {
                                 $this->addToQueue($properties[$i]['DEVICE_ID'], $value, '[]');
                             }
@@ -1988,6 +2017,32 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                             $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
                         }
                         //zhimi.heater.zb1a
+                    }
+                    
+                    if ($properties[$i]['DEVICE_TYPE'] == 'mmgg.pet_waterer.s1') {
+                        if ($properties[$i]['TITLE'] == 'on') {
+                            if ($value) {
+                                $value = 'true';
+                            } else {
+                                $value = 'false';
+                            }
+                            $params = '[{"did":"on","siid":2,"piid":2,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        }
+                        if ($properties[$i]['TITLE'] == 'led') {
+                            if ($value) {
+                                $value = 'true';
+                            } else {
+                                $value = 'false';
+                            }
+                            $params = '[{"did":"led","siid":4,"piid":1,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        }
+                        if ($properties[$i]['TITLE'] == 'mode') {
+                            $params = '[{"mode":"mode","siid":2,"piid":3,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        }
+                        //mmgg.pet_waterer.s1
                     }
                     //
 
