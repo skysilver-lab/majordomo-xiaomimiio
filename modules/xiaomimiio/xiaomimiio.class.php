@@ -913,6 +913,21 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                 array('did' => 'temperature', 'siid' => 5, 'piid' => 8)
             );
             $this->addToQueue($device_id, 'get_properties', json_encode($props));
+	} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.heater.mc2') {
+            $props = array(
+                array('did' => 'power', 'siid' => 2, 'piid' => 1),
+		array('did' => 'fault', 'siid' => 2, 'piid' => 2),
+                array('did' => 'target_temperature', 'siid' => 2, 'piid' => 5),
+                array('did' => 'buzzer', 'siid' => 6, 'piid' => 1),
+		array('did' => 'led', 'siid' => 7, 'piid' => 3),
+		array('did' => 'child_lock', 'siid' => 5, 'piid' => 1),
+		array('did' => 'countdown_time', 'siid' => 3, 'piid' => 1),
+		//array('did' => 'use_time', 'siid' => 8, 'piid' => 9),
+		//array('did' => 'button', 'siid' => 8, 'piid' => 1),
+                array('did' => 'temperature', 'siid' => 4, 'piid' => 7)
+            );
+            $this->addToQueue($device_id, 'get_properties', json_encode($props));
+
         } elseif ($device_rec['DEVICE_TYPE'] == 'xiaomi.repeater.v6') {
             // https://home.miot-spec.com/spec/xiaomi.repeater.v6
         } elseif ($device_rec['DEVICE_TYPE'] == 'isa.camera.hlc7') {
@@ -2029,6 +2044,33 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         }
                         //zhimi.heater.zb1a
                     }
+		    if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.heater.mc2') {
+                        if ($properties[$i]['TITLE'] == 'power') {
+                            $params = '[{"did":"power","siid":2,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        } elseif ($properties[$i]['TITLE'] == 'target_temperature') {
+			    if ($value < 18) $value = 18;
+                            if ($value > 28) $value = 28;
+                            $params = '[{"did":"target_temperature","siid":2,"piid":5,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        } elseif ($properties[$i]['TITLE'] == 'buzzer') {
+                            $params = '[{"did":"buzzer","siid":6,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        } elseif ($properties[$i]['TITLE'] == 'led') {
+                            $params = '[{"did":"led","siid":7,"piid":3,"value":' . ($value ? 'true' : 'false') . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        } elseif ($properties[$i]['TITLE'] == 'child_lock') {
+                            $params = '[{"did":"child_lock","siid":5,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                        } elseif ($properties[$i]['TITLE'] == 'countdown_time') {
+                            if ($value < 0) $value = 0;
+                            if ($value > 12) $value = 12;
+                            $params = '[{"did":"countdown_time","siid":3,"piid":1,"value":' . $value . '}]';
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', $params);
+                         }
+                        //zhimi.heater.mc2           
+		    }
+
                     if ($properties[$i]['DEVICE_TYPE'] == 'isa.camera.hlc7') {
                         if ($properties[$i]['TITLE'] == 'on') {
                             if ($value) {
