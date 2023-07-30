@@ -1404,7 +1404,7 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         if ($value < 1) $value = 1;
                         if ($value > 100) $value = 100;
                         $this->addToQueue($properties[$i]['DEVICE_ID'], 'vol_down', "[$value]");
-                    } elseif ($properties[$i]['TITLE'] == 'led') {
+                    } elseif ($properties[$i]['TITLE'] == 'led_brightness') {
                         if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
                                 switch ($value) {
                                 case 'off':
