@@ -748,7 +748,7 @@ class xiaomimiio extends module
             $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
             
         } elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
-            $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":1,"value":0},{"did":"mode","siid":2,"piid":5,"value":0},{"did":"temperature","siid":3,"piid":7,"value":0},{"did":"water_level","siid":2,"piid":7,"value":0},{"did":"humidity","siid":3,"piid":9,"value":0},{"did":"speed_level","siid":7,"piid":1,"value":0},{"did":"led_brightnes","siid":5,"piid":2,"value":0}]');
+            $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":1,"value":0},{"did":"mode","siid":2,"piid":5,"value":0},{"did":"temperature","siid":3,"piid":7,"value":0},{"did":"water_level","siid":2,"piid":7,"value":0},{"did":"humidity","siid":3,"piid":9,"value":0},{"did":"speed_level","siid":7,"piid":1,"value":0},{"did":"led_brightness","siid":5,"piid":2,"value":0}]');
             $this->addToQueue($device_id, 'get_properties', '[{"did":"fault","siid":2,"piid":2,"value":0},{"did":"target_humidity","siid":2,"piid":6,"value":0},{"did":"dry","siid":2,"piid":8,"value":0},{"did":"use_time","siid":2,"piid":9,"value":0},{"did":"button_pressed","siid":2,"piid":10,"value":0},{"did":"fahrenheit","siid":3,"piid":8,"value":0},{"did":"buzzer","siid":4,"piid":1,"value":0},{"did":"child_lock","siid":6,"piid":1,"value":0},{"did":"actual_speed","siid":7,"piid":1,"value":0},{"did":"power_time","siid":7,"piid":3,"value":0},{"did":"clean_mode","siid":7,"piid":5,"value":0}]');
            
         } elseif ($device_rec['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
@@ -1404,30 +1404,31 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         if ($value < 1) $value = 1;
                         if ($value > 100) $value = 100;
                         $this->addToQueue($properties[$i]['DEVICE_ID'], 'vol_down', "[$value]");
+                    } elseif ($properties[$i]['TITLE'] == 'led_brightness') {
+                        if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
+                                switch ($value) {
+                                case 'off':
+                                    $params = 0;
+                                    break;
+                                case 'dim':
+                                    $params = 1;
+                                    break;
+                                case 'bright':
+                                    $params = 2;
+                                    break;
+                                default:
+                                    $params = 0;
+                                    break;
+                            }
+                            if (is_numeric($value) && $value >=0 && $value <= 2) $params=$value;
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"led_brightness","siid":5,"piid":2,"value":' . $params . '}]');
+                        }
                     } elseif ($properties[$i]['TITLE'] == 'led') {
                         //
                         $method = 'set_led';
                         if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                             $method = 'set_properties';
                             $params = '[{"did":"led","siid":6,"piid":6,"value":' . ($value ? 'true' : 'false') . '}]';
-                        } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {                   
-                            
-                                switch ($value) {
-                                case 'Off':
-                                    $params = 0;
-                                    break;
-                                case 'Dim':
-                                    $params = 1;
-                                    break;
-                                case 'Brightest':
-                                    $params = 2;
-                                    break;                                
-                                default:
-                                    $params = 0;
-                                    break;
-                            }
-                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"led_brightness","siid":5,"piid":2,"value":' . $params . '}]');                       
-                         
 			} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
                             $method = 'set_properties';
                             $params = '[{"did":"led","siid":6,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
@@ -1806,7 +1807,7 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
                     		//"target_humidity": {"siid": 2, "piid": 6},  # [30, 80] step 1
                             if (($value >= 30) && ($value <= 80) && (($value % 10) == 0)) {
-                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"mode","siid":2,"piid":6,"value":' . $value . '}]');
+                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"target-humidity","siid":2,"piid":6,"value":' . $value . '}]');
                         	}
 		    	} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
                     		//"target_humidity": {"siid": 2, "piid": 6},  # [30, 80] step 1
