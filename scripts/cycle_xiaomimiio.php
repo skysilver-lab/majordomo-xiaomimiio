@@ -73,7 +73,7 @@ while (1) {
 
    $queue = SQLSelect("SELECT miio_queue.*, miio_devices.TOKEN, miio_devices.DEVICE_TYPE, miio_devices.IP FROM miio_queue LEFT JOIN miio_devices ON miio_queue.DEVICE_ID=miio_devices.ID ORDER BY miio_queue.ID");
 
-   if ($queue[0]['ID']) {
+   if (isset($queue[0]['ID'])) {
       $total = count($queue);
       for ($i = 0; $i < $total; $i++) {
 
@@ -132,7 +132,7 @@ while (1) {
 
    $devices = SQLSelect("SELECT * FROM miio_devices WHERE UPDATE_PERIOD>0 AND NEXT_UPDATE<=NOW() AND DEVICE_TYPE!='' AND TOKEN!=''");
 
-   if ($devices[0]['ID']) {
+   if (isset($devices[0]['ID'])) {
       $total = count($devices);
       for ($i = 0; $i < $total; $i++) {
          $devices[$i]['NEXT_UPDATE'] = date('Y-m-d H:i:s', time()+(int)$devices[$i]['UPDATE_PERIOD']);

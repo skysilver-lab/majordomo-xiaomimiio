@@ -414,9 +414,9 @@ class xiaomimiio extends module
 
         $this->getConfig();
 
-        if ($miio_module->config['API_IP']) $bind_ip = $miio_module->config['API_IP'];
+        if (isset($miio_module->config['API_IP'])) $bind_ip = $miio_module->config['API_IP'];
         else $bind_ip = '0.0.0.0';
-        if ($miio_module->config['API_LOG_MIIO']) $miio_debug = true;
+        if (isset($miio_module->config['API_LOG_MIIO'])) $miio_debug = true;
         else $miio_debug = false;
 
         if (!class_exists('miIO', false)) {
@@ -633,7 +633,7 @@ class xiaomimiio extends module
                 $props[$i] = '"' . $props[$i] . '"';
             }
             $this->addToQueue($device_id, 'get_prop', '[' . implode(',', $props) . ']');
-        } else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
+        } else if (($device_rec['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device_rec['DEVICE_TYPE'] == 'roborock.vacuum.s5') || (isset($dev_rec['DEVICE_TYPE']) && $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s')) {
             //
             $this->addToQueue($device_id, 'get_status');
             $this->addToQueue($device_id, 'get_consumable');
@@ -2274,7 +2274,7 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                     $res_commands[] = array('command' => $key, 'value' => $value);
                     $i++;
                 }
-            } elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5') || $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s') {
+            } elseif (($device['DEVICE_TYPE'] == 'rockrobo.vacuum.v1') || ($device['DEVICE_TYPE'] == 'roborock.vacuum.s5') || (isset($dev_rec['DEVICE_TYPE']) && $dev_rec['DEVICE_TYPE'] == 'roborock.vacuum.m1s')) {
                 if (($command == 'get_status' || $command == 'get_consumable') && is_array($data['result'])) {
                     foreach ($data['result'][0] as $key => $value) {
                         $res_commands[] = array('command' => $key, 'value' => $value);
