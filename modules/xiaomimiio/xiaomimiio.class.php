@@ -754,7 +754,10 @@ class xiaomimiio extends module
         } elseif ($device_rec['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
             $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":1,"value":0},{"did":"relative_humidity","siid":3,"piid":1,"value":0},{"did":"temperature","siid":3,"piid":7,"value":0},{"did":"target_humidity","siid":2,"piid":6,"value":0},{"did":"fan_level","siid":2,"piid":5,"value":0},{"did":"fault","siid":2,"piid":2,"value":0},{"did":"led","siid":6,"piid":1,"value":0},{"did":"water_shortage_fault","siid":7,"piid":1,"value":0},{"did":"the_tank_filedt","siid":7,"piid":2,"value":0},{"did":"buzzer","siid":5,"piid":1,"value":0}]');
          	
-	} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2') {
+		} elseif ($device_rec['DEVICE_TYPE'] == 'deerma.humidifier.jsq2g') {
+            $this->addToQueue($device_id, 'get_properties', '[{"did":"power","siid":2,"piid":1,"value":0},{"did":"relative_humidity","siid":3,"piid":1,"value":0},{"did":"temperature","siid":3,"piid":7,"value":0},{"did":"target_humidity","siid":2,"piid":6,"value":0},{"did":"fan_level","siid":2,"piid":5,"value":0},{"did":"fault","siid":2,"piid":2,"value":0},{"did":"led","siid":6,"piid":1,"value":0},{"did":"water_shortage_fault","siid":7,"piid":2,"value":0},{"did":"the_tank_filed","siid":7,"piid":1,"value":0},{"did":"buzzer","siid":5,"piid":1,"value":0}]');
+         	
+		} elseif ($device_rec['DEVICE_TYPE'] == 'zhimi.airpurifier.ma2') {
             //
             $props = explode(',', MIIO_ZHIMI_AIRPURIFIER_MA2_PROPS);
             $total = count($props);
@@ -1228,10 +1231,10 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
                             $method = 'set_properties';
                             $params = '[{"did":"power","siid":2,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
-                        } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
+                        } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq2g') {
                             $method = 'set_properties';
                             $params = '[{"did":"power","siid":2,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
-			} else if ($properties[$i]['DEVICE_TYPE'] == 'chuangmi.plug.212a01') {
+						} else if ($properties[$i]['DEVICE_TYPE'] == 'chuangmi.plug.212a01') {
                             $method = 'set_properties';
                             $params = '[{"did":"power","siid":2,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                         } else if ($properties[$i]['DEVICE_TYPE'] == 'lumi.acpartner.v3') {
@@ -1265,7 +1268,7 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
                             $method = 'set_properties';
                             $params = '[{"did":"buzzer","siid":4,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
-			} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
+						} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq2g') {
                             $method = 'set_properties';
                             $params = '[{"did":"buzzer","siid":5,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
                         } else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
@@ -1429,18 +1432,18 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                         if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.airpurifier.mb3') {
                             $method = 'set_properties';
                             $params = '[{"did":"led","siid":6,"piid":6,"value":' . ($value ? 'true' : 'false') . '}]';
-			} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
+					} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq2g') {
                             $method = 'set_properties';
                             $params = '[{"did":"led","siid":6,"piid":1,"value":' . ($value ? 'true' : 'false') . '}]';
-                  	} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
+					} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.mjjsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq1') {
                             $method = 'SetLedState';
                             $params = '[' . (int)$value . ']';
-                        } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
+                    } else if ($properties[$i]['DEVICE_TYPE'] == 'dmaker.airfresh.a1') {
                             $method = 'set_display';
                             $params = $value ? '[true]' : '[false]';
-                        } else {
+                    } else {
                             $params = $value ? '["on"]' : '["off"]';
-                        }
+                    }
                         $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
                     } elseif ($properties[$i]['TITLE'] == 'child_lock') {
                         //
@@ -1486,12 +1489,11 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                             if ($value < 1) $value = 1;
                             if ($value > 3) $value = 3;
                             $params = '[{"did":"fan_level","siid":2,"piid":4,"value":' . $value . '}]';
-                        } elseif ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
+                        } elseif ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq2g') {
                             if ($value < 1) $value = 1;
                             if ($value > 4) $value = 4;
                             $params = '[{"did":"fan_level","siid":2,"piid":5,"value":' . $value . '}]';
                         }
-
 			
                         $this->addToQueue($properties[$i]['DEVICE_ID'], $method, $params);
                     } elseif ($properties[$i]['TITLE'] == 'dry' && $properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
@@ -1804,19 +1806,13 @@ array('did'=>'water_box_carriage_status','siid'=>4,'piid'=>6),
                             if ($value < 0) $value = 0;
                             if ($value > 99) $value = 99;
                             $this->addToQueue($properties[$i]['DEVICE_ID'], 'Set_HumiValue', '[' . $value . ']');
-                        } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4') {
+                        } else if ($properties[$i]['DEVICE_TYPE'] == 'zhimi.humidifier.ca4' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5' || $properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq2g') {
                     		//"target_humidity": {"siid": 2, "piid": 6},  # [30, 80] step 1
                             if (($value >= 30) && ($value <= 80) && (($value % 10) == 0)) {
-                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"target-humidity","siid":2,"piid":6,"value":' . $value . '}]');
+								$this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"target-humidity","siid":2,"piid":6,"value":' . $value . '}]');
                         	}
-		    	} else if ($properties[$i]['DEVICE_TYPE'] == 'deerma.humidifier.jsq5') {
-                    		//"target_humidity": {"siid": 2, "piid": 6},  # [30, 80] step 1
-                            if (($value >= 40) && ($value <= 80)) {
-                            $this->addToQueue($properties[$i]['DEVICE_ID'], 'set_properties', '[{"did":"target_humidity","siid":2,"piid":6,"value":' . $value . '}]');
-            
-                    	       }
-				
-		      }  
+						}
+				 
                     } elseif ($properties[$i]['TITLE'] == 'target_temperature') {
                         $value = (int)$value;
                         if ($properties[$i]['DEVICE_TYPE'] == 'hfjh.fishbowl.v1') {
