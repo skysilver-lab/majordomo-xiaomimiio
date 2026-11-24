@@ -173,3 +173,59 @@ a.support-hover:hover .tip {
 a.support-hover-two:hover + .tip-block .tip-two {
  	display:block;
 }
+
+/* Responsive, theme-aware overrides (2026) */
+:root {
+  --mod-tooltip-bg: var(--mj-color-surface, #f5f5f5);
+  --mod-tooltip-fg: var(--mj-color-fg, #333333);
+  --mod-tooltip-border: var(--mj-color-border, #dddddd);
+  --mod-touch: 44px;
+}
+.support,
+.support-two,
+.support-hover {
+  min-height: var(--mod-touch);
+  display: inline-flex;
+  align-items: center;
+}
+.tip,
+.tip-two,
+.tip-three,
+span.support::before,
+span.support-hover::before {
+  width: auto;
+  max-width: min(400px, calc(100vw - 32px));
+  box-sizing: border-box;
+  background: var(--mod-tooltip-bg);
+  color: var(--mod-tooltip-fg);
+  border-color: var(--mod-tooltip-border);
+}
+:root[data-theme="dark"] .tip,
+:root[data-theme="dark"] .tip-two,
+:root[data-theme="dark"] .tip-three,
+:root[data-theme="dark"] span.support::before,
+:root[data-theme="dark"] span.support-hover::before {
+  background: var(--mj-color-surface, #2b2b2b);
+  color: var(--mj-color-fg, #e6e6e6);
+  border-color: var(--mj-color-border, #444444);
+}
+@media (max-width: 767px) {
+  .tip,
+  .tip-two,
+  .tip-three,
+  span.support::before,
+  span.support-hover::before {
+    position: static;
+    display: block;
+    left: auto;
+    top: auto;
+    margin: 8px 0 0;
+    width: 100%;
+    max-width: none;
+    box-shadow: none;
+  }
+  .btn, .support, .support-hover { min-height: var(--mod-touch); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tip, .tip-two, .tip-three { transition: none; }
+}
