@@ -1,56 +1,88 @@
 <?php
-
 if ($this->mode == 'update') {
-    $login = gr('cloud_login');
-    $pass = gr('cloud_password');
-    $region = gr('cloud_region');
-    $read_only = gr('read_only','int');
-    $out['READ_ONLY']=$read_only;
-    if ($login && $pass) {
-        $cmd = 'python3 '.dirname(__FILE__) . '/token_extractor.py --server='.$region.' --username='.$login.' --password='.$pass;
+    $login = trim((string)gr('cloud_login'));
+    $pass = (string)gr('cloud_password');
+    $region = trim((string)gr('cloud_region'));
+    $read_only = (int)gr('read_only', 'int');
+    $out['READ_ONLY'] = $read_only;
 
-        $res = exec($cmd, $output);
-        $result = array();
-        $out['OUTPUT']=$cmd."\n\n".implode("\n",$output);
-        $current_device = array();
-        foreach($output as $line) {
-            if (preg_match('/new-device/',$line)) {
-                $current_device = array();
-            }
-            if (preg_match('/{(.+?)}={(.+?)}/is',$line,$m)) {
-                $current_device[$m[1]]=$m[2];
-            }
-            if ($current_device['ID']) {
-                $result[$current_device['ID']]=$current_device;
-            }
-        }
+    $regions = array('cn', 'de', 'us', 'ru', 'tw', 'sg', 'in', 'i2');
+    if ($region !== '' && !in_array($region, $regions, true)) {
+        $region = '';
+    }
+    $scanRegions = ($region === '') ? $regions : array($region);
 
-        //$milo=SQLSelect("SELECT * FROM miio_devices");
-        //dprint($result,false);
-
-        if (!$read_only) {
-            $updated_devices=0;
-            foreach($result as $device) {
-                // MODEL NAME TOKEN
-                $device_rec = SQLSelectOne("SELECT * FROM miio_devices WHERE IP='".$device['IP']."'");
-                if ($device_rec['ID']
-                    && ($device_rec['DEVICE_TYPE']==$device['MODEL'] || $device_rec['DEVICE_TYPE']=='')) {
-                    if (preg_match('/^new /is',$device_rec['TITLE'])) {
-                        $device_rec['TITLE']=$device['NAME'];
+    $out['OUTPUT'] = '';
+    if ($login === '' || $pass === '') {
+        $out['OUTPUT'] = 'Вкажіть логін і пароль Xiaomi.';
+    } else {
+        include_once(DIR_MODULES . 'xiaomimiio/lib/xiaomi_cloud.class.php');
+        $connector = new XiaomiCloudConnector($login, $pass, false);
+        if (!$connector->login()) {
+            $out['OUTPUT'] = 'Не вдалося увійти в хмару Xiaomi. Перевірте логін, пароль і регіон.';
+        } else {
+            $lines = array();
+            $result = array();
+            foreach ($scanRegions as $currentRegion) {
+                $devices = $connector->getDevices($currentRegion);
+                if (empty($devices)) {
+                    $lines[] = 'Пристроїв у регіоні ' . $currentRegion . ' не знайдено.';
+                    continue;
+                }
+                $lines[] = 'Пристрої в регіоні ' . $currentRegion . ':';
+                foreach ($devices as $device) {
+                    $item = array(
+                        'NAME' => isset($device['name']) ? $device['name'] : '',
+                        'ID' => isset($device['did']) ? $device['did'] : '',
+                        'IP' => isset($device['localip']) ? $device['localip'] : '',
+                        'TOKEN' => isset($device['token']) ? $device['token'] : '',
+                        'MODEL' => isset($device['model']) ? $device['model'] : '',
+                        'BLE KEY' => '',
+                    );
+                    if ($item['ID'] !== '' && strpos($item['ID'], 'blt') !== false) {
+                        $item['BLE KEY'] = $connector->getBeaconKey($currentRegion, $item['ID']);
                     }
-                    $device_rec['TOKEN']=$device['TOKEN'];
-                    $device_rec['DEVICE_TYPE']=$device['MODEL'];
-                    SQLUpdate('miio_devices',$device_rec);
-                    $updated_devices++;
+                    $lines[] = 'new-device';
+                    foreach ($item as $key => $value) {
+                        if ($value !== '') {
+                            $lines[] = '{' . $key . '}={' . $value . '}';
+                        }
+                    }
+                    if ($item['ID'] !== '') {
+                        $result[$item['ID']] = $item;
+                    }
+                }
+                $lines[] = '---------';
+            }
+            $out['OUTPUT'] = implode("\n", $lines);
+
+            if (!$read_only) {
+                $updatedDevices = 0;
+                foreach ($result as $device) {
+                    if (empty($device['IP'])) {
+                        continue;
+                    }
+                    $deviceRec = SQLSelectOne("SELECT * FROM miio_devices WHERE IP='" . DBSafe($device['IP']) . "'");
+                    if ($deviceRec['ID'] && ($deviceRec['DEVICE_TYPE'] === $device['MODEL'] || $deviceRec['DEVICE_TYPE'] === '')) {
+                        if (preg_match('/^new /is', $deviceRec['TITLE'])) {
+                            $deviceRec['TITLE'] = $device['NAME'];
+                        }
+                        if ($device['TOKEN'] !== '') {
+                            $deviceRec['TOKEN'] = $device['TOKEN'];
+                        }
+                        if ($device['MODEL'] !== '') {
+                            $deviceRec['DEVICE_TYPE'] = $device['MODEL'];
+                        }
+                        SQLUpdate('miio_devices', $deviceRec);
+                        $updatedDevices++;
+                    }
+                }
+                if ($updatedDevices) {
+                    $this->discover();
                 }
             }
-            if ($updated_devices) {
-                $this->discover();
-            }
         }
-
     }
     $out['CLOUD_LOGIN'] = htmlspecialchars($login);
-    $out['CLOUD_PASSWORD'] = htmlspecialchars($pass);
     $out['CLOUD_REGION'] = htmlspecialchars($region);
 }
